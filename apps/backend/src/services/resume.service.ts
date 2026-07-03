@@ -1,5 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import { prisma } from "@devforge/database"
+import { PrismaClient } from "@prisma/client"
+
+const prisma = new PrismaClient()
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })

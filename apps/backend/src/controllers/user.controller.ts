@@ -1,5 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify"
-import { prisma } from "@devforge/database"
+import { PrismaClient } from "@prisma/client"
+
+const prisma = new PrismaClient()
 
 export const UserController = {
   async getMe(req: FastifyRequest, reply: FastifyReply) {

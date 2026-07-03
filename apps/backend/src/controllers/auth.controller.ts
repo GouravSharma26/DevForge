@@ -1,7 +1,9 @@
 import { FastifyRequest, FastifyReply } from "fastify"
 import bcrypt from "bcrypt"
-import { prisma } from "@devforge/database"
+import { PrismaClient } from "@prisma/client"
 import { RegisterSchema, LoginSchema } from "@devforge/shared-types"
+
+const prisma = new PrismaClient()
 
 export const AuthController = {
   async register(req: FastifyRequest, reply: FastifyReply) {

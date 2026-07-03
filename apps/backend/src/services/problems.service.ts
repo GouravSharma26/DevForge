@@ -1,5 +1,7 @@
-import { prisma } from "@devforge/database"
+import { PrismaClient } from "@prisma/client"
 import { runInSandbox } from "../utils/sandbox"
+
+const prisma = new PrismaClient()
 
 export async function getProblems(
   difficulty?: string,

@@ -1,4 +1,5 @@
-import { prisma } from "@devforge/database"
+import { PrismaClient } from "@prisma/client"
+const prisma = new PrismaClient()
 
 export async function getRandomEasyProblem() {
   const problems = await prisma.problem.findMany({

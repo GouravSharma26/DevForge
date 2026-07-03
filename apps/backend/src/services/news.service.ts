@@ -1,8 +1,9 @@
-import { prisma } from "@devforge/database"
+import { PrismaClient } from "@prisma/client"
+
+const prisma = new PrismaClient()
 
 const NEWS_API_KEY = process.env.NEWS_API_KEY!
 const BASE_URL = "https://newsapi.org/v2"
-
 const CATEGORIES = ["technology", "science", "business"]
 
 interface NewsAPIArticle {
@@ -24,13 +25,10 @@ export async function fetchAndStoreNews() {
         `${BASE_URL}/top-headlines?category=${category}&language=en&pageSize=20&apiKey=${NEWS_API_KEY}`
       )
       const data = (await res.json()) as { articles: NewsAPIArticle[] }
-
       if (!data.articles?.length) continue
 
       for (const article of data.articles) {
-        // Skip articles with missing required fields
         if (!article.title || !article.url || article.title === "[Removed]") continue
-
         await prisma.article.upsert({
           where: { url: article.url },
           update: {},
@@ -57,28 +55,20 @@ export async function fetchAndStoreNews() {
 
 export async function getArticles(category?: string, page = 1, limit = 20) {
   const skip = (page - 1) * limit
-
   try {
     const where = category ? { category } : undefined
-
     const [articles, total] = await Promise.all([
-      (prisma as any).article.findMany({
+      prisma.article.findMany({
         where,
         orderBy: { publishedAt: "desc" },
         skip,
         take: limit,
       }),
-      (prisma as any).article.count({ where }),
+      prisma.article.count({ where }),
     ])
-
     return {
       articles,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     }
   } catch (err) {
     console.error("getArticles error:", err)
