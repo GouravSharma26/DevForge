@@ -1,0 +1,36 @@
+{
+  "name": "@devforge/backend",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "@devforge/database": "*",
+    "@devforge/shared-types": "*",
+    "@fastify/cors": "^9.0.0",
+    "@fastify/helmet": "^11.0.0",
+    "@fastify/jwt": "^8.0.0",
+    "@fastify/multipart": "^8.3.1",
+    "@fastify/rate-limit": "^9.0.0",
+    "@google/generative-ai": "^0.24.1",
+    "bcrypt": "^5.1.1",
+    "bullmq": "^5.7.0",
+    "dotenv": "^16.4.0",
+    "fastify": "^4.27.0",
+    "ioredis": "^5.3.2",
+    "multer": "^2.2.0",
+    "socket.io": "^4.8.3",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/multer": "^2.1.0",
+    "@types/node": "^20.0.0",
+    "@types/pdf-parse": "^1.1.5",
+    "tsx": "^4.11.0",
+    "typescript": "^5.4.0"
+  }
+}

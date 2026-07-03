@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ExperienceLevel {
+  BEGINNER
+  MID
+  SENIOR
+}
+
+model User {
+  id              String          @id @default(cuid())
+  username        String          @unique
+  email           String          @unique
+  password        String
+  avatar          String?
+  bio             String?
+  targetRole      String?
+  experienceLevel ExperienceLevel @default(BEGINNER)
+  xp              Int             @default(0)
+  streak          Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  enrollments     Enrollment[]
+  progress        UserProgress[]
+  submissions     Submission[]
+  matchesAsP1     Match[]         @relation("player1")
+  matchesAsP2     Match[]         @relation("player2")
+  matchesWon      Match[]         @relation("winner")
+  resume          Resume?
+  interviews      Interview[]
+  resumeBuilder   ResumeBuilder?
+}
+
+model Article {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  url         String   @unique
+  imageUrl    String?
+  source      String
+  category    String   @default("general")
+  publishedAt DateTime
+  createdAt   DateTime @default(now())
+}
+
+model LearningPath {
+  id          String       @id @default(cuid())
+  title       String
+  description String
+  icon        String       @default("📚")
+  level       ExperienceLevel @default(BEGINNER)
+  totalTopics Int          @default(0)
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
+  topics      Topic[]
+  enrollments Enrollment[]
+}
+
+model Topic {
+  id             String       @id @default(cuid())
+  title          String
+  description    String?
+  order          Int
+  estimatedMins  Int          @default(30)
+  pathId         String
+  path           LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  progress       UserProgress[]
+}
+
+model Enrollment {
+  id        String       @id @default(cuid())
+  userId    String
+  pathId    String
+  createdAt DateTime     @default(now())
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  path      LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pathId])
+}
+
+model UserProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  topicId     String
+  completed   Boolean  @default(false)
+  completedAt DateTime?
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, topicId])
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model Problem {
+  id          String       @id @default(cuid())
+  title       String
+  slug        String       @unique
+  description String
+  difficulty  Difficulty   @default(EASY)
+  category    String
+  examples    Json
+  constraints String[]
+  starterCode Json         // { javascript: "...", python: "..." }
+  testCases   Json         // [{ input: "...", expected: "..." }]
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
+  submissions Submission[]
+  matches     Match[]
+}
+
+model Submission {
+  id        String   @id @default(cuid())
+  userId    String
+  problemId String
+  code      String
+  language  String
+  status    String   // "accepted", "wrong_answer", "runtime_error"
+  runtime   Int?     // ms
+  memory    Int?     // KB
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+}
+
+enum MatchStatus {
+  WAITING
+  ACTIVE
+  COMPLETED
+}
+
+model Match {
+  id         String      @id @default(cuid())
+  status     MatchStatus @default(WAITING)
+  problemId  String
+  player1Id  String
+  player2Id  String?
+  winnerId   String?
+  startedAt  DateTime?
+  endedAt    DateTime?
+  createdAt  DateTime    @default(now())
+  problem    Problem     @relation(fields: [problemId], references: [id])
+  player1    User        @relation("player1", fields: [player1Id], references: [id])
+  player2    User?       @relation("player2", fields: [player2Id], references: [id])
+  winner     User?       @relation("winner", fields: [winnerId], references: [id])
+}
+
+model Resume {
+  id              String      @id @default(cuid())
+  userId          String      @unique
+  originalText    String
+  skills          String[]
+  experienceLevel String      @default("JUNIOR")
+  targetRole      String?
+  score           Int         @default(0)
+  skillsScore     Int         @default(0)
+  projectsScore   Int         @default(0)
+  writingScore    Int         @default(0)
+  atsScore        Int         @default(0)
+  suggestions     Json
+  gaps            String[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interviews      Interview[]
+}
+
+model ResumeBuilder {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  sections  Json
+  template  String   @default("modern")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Interview {
+  id        String            @id @default(cuid())
+  userId    String
+  resumeId  String
+  status    InterviewStatus   @default(IN_PROGRESS)
+  score     Int?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume    Resume            @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  questions Question[]
+}
+
+model Question {
+  id          String    @id @default(cuid())
+  interviewId String
+  round       Int
+  question    String
+  context     String?
+  userAnswer  String?
+  feedback    String?
+  score       Int?
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+}
+
+enum InterviewStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
