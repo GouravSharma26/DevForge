@@ -5,6 +5,11 @@ const prisma = new PrismaClient()
 async function main() {
   console.log("🌱 Seeding learning paths...")
 
+  await prisma.userProgress.deleteMany()
+  await prisma.enrollment.deleteMany()
+  await prisma.topic.deleteMany()
+  await prisma.learningPath.deleteMany()
+
   const paths = [
     {
       title: "Frontend Developer",
