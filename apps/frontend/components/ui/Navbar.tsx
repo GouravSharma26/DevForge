@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { useAuthStore } from "@/store/auth.store"
 
 const NAV_ITEMS = [
-  { label: "News",     href: "/" },
+  { label: "News",     href: "/news" },
   { label: "Paths",    href: "/paths" },
   { label: "Practice", href: "/problems" },
   { label: "Arena",    href: "/arena" },
