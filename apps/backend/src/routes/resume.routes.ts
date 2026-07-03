@@ -3,7 +3,6 @@ import { authenticate } from "../plugins/authenticate"
 import { PrismaClient } from "@prisma/client"
 import {
   analyzeResume,
-  extractTextFromPDF,
   analyzeResumeFromText,
   deleteResume,
   getResume,

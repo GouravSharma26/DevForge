@@ -1,35 +1,53 @@
 import { Queue, Worker } from "bullmq"
-import IORedis from "ioredis"
 import { fetchAndStoreNews } from "../services/news.service"
 
-const connection = new IORedis(process.env.REDIS_URL!, {
+const connection = {
+  url: process.env.REDIS_URL!,
+}
+
+// Use URL-based connection to avoid ioredis version conflicts
+const redisConnection = {
+  host: (() => {
+    try {
+      const url = new URL(process.env.REDIS_URL!.replace("rediss://", "https://").replace("redis://", "http://"))
+      return url.hostname
+    } catch { return "localhost" }
+  })(),
+  port: (() => {
+    try {
+      const url = new URL(process.env.REDIS_URL!.replace("rediss://", "https://").replace("redis://", "http://"))
+      return parseInt(url.port) || 6379
+    } catch { return 6379 }
+  })(),
+  password: (() => {
+    try {
+      const url = new URL(process.env.REDIS_URL!.replace("rediss://", "https://").replace("redis://", "http://"))
+      return url.password || undefined
+    } catch { return undefined }
+  })(),
   tls: process.env.REDIS_URL?.startsWith("rediss://") ? {} : undefined,
-  maxRetriesPerRequest: null,
-})
+}
 
-// Queue that schedules the fetch job
-export const newsQueue = new Queue("news", { connection })
+export const newsQueue = new Queue("news", { connection: redisConnection })
 
-// Worker that processes the job
 const worker = new Worker(
   "news",
   async (job) => {
     console.log(`⚙️  Processing job: ${job.name}`)
     await fetchAndStoreNews()
   },
-  { connection }
+  { connection: redisConnection }
 )
 
 worker.on("completed", () => console.log("✅ News job completed"))
 worker.on("failed", (job, err) => console.error(`❌ News job failed`, err))
 
-// Schedule: fetch news every 6 hours
 export async function scheduleNewsJob() {
   await newsQueue.add(
     "fetch-news",
     {},
     {
-      repeat: { every: 6 * 60 * 60 * 1000 }, // 6 hours in ms
+      repeat: { every: 6 * 60 * 60 * 1000 },
       removeOnComplete: true,
       removeOnFail: 50,
     }

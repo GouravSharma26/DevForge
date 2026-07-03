@@ -10,6 +10,8 @@
   "dependencies": {
     "@devforge/database": "*",
     "@devforge/shared-types": "*",
+    "@types/bcrypt": "^5.0.2",
+    "@types/multer": "^2.1.0",
     "@fastify/cors": "^9.0.0",
     "@fastify/helmet": "^11.0.0",
     "@fastify/jwt": "^8.0.0",
