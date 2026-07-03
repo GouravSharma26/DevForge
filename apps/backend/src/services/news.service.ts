@@ -58,25 +58,33 @@ export async function fetchAndStoreNews() {
 export async function getArticles(category?: string, page = 1, limit = 20) {
   const skip = (page - 1) * limit
 
-  const [articles, total] = await Promise.all([
-    prisma.article.findMany({
-      where: category ? { category } : undefined,
-      orderBy: { publishedAt: "desc" },
-      skip,
-      take: limit,
-    }),
-    prisma.article.count({
-      where: category ? { category } : undefined,
-    }),
-  ])
+  try {
+    const where = category ? { category } : undefined
 
-  return {
-    articles,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
-    },
+    const [articles, total] = await Promise.all([
+      (prisma as any).article.findMany({
+        where,
+        orderBy: { publishedAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).article.count({ where }),
+    ])
+
+    return {
+      articles,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    }
+  } catch (err) {
+    console.error("getArticles error:", err)
+    return {
+      articles: [],
+      pagination: { page, limit, total: 0, totalPages: 0 },
+    }
   }
 }
