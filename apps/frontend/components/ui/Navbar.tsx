@@ -16,7 +16,7 @@ export function Navbar({ open }: { open: boolean }) {
   const router = useRouter()
   const token = useAuthStore((s) => s.token)
 
-  if (pathname === "/landing") return null
+  // if (pathname === "/landing") return null
 
   if (!token) return null
 
