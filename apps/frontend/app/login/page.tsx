@@ -41,8 +41,7 @@ async function handleSubmit() {
       : { email: form.email, password: form.password }
     const res = await api.post(endpoint, payload)
     setAuth(res.data.data.user, res.data.data.token)
-    // Redirect to the news dashboard after login/register
-    router.push("/news")
+    router.push("/")
   } catch (err: any) {
     const raw = err?.response?.data?.error
 
@@ -285,7 +284,7 @@ async function handleSubmit() {
 
         {/* Landing link */}
         <p style={{ textAlign: "center", fontSize: 11, color: "#3a3760", fontFamily: mono }}>
-          <a href="/" style={{ color: "#5a5780", textDecoration: "none" }}
+          <a href="/landing" style={{ color: "#5a5780", textDecoration: "none" }}
             onMouseEnter={(e) => (e.currentTarget.style.color = "#a855f7")}
             onMouseLeave={(e) => (e.currentTarget.style.color = "#5a5780")}
           >
