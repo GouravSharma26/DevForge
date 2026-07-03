@@ -27,7 +27,19 @@ export const io = new Server(app.server, {
 async function start() {
   await app.register(helmet)
   await app.register(cors, {
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: (origin, cb) => {
+      // Allow no origin (mobile/curl), production URL, and all Vercel preview URLs
+      if (
+        !origin ||
+        origin === process.env.FRONTEND_URL ||
+        origin.endsWith(".vercel.app") ||
+        origin === "http://localhost:3000"
+      ) {
+        cb(null, true)
+      } else {
+        cb(new Error("Not allowed by CORS"), false)
+      }
+    },
     credentials: true,
   })
   await app.register(jwt, { secret: process.env.JWT_SECRET! })
