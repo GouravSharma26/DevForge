@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { usePaths, useEnroll } from "@/hooks/usePaths"
 import { useAuthStore } from "@/store/auth.store"
@@ -13,6 +13,7 @@ const LEVEL_STYLE: Record<string, { color: string; bg: string; border: string }>
 
 export default function PathsPage() {
   const router = useRouter()
+  const [showModal, setShowModal] = useState(false)
   const token = useAuthStore((s) => s.token)
   const hydrated = useAuthStore((s) => s.hydrated)
   const { data: paths, isLoading } = usePaths()
@@ -108,9 +109,8 @@ export default function PathsPage() {
                     </p>
                   )}
 
-                  {/* Button */}
                   <button
-                    onClick={() => path.isEnrolled ? router.push(`/paths/${path.id}`) : enroll.mutate(path.id)}
+                    onClick={() => path.isEnrolled ? setShowModal(true) : enroll.mutate(path.id)}
                     style={{
                       padding: "10px 0", borderRadius: 12, fontSize: 13,
                       fontFamily: "JetBrains Mono, monospace", cursor: "pointer",
@@ -135,6 +135,53 @@ export default function PathsPage() {
           </div>
         )}
       </div>
+
+      {/* Coming Soon Modal */}
+      {showModal && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 100,
+          background: "rgba(23, 18, 16, 0.8)", backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", justifyContent: "center", padding: 24
+        }}>
+          <div style={{
+            background: "#171210", border: "1px solid rgba(255,180,120,0.14)",
+            borderRadius: 24, padding: 32, width: "100%", maxWidth: 400,
+            boxShadow: "0 24px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset",
+            textAlign: "center"
+          }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: "50%", background: "rgba(234,88,12,0.1)",
+              color: "#ea580c", display: "flex", alignItems: "center", justifyContent: "center",
+              margin: "0 auto 20px", fontSize: 24, border: "1px solid rgba(234,88,12,0.2)"
+            }}>
+              🚧
+            </div>
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: "#fdf6f0", fontFamily: "JetBrains Mono, monospace", marginBottom: 8 }}>
+              Coming Soon
+            </h3>
+            <p style={{ fontSize: 13, color: "#8a7a6a", fontFamily: "JetBrains Mono, monospace", lineHeight: 1.5, marginBottom: 24 }}>
+              The interactive curriculum for this path is currently being forged. Check back in a few days!
+            </p>
+            <button
+              onClick={() => setShowModal(false)}
+              style={{
+                width: "100%", padding: "10px 0", borderRadius: 12, fontSize: 13,
+                fontFamily: "JetBrains Mono, monospace", cursor: "pointer", fontWeight: 600,
+                background: "rgba(255,237,213,0.05)", border: "1px solid rgba(255,180,120,0.14)",
+                color: "#fdf6f0", transition: "all 0.2s"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(255,237,213,0.1)"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(255,237,213,0.05)"
+              }}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

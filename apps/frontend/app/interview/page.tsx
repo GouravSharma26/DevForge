@@ -19,6 +19,7 @@ export default function InterviewHubPage() {
   const deleteInterview = useDeleteInterview()
 
   const [selectedResumeId, setSelectedResumeId] = useState<string>("")
+  const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
     if (hydrated && !token) router.push("/login")
@@ -79,19 +80,100 @@ export default function InterviewHubPage() {
                 </option>
               ))}
             </select>
-            <button
-              onClick={handleStart}
-              disabled={startInterview.isPending || !selectedResumeId}
-              style={{
-                padding: "8px 16px", borderRadius: 8, border: "1px solid rgba(253,186,116,0.45)",
-                background: "rgba(217,119,6,0.18)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", color: "#fed7aa", fontSize: 12,
-                fontFamily: mono, cursor: "pointer", fontWeight: 600, flexShrink: 0,
-              }}
-            >
-              {startInterview.isPending ? "Starting..." : "Start Interview"}
-            </button>
           </div>
         </div>
+
+        {/* ── Interview Types ── */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20, marginTop: 10 }}>
+          
+          {/* Standard Mock */}
+          <div style={{
+            background: "rgba(255,237,213,0.02)",
+            border: "1px solid rgba(255,180,120,0.14)",
+            borderRadius: 16,
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column"
+          }}>
+            <div style={{
+              height: 140,
+              background: "linear-gradient(135deg, rgba(234,88,12,0.15) 0%, rgba(217,119,6,0.05) 100%)",
+              borderBottom: "1px solid rgba(255,180,120,0.14)",
+              display: "flex", alignItems: "center", justifyContent: "center"
+            }}>
+              <span style={{ fontSize: 48 }}>⚔️</span>
+            </div>
+            <div style={{ padding: 20, flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fdf6f0", fontFamily: mono, marginBottom: 8 }}>Standard Mock</h3>
+                <p style={{ fontSize: 12, color: "#8a7a6a", fontFamily: mono, lineHeight: 1.5, marginBottom: 20 }}>
+                  A rigorous 10-question gauntlet: 9 advanced multiple-choice questions followed by 1 interactive Grandmaster coding challenge.
+                </p>
+              </div>
+              <button
+                onClick={handleStart}
+                disabled={startInterview.isPending || !selectedResumeId}
+                style={{
+                  width: "100%", padding: "10px", borderRadius: 10, border: "none",
+                  background: startInterview.isPending ? "rgba(255,237,213,0.05)" : "linear-gradient(135deg, #ea580c, #d97706)",
+                  color: startInterview.isPending ? "#8a7a6a" : "#fdf6f0", fontSize: 13,
+                  fontFamily: mono, cursor: (startInterview.isPending || !selectedResumeId) ? "not-allowed" : "pointer", fontWeight: 700,
+                  boxShadow: (startInterview.isPending || !selectedResumeId) ? "none" : "0 4px 16px rgba(234,88,12,0.3)",
+                  transition: "all 0.2s"
+                }}
+              >
+                {startInterview.isPending ? "Starting..." : "Start Standard"}
+              </button>
+            </div>
+          </div>
+
+          {/* AI Agent Mock */}
+          <div style={{
+            background: "rgba(255,237,213,0.02)",
+            border: "1px solid rgba(255,180,120,0.14)",
+            borderRadius: 16,
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column"
+          }}>
+            <div style={{
+              height: 140,
+              background: "linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(5,150,105,0.05) 100%)",
+              borderBottom: "1px solid rgba(255,180,120,0.14)",
+              display: "flex", alignItems: "center", justifyContent: "center"
+            }}>
+              <span style={{ fontSize: 48 }}>🤖</span>
+            </div>
+            <div style={{ padding: 20, flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fdf6f0", fontFamily: mono, marginBottom: 8 }}>1-on-1 AI Agent</h3>
+                <p style={{ fontSize: 12, color: "#8a7a6a", fontFamily: mono, lineHeight: 1.5, marginBottom: 20 }}>
+                  A completely immersive verbal and collaborative technical interview with an autonomous AI recruiter.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowModal(true)}
+                style={{
+                  width: "100%", padding: "10px", borderRadius: 10, border: "1px solid rgba(255,180,120,0.14)",
+                  background: "rgba(255,237,213,0.05)", color: "#fdf6f0", fontSize: 13,
+                  fontFamily: mono, cursor: "pointer", fontWeight: 700, transition: "all 0.2s"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(255,237,213,0.1)"
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(255,237,213,0.05)"
+                }}
+              >
+                Start AI Agent
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: "#fdf6f0", fontFamily: mono, marginTop: 24, marginBottom: -4, borderBottom: "1px solid rgba(255,180,120,0.14)", paddingBottom: 12 }}>
+          Past Interviews
+        </h2>
 
         {/* ── Saved Interviews Grid ── */}
         {isLoading ? (
@@ -179,6 +261,53 @@ export default function InterviewHubPage() {
           </div>
         )}
       </div>
+
+      {/* Coming Soon Modal */}
+      {showModal && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 100,
+          background: "rgba(23, 18, 16, 0.8)", backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", justifyContent: "center", padding: 24
+        }}>
+          <div style={{
+            background: "#171210", border: "1px solid rgba(255,180,120,0.14)",
+            borderRadius: 24, padding: 32, width: "100%", maxWidth: 400,
+            boxShadow: "0 24px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset",
+            textAlign: "center"
+          }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: "50%", background: "rgba(234,88,12,0.1)",
+              color: "#ea580c", display: "flex", alignItems: "center", justifyContent: "center",
+              margin: "0 auto 20px", fontSize: 24, border: "1px solid rgba(234,88,12,0.2)"
+            }}>
+              🚧
+            </div>
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: "#fdf6f0", fontFamily: mono, marginBottom: 8 }}>
+              Coming Soon
+            </h3>
+            <p style={{ fontSize: 13, color: "#8a7a6a", fontFamily: mono, lineHeight: 1.5, marginBottom: 24 }}>
+              The 1-on-1 AI autonomous voice recruiter is currently in active development. Check back soon!
+            </p>
+            <button
+              onClick={() => setShowModal(false)}
+              style={{
+                width: "100%", padding: "10px 0", borderRadius: 12, fontSize: 13,
+                fontFamily: mono, cursor: "pointer", fontWeight: 600,
+                background: "rgba(255,237,213,0.05)", border: "1px solid rgba(255,180,120,0.14)",
+                color: "#fdf6f0", transition: "all 0.2s"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(255,237,213,0.1)"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(255,237,213,0.05)"
+              }}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
