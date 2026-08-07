@@ -28,6 +28,33 @@ export async function runInSandbox(
   throw new Error(`Unsupported language: ${language}`)
 }
 
+function getSandboxCommand(executable: string, args: string[]): { cmd: string, args: string[] } {
+  // DEV-ONLY: Windows bypass. Render/Linux production always uses the real unshare/ulimit wrapper below.
+  // This just allows local development on Windows where sh/unshare are not available.
+  if (process.platform === "win32") {
+    return { cmd: executable, args }
+  }
+
+  const script = `
+UNSHARE=""
+if unshare -r -n true 2>/dev/null; then
+  UNSHARE="unshare -r -n"
+elif unshare -n true 2>/dev/null; then
+  UNSHARE="unshare -n"
+else
+  echo "[Sandbox Warning] unshare failed, network isolation degraded" >&2
+fi
+
+# ulimit -u is shared with the host process on non-root deployments and is a known, accepted limitation, not full isolation.
+$UNSHARE sh -c 'ulimit -v 524288 -u 64 -n 128 -t 10 -f 1024; exec "$0" "$@"' "$0" "$@"
+`.trim()
+
+  return {
+    cmd: "sh",
+    args: ["-c", script, executable, ...args]
+  }
+}
+
 function runJS(code: string, id: string, timeoutMs: number): Promise<SandboxResult> {
   const filePath = join(tmpdir(), `devforge_${id}.js`)
 
@@ -35,18 +62,21 @@ function runJS(code: string, id: string, timeoutMs: number): Promise<SandboxResu
     writeFileSync(filePath, code, "utf8")
 
     let timedOut = false
+    const command = getSandboxCommand("node", ["--max-old-space-size=64", filePath])
 
     const child = execFile(
-      "node",
-      [
-        "--max-old-space-size=64",   // limit memory to 64MB
-        filePath,
-      ],
-      { timeout: timeoutMs },
+      command.cmd,
+      command.args,
+      { 
+        timeout: timeoutMs,
+        killSignal: "SIGTERM",
+        env: { PATH: process.env.PATH, HTTP_PROXY: "http://127.0.0.1:9999", HTTPS_PROXY: "http://127.0.0.1:9999" }
+      },
       (error, stdout, stderr) => {
+        if (fallbackTimer) clearTimeout(fallbackTimer)
         try { unlinkSync(filePath) } catch {}
 
-        if (error?.killed || error?.signal === "SIGTERM") {
+        if (error?.killed || error?.signal === "SIGTERM" || error?.signal === "SIGKILL") {
           timedOut = true
         }
 
@@ -57,6 +87,12 @@ function runJS(code: string, id: string, timeoutMs: number): Promise<SandboxResu
         })
       }
     )
+
+    const fallbackTimer = setTimeout(() => {
+      try {
+        if (child.pid) process.kill(child.pid, "SIGKILL")
+      } catch (e) {}
+    }, timeoutMs + 1000)
   })
 }
 
@@ -67,15 +103,22 @@ function runPython(code: string, id: string, timeoutMs: number): Promise<Sandbox
     writeFileSync(filePath, code, "utf8")
 
     let timedOut = false
+    const pythonCmd = process.env.PYTHON_CMD || (process.platform === "win32" ? "python" : "python3")
+    const command = getSandboxCommand(pythonCmd, [filePath])
 
-    execFile(
-      "python",
-      [filePath],
-      { timeout: timeoutMs },
+    const child = execFile(
+      command.cmd,
+      command.args,
+      { 
+        timeout: timeoutMs,
+        killSignal: "SIGTERM",
+        env: { PATH: process.env.PATH, HTTP_PROXY: "http://127.0.0.1:9999", HTTPS_PROXY: "http://127.0.0.1:9999" } 
+      },
       (error, stdout, stderr) => {
+        if (fallbackTimer) clearTimeout(fallbackTimer)
         try { unlinkSync(filePath) } catch {}
 
-        if (error?.killed || error?.signal === "SIGTERM") {
+        if (error?.killed || error?.signal === "SIGTERM" || error?.signal === "SIGKILL") {
           timedOut = true
         }
 
@@ -86,5 +129,11 @@ function runPython(code: string, id: string, timeoutMs: number): Promise<Sandbox
         })
       }
     )
+
+    const fallbackTimer = setTimeout(() => {
+      try {
+        if (child.pid) process.kill(child.pid, "SIGKILL")
+      } catch (e) {}
+    }, timeoutMs + 1000)
   })
 }

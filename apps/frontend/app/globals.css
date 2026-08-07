@@ -48,11 +48,12 @@ body { background: var(--bg-base); min-height: 100vh; }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: var(--bg-base); }
-::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 99px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(234, 88, 12, 0.4); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(234, 88, 12, 0.8); }
 
 /* ── Selection ── */
-::selection { background: var(--purple-glow); color: var(--purple-bright); }
+::selection { background: rgba(234, 88, 12, 0.3); color: #fdf6f0; }
 
 /* ── Animations ── */
 @keyframes fadeUp {

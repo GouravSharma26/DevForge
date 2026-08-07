@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { PrismaClient } from "@prisma/client"
+import { redactPII } from "../utils/redact"
 
 const prisma = new PrismaClient()
 
@@ -8,12 +9,13 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
 
 // ─── Resume Analysis (Native PDF Parsing) ─────────────────────────────────────
 
-export async function analyzeResume(userId: string, pdfBuffer: Buffer) {
+export async function analyzeResume(userId: string, pdfBuffer: Buffer, profileName: string = "PDF Upload") {
   const prompt = `
 You are an expert technical recruiter and resume analyst. Read this candidate's resume and return a JSON response.
 
 Return ONLY valid JSON in this exact format (no markdown, no backticks):
 {
+  "redactedText": "Full extracted text of the resume, but with any emails, phone numbers, and physical addresses replaced with [EMAIL REDACTED], [PHONE REDACTED], or [ADDRESS REDACTED]. Do not summarize the text, preserve the full content as closely as possible, just redact the contact info.",
   "skills": ["skill1", "skill2"],
   "experienceLevel": "JUNIOR" | "MID" | "SENIOR",
   "targetRole": "most likely role they're applying for",
@@ -44,11 +46,10 @@ Scoring criteria:
 
   let result;
   let retries = 3;
-  let delay = 2000; // Start with a 2-second wait
+  let delay = 2000; 
 
   while (retries > 0) {
     try {
-      // 🚀 Pass the raw PDF buffer directly to Gemini!
       result = await model.generateContent([
         prompt,
         {
@@ -58,20 +59,20 @@ Scoring criteria:
           },
         },
       ])
-      break; // Success! Exit the retry loop.
+      break; 
     } catch (error: any) {
       if (error.status === 503 && retries > 1) {
         console.warn(`⏳ Gemini API busy. Retrying in ${delay / 1000} seconds...`);
         await new Promise((resolve) => setTimeout(resolve, delay));
         retries--;
-        delay *= 2; // Exponential backoff: waits 2s, then 4s, then 8s
+        delay *= 2; 
       } else {
-        throw error; // If it's not a 503, or we ran out of retries, throw the error
+        throw error; 
       }
     }
   }
 
-  // @ts-ignore - result will always be defined here unless an error was thrown above
+  // @ts-ignore
   const text = result.response.text().trim()
 
   let parsed
@@ -83,24 +84,21 @@ Scoring criteria:
     parsed = JSON.parse(match[0])
   }
 
-  const resume = await prisma.resume.upsert({
-    where: { userId },
-    update: {
-      originalText: "Parsed natively by Gemini", // We no longer store raw extracted text
-      skills: parsed.skills || [],
-      experienceLevel: parsed.experienceLevel || "JUNIOR",
-      targetRole: parsed.targetRole || null,
-      score: parsed.scores?.overall || 0,
-      skillsScore: parsed.scores?.skills || 0,
-      projectsScore: parsed.scores?.projects || 0,
-      writingScore: parsed.scores?.writing || 0,
-      atsScore: parsed.scores?.ats || 0,
-      suggestions: parsed.suggestions || [],
-      gaps: parsed.gaps || [],
-    },
-    create: {
+  // Handle redaction fallback and regex backstop
+  let finalOriginalText = "[REDACTION_FAILED_OR_MISSING]"
+  if (parsed.redactedText && typeof parsed.redactedText === 'string' && parsed.redactedText.trim().length > 0) {
+    // Run our local regex backstop just in case the AI missed something
+    finalOriginalText = redactPII(parsed.redactedText)
+  } else {
+    console.warn("⚠️ analyzeResume: redactedText was missing or empty in Gemini's response. Falling back to placeholder.")
+  }
+
+  // CHANGED: from upsert to create
+  const resume = await prisma.resume.create({
+    data: {
       userId,
-      originalText: "Parsed natively by Gemini",
+      profileName, // Added profile name
+      originalText: finalOriginalText, 
       skills: parsed.skills || [],
       experienceLevel: parsed.experienceLevel || "JUNIOR",
       targetRole: parsed.targetRole || null,
@@ -117,20 +115,66 @@ Scoring criteria:
   return { resume, raw: parsed }
 }
 
-export async function getResume(userId: string) {
-  return prisma.resume.findUnique({ where: { userId } })
+// ─── Get Multiple Resumes ───────────────────────────────────────────────────
+
+export async function getUserResumes(userId: string) {
+  return await prisma.resume.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" }, 
+    select: {
+      id: true,
+      profileName: true, 
+      targetRole: true,
+      score: true,
+      atsScore: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  })
 }
 
-export async function deleteResume(userId: string) {
+// CHANGED: Get a specific resume by ID
+export async function getResumeById(id: string, userId: string) {
+  return await prisma.resume.findFirst({
+    where: { id, userId },
+    include: { interviews: true }
+  })
+}
+
+// CHANGED: Now deletes a specific resume by ID, checking userId for security
+export async function deleteResume(id: string, userId: string) {
   try {
-    return await prisma.resume.delete({ where: { userId } })
+    return await prisma.resume.deleteMany({ 
+      where: { id, userId } 
+    })
   } catch (error) {
-    // If the resume doesn't exist, ignore the error
     return null
   }
 }
 
-export async function analyzeResumeFromText(userId: string, resumeText: string) {
+export async function forkResume(sourceId: string, userId: string, newProfileName: string) {
+  // Fetch the source resume with ownership check.
+  const source = await getResumeById(sourceId, userId)
+  if (!source) {
+    throw new Error("Source resume not found or access denied")
+  }
+
+  // Explicitly destructure out fields we DO NOT want to copy.
+  // This drops id, timestamps, and the existing interviews relation.
+  const { id, createdAt, updatedAt, interviews, profileName, ...resumeData } = source
+
+  // Create the new resume with the new profile name and the remaining data.
+  return await prisma.resume.create({
+    data: {
+      ...resumeData,
+      profileName: newProfileName
+    }
+  })
+}
+
+// ─── Builder/Text Analysis ──────────────────────────────────────────────────
+
+export async function analyzeResumeFromText(userId: string, resumeText: string, profileName: string = "Builder Draft") {
   const prompt = `
 You are an expert technical recruiter and resume analyst. Analyze this resume text and return a JSON response.
 
@@ -139,6 +183,7 @@ ${resumeText}
 
 Return ONLY valid JSON in this exact format (no markdown, no backticks):
 {
+  "redactedText": "Full extracted text of the resume, but with any emails, phone numbers, and physical addresses replaced with [EMAIL REDACTED], [PHONE REDACTED], or [ADDRESS REDACTED]. Do not summarize the text, preserve the full content as closely as possible, just redact the contact info.",
   "skills": ["skill1", "skill2"],
   "experienceLevel": "JUNIOR",
   "targetRole": "most likely role they're applying for",
@@ -172,34 +217,32 @@ Return ONLY valid JSON in this exact format (no markdown, no backticks):
     parsed = JSON.parse(match[0])
   }
 
-  return prisma.resume.upsert({
-    where: { userId },
-    update: {
-      originalText: resumeText,
-      skills: parsed.skills || [],
-      experienceLevel: parsed.experienceLevel || "JUNIOR",
-      targetRole: parsed.targetRole || null,
-      score: parsed.scores.overall || 0,
-      skillsScore: parsed.scores.skills || 0,
-      projectsScore: parsed.scores.projects || 0,
-      writingScore: parsed.scores.writing || 0,
-      atsScore: parsed.scores.ats || 0,
-      suggestions: parsed.suggestions || [],
-      gaps: parsed.gaps || [],
-    },
-    create: {
+  // Handle redaction fallback and regex backstop
+  let finalOriginalText = ""
+  if (parsed.redactedText && typeof parsed.redactedText === 'string' && parsed.redactedText.trim().length > 0) {
+    // Run our local regex backstop just in case the AI missed something
+    finalOriginalText = redactPII(parsed.redactedText)
+  } else {
+    console.warn("⚠️ analyzeResumeFromText: redactedText was missing or empty in Gemini's response. Falling back to local regex redaction on raw input.")
+    finalOriginalText = redactPII(resumeText)
+  }
+
+  // CHANGED: from upsert to create
+  return prisma.resume.create({
+    data: {
       userId,
-      originalText: resumeText,
+      profileName, // Added profile name
+      originalText: finalOriginalText,
       skills: parsed.skills || [],
       experienceLevel: parsed.experienceLevel || "JUNIOR",
       targetRole: parsed.targetRole || null,
-      score: parsed.scores.overall || 0,
-      skillsScore: parsed.scores.skills || 0,
-      projectsScore: parsed.scores.projects || 0,
-      writingScore: parsed.scores.writing || 0,
-      atsScore: parsed.scores.ats || 0,
+      score: parsed.scores?.overall || 0,
+      skillsScore: parsed.scores?.skills || 0,
+      projectsScore: parsed.scores?.projects || 0,
+      writingScore: parsed.scores?.writing || 0,
+      atsScore: parsed.scores?.ats || 0,
       suggestions: parsed.suggestions || [],
       gaps: parsed.gaps || [],
-    },
+    }
   })
 }

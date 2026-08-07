@@ -79,13 +79,13 @@ export default function ProblemPage() {
   const diff = DIFF[problem.difficulty] || DIFF.EASY
 
   return (
-    <div style={{ background: "#0d0d1a", height: "calc(100vh - 56px)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div style={{ background: "#171210", height: "calc(100vh - 56px)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
       {/* ── Top bar ── */}
       <div style={{
         height: 48, flexShrink: 0,
-        borderBottom: "1px solid #1f1f45",
-        background: "#12122b",
+        borderBottom: "1px solid rgba(255,180,120,0.14)",
+        background: "rgba(23,18,16,0.5)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
         display: "flex", alignItems: "center",
         justifyContent: "space-between",
         padding: "0 16px", gap: 12,
@@ -95,19 +95,19 @@ export default function ProblemPage() {
           <button
             onClick={() => router.push("/problems")}
             style={{
-              background: "#1c1c45", border: "1px solid #2a2a5a",
+              background: "rgba(255,237,213,0.05)", border: "1px solid rgba(255,180,120,0.14)",
               borderRadius: 8, padding: "5px 12px", cursor: "pointer",
-              color: "#a09dc0", fontSize: 11, fontFamily: mono,
+              color: "#8a7a6a", fontSize: 11, fontFamily: mono,
               display: "flex", alignItems: "center", gap: 6,
               transition: "all 0.2s", flexShrink: 0,
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "#7c3aed40"
-              ;(e.currentTarget as HTMLButtonElement).style.color = "#f1f0ff"
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(234,88,12,0.5)"
+              ;(e.currentTarget as HTMLButtonElement).style.color = "#fdf6f0"
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "#2a2a5a"
-              ;(e.currentTarget as HTMLButtonElement).style.color = "#a09dc0"
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,180,120,0.14)"
+              ;(e.currentTarget as HTMLButtonElement).style.color = "#8a7a6a"
             }}
           >
             ← Problems
@@ -116,7 +116,7 @@ export default function ProblemPage() {
           <div style={{ width: 1, height: 20, background: "#1f1f45", flexShrink: 0 }} />
 
           <span style={{
-            fontSize: 13, fontWeight: 700, color: "#f1f0ff",
+            fontSize: 13, fontWeight: 700, color: "#fdf6f0",
             fontFamily: mono, whiteSpace: "nowrap", overflow: "hidden",
             textOverflow: "ellipsis",
           }}>
@@ -138,9 +138,9 @@ export default function ProblemPage() {
             value={language}
             onChange={(e) => setLanguage(e.target.value as any)}
             style={{
-              background: "#1c1c45", border: "1px solid #2a2a5a",
+              background: "rgba(255,237,213,0.05)", border: "1px solid rgba(255,180,120,0.14)",
               borderRadius: 8, padding: "5px 10px",
-              color: "#a09dc0", fontSize: 11, fontFamily: mono,
+              color: "#8a7a6a", fontSize: 11, fontFamily: mono,
               cursor: "pointer", outline: "none",
             }}
           >
@@ -155,11 +155,12 @@ export default function ProblemPage() {
               padding: "6px 20px", borderRadius: 8, border: "none",
               cursor: submit.isPending ? "not-allowed" : "pointer",
               background: submit.isPending
-                ? "#2a2a5a"
-                : "linear-gradient(135deg, #10b981, #059669)",
-              color: submit.isPending ? "#5a5780" : "#fff",
+                ? "rgba(255,237,213,0.05)"
+                : "rgba(217,119,6,0.18)",
+              border: submit.isPending ? "1px solid transparent" : "1px solid rgba(253,186,116,0.45)",
+              color: submit.isPending ? "#8a7a6a" : "#fed7aa",
               fontSize: 12, fontWeight: 700, fontFamily: mono,
-              boxShadow: submit.isPending ? "none" : "0 2px 12px #10b98130",
+              boxShadow: submit.isPending ? "none" : "0 4px 20px rgba(234,88,12,0.1)",
               transition: "all 0.2s",
               display: "flex", alignItems: "center", gap: 6,
             }}
@@ -181,14 +182,14 @@ export default function ProblemPage() {
         {/* ── LEFT panel ── */}
         <div style={{
           width: "38%", minWidth: 300, maxWidth: 520,
-          borderRight: "1px solid #1f1f45",
+          borderRight: "1px solid rgba(255,180,120,0.14)",
           display: "flex", flexDirection: "column",
           overflow: "hidden",
         }}>
           {/* Tab bar */}
           <div style={{
-            display: "flex", borderBottom: "1px solid #1f1f45",
-            background: "#12122b", flexShrink: 0,
+            display: "flex", borderBottom: "1px solid rgba(255,180,120,0.14)",
+            background: "rgba(255,237,213,0.02)", flexShrink: 0,
           }}>
             {(["description", "results"] as const).map((tab) => {
               const active = activeTab === tab
@@ -201,8 +202,8 @@ export default function ProblemPage() {
                     padding: "10px 18px", fontSize: 11, fontFamily: mono,
                     cursor: "pointer", border: "none",
                     background: "transparent",
-                    color: active ? "#f1f0ff" : "#5a5780",
-                    borderBottom: active ? "2px solid #7c3aed" : "2px solid transparent",
+                    color: active ? "#fdf6f0" : "#8a7a6a",
+                    borderBottom: active ? "2px solid #ea580c" : "2px solid transparent",
                     transition: "all 0.2s",
                     display: "flex", alignItems: "center", gap: 6,
                   }}
@@ -230,14 +231,14 @@ export default function ProblemPage() {
                 {/* Title + meta */}
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                    <h1 style={{ fontSize: 17, fontWeight: 800, color: "#f1f0ff", fontFamily: mono, margin: 0 }}>
+                    <h1 style={{ fontSize: 17, fontWeight: 800, color: "#fdf6f0", fontFamily: mono, margin: 0 }}>
                       {problem.title}
                     </h1>
                   </div>
                   <span style={{
-                    fontSize: 11, color: "#5a5780", fontFamily: mono,
+                    fontSize: 11, color: "#8a7a6a", fontFamily: mono,
                     padding: "3px 10px", borderRadius: 6,
-                    background: "#1c1c45", border: "1px solid #1f1f45",
+                    background: "rgba(255,237,213,0.05)", border: "1px solid rgba(255,180,120,0.14)",
                   }}>
                     {problem.category}
                   </span>
@@ -245,7 +246,7 @@ export default function ProblemPage() {
 
                 {/* Description */}
                 <div style={{
-                  fontSize: 13, color: "#a09dc0", lineHeight: 1.9,
+                  fontSize: 13, color: "#d4a373", lineHeight: 1.9,
                   fontFamily: mono, whiteSpace: "pre-wrap",
                 }}>
                   {problem.description}
@@ -255,37 +256,37 @@ export default function ProblemPage() {
                 {(problem.examples as any[]).length > 0 && (
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                     <p style={{
-                      fontSize: 10, color: "#5a5780", fontFamily: mono,
+                      fontSize: 10, color: "#8a7a6a", fontFamily: mono,
                       textTransform: "uppercase", letterSpacing: 1.5, margin: 0,
                     }}>
                       Examples
                     </p>
                     {(problem.examples as any[]).map((ex: any, i: number) => (
                       <div key={i} style={{
-                        background: "#16163a", border: "1px solid #1f1f45",
+                        background: "rgba(255,237,213,0.05)", border: "1px solid rgba(255,180,120,0.14)",
                         borderRadius: 12, padding: 14,
                         display: "flex", flexDirection: "column", gap: 6,
                       }}>
                         <div style={{ fontSize: 12, fontFamily: mono }}>
-                          <span style={{ color: "#5a5780" }}>Input: </span>
+                          <span style={{ color: "#8a7a6a" }}>Input: </span>
                           <code style={{
-                            color: "#f1f0ff", background: "#0d0d1a",
+                            color: "#fdf6f0", background: "#1c1712",
                             padding: "2px 6px", borderRadius: 4, fontSize: 11,
                           }}>
                             {ex.input}
                           </code>
                         </div>
                         <div style={{ fontSize: 12, fontFamily: mono }}>
-                          <span style={{ color: "#5a5780" }}>Output: </span>
+                          <span style={{ color: "#8a7a6a" }}>Output: </span>
                           <code style={{
-                            color: "#a855f7", background: "#7c3aed10",
+                            color: "#d4a373", background: "#1c1712",
                             padding: "2px 6px", borderRadius: 4, fontSize: 11,
                           }}>
                             {ex.output}
                           </code>
                         </div>
                         {ex.explanation && (
-                          <p style={{ fontSize: 11, color: "#5a5780", fontFamily: mono, margin: 0 }}>
+                          <p style={{ fontSize: 11, color: "#8a7a6a", fontFamily: mono, margin: 0 }}>
                             {ex.explanation}
                           </p>
                         )}
@@ -298,20 +299,20 @@ export default function ProblemPage() {
                 {(problem.constraints as string[]).length > 0 && (
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     <p style={{
-                      fontSize: 10, color: "#5a5780", fontFamily: mono,
+                      fontSize: 10, color: "#8a7a6a", fontFamily: mono,
                       textTransform: "uppercase", letterSpacing: 1.5, margin: 0,
                     }}>
                       Constraints
                     </p>
                     <div style={{
-                      background: "#16163a", border: "1px solid #1f1f45",
+                      background: "rgba(255,237,213,0.05)", border: "1px solid rgba(255,180,120,0.14)",
                       borderRadius: 12, padding: 14,
                       display: "flex", flexDirection: "column", gap: 6,
                     }}>
                       {(problem.constraints as string[]).map((c, i) => (
                         <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-                          <span style={{ color: "#7c3aed", fontSize: 11, marginTop: 1, flexShrink: 0 }}>•</span>
-                          <span style={{ fontSize: 12, color: "#a09dc0", fontFamily: mono, lineHeight: 1.6 }}>{c}</span>
+                          <span style={{ color: "#ea580c", fontSize: 11, marginTop: 1, flexShrink: 0 }}>•</span>
+                          <span style={{ fontSize: 12, color: "#d4a373", fontFamily: mono, lineHeight: 1.6 }}>{c}</span>
                         </div>
                       ))}
                     </div>
@@ -339,7 +340,7 @@ export default function ProblemPage() {
                     }}>
                       {allPassed ? "All tests passed!" : "Some tests failed"}
                     </p>
-                    <p style={{ fontSize: 11, color: "#5a5780", fontFamily: mono, margin: "2px 0 0" }}>
+                    <p style={{ fontSize: 11, color: "#8a7a6a", fontFamily: mono, margin: "2px 0 0" }}>
                       {results.filter(r => r.passed).length} / {results.length} test cases passed
                     </p>
                   </div>
@@ -348,7 +349,7 @@ export default function ProblemPage() {
                 {/* Individual test results */}
                 {results.map((r: any, i: number) => (
                   <div key={i} style={{
-                    background: "#16163a",
+                    background: "rgba(255,237,213,0.05)",
                     border: `1px solid ${r.passed ? "#10b98125" : "#ef444425"}`,
                     borderRadius: 12, overflow: "hidden",
                   }}>
@@ -368,7 +369,7 @@ export default function ProblemPage() {
                       </span>
                       {r.time && (
                         <span style={{
-                          fontSize: 10, color: "#5a5780", fontFamily: mono,
+                          fontSize: 10, color: "#8a7a6a", fontFamily: mono,
                           marginLeft: "auto",
                         }}>
                           {r.time}s
@@ -379,28 +380,28 @@ export default function ProblemPage() {
                     {/* Result body */}
                     <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
                       <div>
-                        <span style={{ fontSize: 10, color: "#5a5780", fontFamily: mono }}>Input</span>
+                        <span style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono }}>Input</span>
                         <div style={{
-                          marginTop: 4, background: "#0d0d1a", borderRadius: 6,
-                          padding: "6px 10px", fontSize: 11, fontFamily: mono, color: "#a09dc0",
+                          marginTop: 4, background: "#1c1712", borderRadius: 6,
+                          padding: "6px 10px", fontSize: 11, fontFamily: mono, color: "#d4a373",
                         }}>
                           {r.input}
                         </div>
                       </div>
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                         <div>
-                          <span style={{ fontSize: 10, color: "#5a5780", fontFamily: mono }}>Expected</span>
+                          <span style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono }}>Expected</span>
                           <div style={{
-                            marginTop: 4, background: "#0d0d1a", borderRadius: 6,
+                            marginTop: 4, background: "#1c1712", borderRadius: 6,
                             padding: "6px 10px", fontSize: 11, fontFamily: mono, color: "#10b981",
                           }}>
                             {r.expected}
                           </div>
                         </div>
                         <div>
-                          <span style={{ fontSize: 10, color: "#5a5780", fontFamily: mono }}>Got</span>
+                          <span style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono }}>Got</span>
                           <div style={{
-                            marginTop: 4, background: "#0d0d1a", borderRadius: 6,
+                            marginTop: 4, background: "#1c1712", borderRadius: 6,
                             padding: "6px 10px", fontSize: 11, fontFamily: mono,
                             color: r.passed ? "#10b981" : "#ef4444",
                           }}>
@@ -442,13 +443,13 @@ export default function ProblemPage() {
           {/* Editor header */}
           <div style={{
             height: 36, flexShrink: 0,
-            borderBottom: "1px solid #1f1f45",
-            background: "#12122b",
+            borderBottom: "1px solid rgba(255,255,255,0.1)",
+            background: "#171210",
             display: "flex", alignItems: "center",
             padding: "0 16px", gap: 8,
           }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#7c3aed" }} />
-            <span style={{ fontSize: 11, color: "#5a5780", fontFamily: mono }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#5a5780" }} />
+            <span style={{ fontSize: 11, color: "#8a7a6a", fontFamily: mono }}>
               solution.{language === "javascript" ? "js" : "py"}
             </span>
             <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
@@ -490,8 +491,8 @@ export default function ProblemPage() {
           {/* Status bar */}
           <div style={{
             height: 24, flexShrink: 0,
-            borderTop: "1px solid #1f1f45",
-            background: "#0d0d1a",
+            borderTop: "1px solid rgba(255,255,255,0.1)",
+            background: "#171210",
             display: "flex", alignItems: "center",
             padding: "0 16px", gap: 16,
           }}>
@@ -502,7 +503,7 @@ export default function ProblemPage() {
               UTF-8
             </span>
             {submit.isPending && (
-              <span style={{ fontSize: 10, color: "#7c3aed", fontFamily: mono, marginLeft: "auto", animation: "pulse 1s infinite" }}>
+              <span style={{ fontSize: 10, color: "#ea580c", fontFamily: mono, marginLeft: "auto", animation: "pulse 1s infinite" }}>
                 ● Executing...
               </span>
             )}

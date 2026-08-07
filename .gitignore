@@ -5,3 +5,10 @@ dist/
 .next/
 .turbo/
 *.log
+
+# Local test scripts and scratch files
+test_*.ts
+test.sh
+test-e2e.js
+temp_landing.html
+apps/backend/scripts/

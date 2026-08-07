@@ -26,6 +26,8 @@ const redisConnection = {
     } catch { return undefined }
   })(),
   tls: process.env.REDIS_URL?.startsWith("rediss://") ? {} : undefined,
+  family: 4, // Force IPv4 to prevent ETIMEDOUT on Upstash
+  maxRetriesPerRequest: null, // Required by BullMQ
 }
 
 export const newsQueue = new Queue("news", { connection: redisConnection })

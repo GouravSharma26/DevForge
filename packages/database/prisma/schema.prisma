@@ -32,8 +32,9 @@ model User {
   matchesAsP1     Match[]         @relation("player1")
   matchesAsP2     Match[]         @relation("player2")
   matchesWon      Match[]         @relation("winner")
-  resume          Resume?
+  resume          Resume[]
   interviews      Interview[]
+  jdMatches       JDMatch[]
   resumeBuilder   ResumeBuilder?
 }
 
@@ -157,8 +158,9 @@ model Match {
 
 model Resume {
   id              String      @id @default(cuid())
-  userId          String      @unique
-  originalText    String
+  userId          String      
+  profileName     String      @default("Default")
+  originalText    String      
   skills          String[]
   experienceLevel String      @default("JUNIOR")
   targetRole      String?
@@ -173,6 +175,25 @@ model Resume {
   updatedAt       DateTime    @updatedAt
   user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   interviews      Interview[]
+  jdMatches       JDMatch[]
+
+  @@index([userId])
+}
+
+model JDMatch {
+  id              String   @id @default(cuid())
+  userId          String
+  resumeId        String
+  companyName     String   @default("Unknown Company")
+  jobTitle        String   @default("Untitled Role")
+  jdText          String
+  matchScore      Int
+  matchedKeywords String[]
+  missingKeywords String[]
+  cultureFlags    Json     @default("[]")
+  createdAt       DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume          Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 }
 
 model ResumeBuilder {
@@ -199,14 +220,23 @@ model Interview {
 }
 
 model Question {
-  id          String    @id @default(cuid())
-  interviewId String
-  round       Int
-  question    String
-  context     String?
-  userAnswer  String?
-  feedback    String?
-  score       Int?
+  id             String    @id @default(cuid())
+  interviewId    String
+  round          Int
+  question       String
+  context        String?
+  userAnswer     String?
+  feedback       String?
+  score          Int?
+  
+  // -- NEW FIELDS FOR GRANDMASTER --
+  isGrandmaster  Boolean   @default(false)
+  language       String?
+  buggyCode      String?
+  expectedOutput String?
+  pistonOutput   String?
+  runAttempts    Int       @default(0)
+
   interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
 }
 

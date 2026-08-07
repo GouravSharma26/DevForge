@@ -24,8 +24,8 @@ export function useSaveResumeBuilder() {
 
 export function useAIFillResume() {
   return useMutation({
-    mutationFn: async (sections: any[]) => {
-      const res = await api.post("/resume/builder/ai-fill", { sections })
+    mutationFn: async ({ sections, resumeId }: { sections: any[]; resumeId?: string }) => {
+      const res = await api.post("/resume/builder/ai-fill", { sections, resumeId })
       return res.data.data
     },
   })

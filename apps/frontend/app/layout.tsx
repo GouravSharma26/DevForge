@@ -13,7 +13,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body
         className="min-h-screen antialiased"
-        style={{ background: "#0d0d1a", color: "#f1f0ff" }}
+        style={{ 
+          background: "radial-gradient(circle at 30% 20%, #c2591b33, transparent 60%), radial-gradient(circle at 80% 80%, #7c2d1233, transparent 60%), #171210", 
+          color: "#fdf6f0" 
+        }}
         suppressHydrationWarning
       >
         <Providers>

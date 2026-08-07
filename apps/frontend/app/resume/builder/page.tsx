@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuthStore } from "@/store/auth.store"
 import { useResumeBuilder, useSaveResumeBuilder, useAIFillResume } from "@/hooks/useResumeBuilder"
+import { useResumes } from "@/hooks/useResume"
+import type { Resume } from "@devforge/shared-types"
 import { nanoid } from "nanoid"
 
 const mono = "JetBrains Mono, monospace"
@@ -51,10 +53,10 @@ const AVAILABLE_SECTIONS = [
 // ─── Shared input style ───────────────────────────────────────────────────────
 const inp = (focused = false): React.CSSProperties => ({
   width: "100%", padding: "8px 12px", borderRadius: 8, boxSizing: "border-box",
-  border: `1px solid ${focused ? "#7c3aed60" : "#1f1f45"}`,
-  background: "#0d0d1a", color: "#f1f0ff", fontSize: 12, fontFamily: mono,
+  border: `1px solid ${focused ? "rgba(234,88,12,0.6)" : "rgba(255,180,120,0.14)"}`,
+  background: "#171210", color: "#fdf6f0", fontSize: 12, fontFamily: mono,
   outline: "none", transition: "all 0.2s",
-  boxShadow: focused ? "0 0 0 3px #7c3aed15" : "none",
+  boxShadow: focused ? "0 0 0 3px rgba(234,88,12,0.15)" : "none",
 })
 
 function Input({ value, onChange, placeholder, style = {} }: any) {
@@ -103,7 +105,7 @@ function PersonalEditor({ data, onChange }: any) {
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
       {fields.map(f => (
         <div key={f.key}>
-          <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>{f.label}</label>
+          <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>{f.label}</label>
           <Input value={data[f.key]} onChange={(e: any) => onChange({ ...data, [f.key]: e.target.value })} placeholder={f.placeholder} />
         </div>
       ))}
@@ -114,7 +116,7 @@ function PersonalEditor({ data, onChange }: any) {
 function SummaryEditor({ data, onChange }: any) {
   return (
     <div>
-      <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>Summary</label>
+      <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Summary</label>
       <Textarea value={data.text} onChange={(e: any) => onChange({ text: e.target.value })} placeholder="A results-driven Full Stack Developer with 2+ years of experience..." rows={5} />
     </div>
   )
@@ -148,58 +150,58 @@ function ExperienceEditor({ data, onChange }: any) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {data.items.map((item: any, idx: number) => (
-        <div key={item.id} style={{ background: "#0d0d1a", borderRadius: 10, padding: 14, border: "1px solid #1f1f45", display: "flex", flexDirection: "column", gap: 10 }}>
+        <div key={item.id} style={{ background: "rgba(255,237,213,0.05)", borderRadius: 10, padding: 14, border: "1px solid rgba(255,180,120,0.14)", display: "flex", flexDirection: "column", gap: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 11, color: "#7c3aed", fontFamily: mono }}>Experience #{idx + 1}</span>
+            <span style={{ fontSize: 11, color: "#ea580c", fontFamily: mono }}>Experience #{idx + 1}</span>
             {data.items.length > 1 && (
               <button onClick={() => removeItem(item.id)} style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: 12, fontFamily: mono }}>✕ Remove</button>
             )}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             <div>
-              <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>Company</label>
+              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Company</label>
               <Input value={item.company} onChange={(e: any) => updateItem(item.id, "company", e.target.value)} placeholder="Google" />
             </div>
             <div>
-              <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>Position</label>
+              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Position</label>
               <Input value={item.position} onChange={(e: any) => updateItem(item.id, "position", e.target.value)} placeholder="Software Engineer" />
             </div>
             <div>
-              <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>Start Date</label>
+              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Start Date</label>
               <Input value={item.startDate} onChange={(e: any) => updateItem(item.id, "startDate", e.target.value)} placeholder="Jun 2023" />
             </div>
             <div>
-              <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>End Date</label>
+              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>End Date</label>
               <Input value={item.current ? "Present" : item.endDate} onChange={(e: any) => updateItem(item.id, "endDate", e.target.value)} placeholder="Present" style={{ opacity: item.current ? 0.5 : 1 }} />
             </div>
             <div style={{ gridColumn: "span 2" }}>
-              <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>Location</label>
+              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Location</label>
               <Input value={item.location} onChange={(e: any) => updateItem(item.id, "location", e.target.value)} placeholder="Mountain View, CA" />
             </div>
             <div style={{ gridColumn: "span 2", display: "flex", alignItems: "center", gap: 8 }}>
               <input type="checkbox" checked={item.current} onChange={(e) => updateItem(item.id, "current", e.target.checked)} id={`current-${item.id}`} />
-              <label htmlFor={`current-${item.id}`} style={{ fontSize: 11, color: "#a09dc0", fontFamily: mono, cursor: "pointer" }}>Currently working here</label>
+              <label htmlFor={`current-${item.id}`} style={{ fontSize: 11, color: "#8a7a6a", fontFamily: mono, cursor: "pointer" }}>Currently working here</label>
             </div>
           </div>
           {/* Bullets */}
           <div>
-            <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 6 }}>Bullet Points</label>
+            <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 6 }}>Bullet Points</label>
             {item.bullets.map((b: string, i: number) => (
               <div key={i} style={{ display: "flex", gap: 6, marginBottom: 6 }}>
-                <span style={{ color: "#7c3aed", fontFamily: mono, fontSize: 12, marginTop: 8, flexShrink: 0 }}>•</span>
+                <span style={{ color: "#ea580c", fontFamily: mono, fontSize: 12, marginTop: 8, flexShrink: 0 }}>•</span>
                 <Input value={b} onChange={(e: any) => updateBullet(item.id, i, e.target.value)} placeholder="Engineered a feature that reduced load time by 40%" />
                 {item.bullets.length > 1 && (
-                  <button onClick={() => removeBullet(item.id, i)} style={{ background: "none", border: "none", color: "#5a5780", cursor: "pointer", fontSize: 14, flexShrink: 0 }}>✕</button>
+                  <button onClick={() => removeBullet(item.id, i)} style={{ background: "none", border: "none", color: "#8a7a6a", cursor: "pointer", fontSize: 14, flexShrink: 0 }}>✕</button>
                 )}
               </div>
             ))}
-            <button onClick={() => addBullet(item.id)} style={{ background: "none", border: "1px dashed #2a2a5a", borderRadius: 6, padding: "5px 12px", color: "#5a5780", fontSize: 11, fontFamily: mono, cursor: "pointer", marginTop: 4 }}>
+            <button onClick={() => addBullet(item.id)} style={{ background: "none", border: "1px dashed rgba(255,180,120,0.14)", borderRadius: 6, padding: "5px 12px", color: "#8a7a6a", fontSize: 11, fontFamily: mono, cursor: "pointer", marginTop: 4 }}>
               + Add bullet
             </button>
           </div>
         </div>
       ))}
-      <button onClick={addItem} style={{ padding: "10px", borderRadius: 10, border: "1px dashed #7c3aed40", background: "#7c3aed08", color: "#a855f7", fontSize: 12, fontFamily: mono, cursor: "pointer" }}>
+      <button onClick={addItem} style={{ padding: "10px", borderRadius: 10, border: "1px dashed rgba(234,88,12,0.4)", background: "rgba(234,88,12,0.08)", color: "#ea580c", fontSize: 12, fontFamily: mono, cursor: "pointer" }}>
         + Add Experience
       </button>
     </div>
@@ -219,9 +221,9 @@ function EducationEditor({ data, onChange }: any) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {data.items.map((item: any, idx: number) => (
-        <div key={item.id} style={{ background: "#0d0d1a", borderRadius: 10, padding: 14, border: "1px solid #1f1f45", display: "flex", flexDirection: "column", gap: 10 }}>
+        <div key={item.id} style={{ background: "rgba(255,237,213,0.05)", borderRadius: 10, padding: 14, border: "1px solid rgba(255,180,120,0.14)", display: "flex", flexDirection: "column", gap: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 11, color: "#7c3aed", fontFamily: mono }}>Education #{idx + 1}</span>
+            <span style={{ fontSize: 11, color: "#ea580c", fontFamily: mono }}>Education #{idx + 1}</span>
             {data.items.length > 1 && (
               <button onClick={() => removeItem(item.id)} style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: 12, fontFamily: mono }}>✕ Remove</button>
             )}
@@ -237,14 +239,14 @@ function EducationEditor({ data, onChange }: any) {
               { key: "location",    label: "Location",    placeholder: "Chennai, India" },
             ].map((f: any) => (
               <div key={f.key} style={{ gridColumn: f.col || "auto" }}>
-                <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>{f.label}</label>
+                <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>{f.label}</label>
                 <Input value={item[f.key]} onChange={(e: any) => updateItem(item.id, f.key, e.target.value)} placeholder={f.placeholder} />
               </div>
             ))}
           </div>
         </div>
       ))}
-      <button onClick={addItem} style={{ padding: "10px", borderRadius: 10, border: "1px dashed #7c3aed40", background: "#7c3aed08", color: "#a855f7", fontSize: 12, fontFamily: mono, cursor: "pointer" }}>
+      <button onClick={addItem} style={{ padding: "10px", borderRadius: 10, border: "1px dashed rgba(234,88,12,0.4)", background: "rgba(234,88,12,0.08)", color: "#ea580c", fontSize: 12, fontFamily: mono, cursor: "pointer" }}>
         + Add Education
       </button>
     </div>
@@ -266,11 +268,11 @@ function SkillsEditor({ data, onChange }: any) {
       {data.items.map((item: any) => (
         <div key={item.id} style={{ display: "grid", gridTemplateColumns: "1fr 2fr auto", gap: 8, alignItems: "end" }}>
           <div>
-            <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>Category</label>
+            <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Category</label>
             <Input value={item.category} onChange={(e: any) => updateItem(item.id, "category", e.target.value)} placeholder="Languages" />
           </div>
           <div>
-            <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>Skills (comma-separated)</label>
+            <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Skills (comma-separated)</label>
             <Input value={item.skills} onChange={(e: any) => updateItem(item.id, "skills", e.target.value)} placeholder="Python, JavaScript, TypeScript" />
           </div>
           {data.items.length > 1 && (
@@ -278,7 +280,7 @@ function SkillsEditor({ data, onChange }: any) {
           )}
         </div>
       ))}
-      <button onClick={addItem} style={{ padding: "10px", borderRadius: 10, border: "1px dashed #7c3aed40", background: "#7c3aed08", color: "#a855f7", fontSize: 12, fontFamily: mono, cursor: "pointer" }}>
+      <button onClick={addItem} style={{ padding: "10px", borderRadius: 10, border: "1px dashed rgba(234,88,12,0.4)", background: "rgba(234,88,12,0.08)", color: "#ea580c", fontSize: 12, fontFamily: mono, cursor: "pointer" }}>
         + Add Skill Category
       </button>
     </div>
@@ -311,49 +313,49 @@ function ProjectsEditor({ data, onChange }: any) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {data.items.map((item: any, idx: number) => (
-        <div key={item.id} style={{ background: "#0d0d1a", borderRadius: 10, padding: 14, border: "1px solid #1f1f45", display: "flex", flexDirection: "column", gap: 10 }}>
+        <div key={item.id} style={{ background: "rgba(255,237,213,0.05)", borderRadius: 10, padding: 14, border: "1px solid rgba(255,180,120,0.14)", display: "flex", flexDirection: "column", gap: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 11, color: "#7c3aed", fontFamily: mono }}>Project #{idx + 1}</span>
+            <span style={{ fontSize: 11, color: "#ea580c", fontFamily: mono }}>Project #{idx + 1}</span>
             {data.items.length > 1 && (
               <button onClick={() => removeItem(item.id)} style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: 12, fontFamily: mono }}>✕ Remove</button>
             )}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             <div style={{ gridColumn: "span 2" }}>
-              <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>Project Name</label>
+              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Project Name</label>
               <Input value={item.name} onChange={(e: any) => updateItem(item.id, "name", e.target.value)} placeholder="DevForge" />
             </div>
             <div>
-              <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>Tech Stack</label>
+              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Tech Stack</label>
               <Input value={item.tech} onChange={(e: any) => updateItem(item.id, "tech", e.target.value)} placeholder="Next.js, Fastify, PostgreSQL" />
             </div>
             <div>
-              <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>Live Link</label>
+              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Live Link</label>
               <Input value={item.link} onChange={(e: any) => updateItem(item.id, "link", e.target.value)} placeholder="devforge.vercel.app" />
             </div>
             <div style={{ gridColumn: "span 2" }}>
-              <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>GitHub</label>
+              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>GitHub</label>
               <Input value={item.github} onChange={(e: any) => updateItem(item.id, "github", e.target.value)} placeholder="github.com/gourav/devforge" />
             </div>
           </div>
           <div>
-            <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 6 }}>Bullet Points</label>
+            <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 6 }}>Bullet Points</label>
             {item.bullets.map((b: string, i: number) => (
               <div key={i} style={{ display: "flex", gap: 6, marginBottom: 6 }}>
-                <span style={{ color: "#7c3aed", fontFamily: mono, fontSize: 12, marginTop: 8, flexShrink: 0 }}>•</span>
+                <span style={{ color: "#ea580c", fontFamily: mono, fontSize: 12, marginTop: 8, flexShrink: 0 }}>•</span>
                 <Input value={b} onChange={(e: any) => updateBullet(item.id, i, e.target.value)} placeholder="Built real-time PvP feature with Socket.io serving 100+ concurrent users" />
                 {item.bullets.length > 1 && (
-                  <button onClick={() => removeBullet(item.id, i)} style={{ background: "none", border: "none", color: "#5a5780", cursor: "pointer", fontSize: 14, flexShrink: 0 }}>✕</button>
+                  <button onClick={() => removeBullet(item.id, i)} style={{ background: "none", border: "none", color: "#8a7a6a", cursor: "pointer", fontSize: 14, flexShrink: 0 }}>✕</button>
                 )}
               </div>
             ))}
-            <button onClick={() => addBullet(item.id)} style={{ background: "none", border: "1px dashed #2a2a5a", borderRadius: 6, padding: "5px 12px", color: "#5a5780", fontSize: 11, fontFamily: mono, cursor: "pointer", marginTop: 4 }}>
+            <button onClick={() => addBullet(item.id)} style={{ background: "none", border: "1px dashed rgba(255,180,120,0.14)", borderRadius: 6, padding: "5px 12px", color: "#8a7a6a", fontSize: 11, fontFamily: mono, cursor: "pointer", marginTop: 4 }}>
               + Add bullet
             </button>
           </div>
         </div>
       ))}
-      <button onClick={addItem} style={{ padding: "10px", borderRadius: 10, border: "1px dashed #7c3aed40", background: "#7c3aed08", color: "#a855f7", fontSize: 12, fontFamily: mono, cursor: "pointer" }}>
+      <button onClick={addItem} style={{ padding: "10px", borderRadius: 10, border: "1px dashed rgba(234,88,12,0.4)", background: "rgba(234,88,12,0.08)", color: "#ea580c", fontSize: 12, fontFamily: mono, cursor: "pointer" }}>
         + Add Project
       </button>
     </div>
@@ -373,7 +375,7 @@ function CertificationsEditor({ data, onChange }: any) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {data.items.map((item: any) => (
-        <div key={item.id} style={{ background: "#0d0d1a", borderRadius: 10, padding: 12, border: "1px solid #1f1f45", display: "flex", flexDirection: "column", gap: 8 }}>
+        <div key={item.id} style={{ background: "rgba(255,237,213,0.05)", borderRadius: 10, padding: 12, border: "1px solid rgba(255,180,120,0.14)", display: "flex", flexDirection: "column", gap: 8 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {[
               { key: "name",   label: "Certification Name", placeholder: "AWS Solutions Architect", col: "span 2" },
@@ -382,7 +384,7 @@ function CertificationsEditor({ data, onChange }: any) {
               { key: "link",   label: "Credential URL",     placeholder: "credly.com/...", col: "span 2" },
             ].map((f: any) => (
               <div key={f.key} style={{ gridColumn: f.col || "auto" }}>
-                <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>{f.label}</label>
+                <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>{f.label}</label>
                 <Input value={item[f.key]} onChange={(e: any) => updateItem(item.id, f.key, e.target.value)} placeholder={f.placeholder} />
               </div>
             ))}
@@ -392,7 +394,7 @@ function CertificationsEditor({ data, onChange }: any) {
           )}
         </div>
       ))}
-      <button onClick={addItem} style={{ padding: "10px", borderRadius: 10, border: "1px dashed #7c3aed40", background: "#7c3aed08", color: "#a855f7", fontSize: 12, fontFamily: mono, cursor: "pointer" }}>
+      <button onClick={addItem} style={{ padding: "10px", borderRadius: 10, border: "1px dashed rgba(234,88,12,0.4)", background: "rgba(234,88,12,0.08)", color: "#ea580c", fontSize: 12, fontFamily: mono, cursor: "pointer" }}>
         + Add Certification
       </button>
     </div>
@@ -412,22 +414,22 @@ function CustomEditor({ data, onChange }: any) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {data.items.map((item: any) => (
-        <div key={item.id} style={{ background: "#0d0d1a", borderRadius: 10, padding: 12, border: "1px solid #1f1f45", display: "flex", flexDirection: "column", gap: 8 }}>
+        <div key={item.id} style={{ background: "rgba(255,237,213,0.05)", borderRadius: 10, padding: 12, border: "1px solid rgba(255,180,120,0.14)", display: "flex", flexDirection: "column", gap: 8 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             <div style={{ gridColumn: "span 2" }}>
-              <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>Title</label>
+              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Title</label>
               <Input value={item.title} onChange={(e: any) => updateItem(item.id, "title", e.target.value)} placeholder="Achievement title" />
             </div>
             <div>
-              <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>Subtitle</label>
+              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Subtitle</label>
               <Input value={item.subtitle} onChange={(e: any) => updateItem(item.id, "subtitle", e.target.value)} placeholder="Organisation" />
             </div>
             <div>
-              <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>Date</label>
+              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Date</label>
               <Input value={item.date} onChange={(e: any) => updateItem(item.id, "date", e.target.value)} placeholder="2024" />
             </div>
             <div style={{ gridColumn: "span 2" }}>
-              <label style={{ fontSize: 10, color: "#5a5780", fontFamily: mono, display: "block", marginBottom: 4 }}>Description</label>
+              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Description</label>
               <Textarea value={item.description} onChange={(e: any) => updateItem(item.id, "description", e.target.value)} placeholder="Describe this achievement..." rows={2} />
             </div>
           </div>
@@ -436,7 +438,7 @@ function CustomEditor({ data, onChange }: any) {
           )}
         </div>
       ))}
-      <button onClick={addItem} style={{ padding: "10px", borderRadius: 10, border: "1px dashed #7c3aed40", background: "#7c3aed08", color: "#a855f7", fontSize: 12, fontFamily: mono, cursor: "pointer" }}>
+      <button onClick={addItem} style={{ padding: "10px", borderRadius: 10, border: "1px dashed rgba(234,88,12,0.4)", background: "rgba(234,88,12,0.08)", color: "#ea580c", fontSize: 12, fontFamily: mono, cursor: "pointer" }}>
         + Add Item
       </button>
     </div>
@@ -457,7 +459,7 @@ function ResumePreview({ sections }: { sections: any[] }) {
 
   const h2: React.CSSProperties = {
     fontSize: 11, fontWeight: 700, color: "#1a1a2e", textTransform: "uppercase",
-    letterSpacing: 1.5, borderBottom: "2px solid #7c3aed", paddingBottom: 4,
+    letterSpacing: 1.5, borderBottom: "2px solid #ea580c", paddingBottom: 4,
     marginBottom: 10, marginTop: 0,
   }
   const h3: React.CSSProperties = {
@@ -482,7 +484,7 @@ function ResumePreview({ sections }: { sections: any[] }) {
       {personal && (
         <div style={{ textAlign: "center", marginBottom: 16, borderBottom: "1px solid #e0e0e0", paddingBottom: 12 }}>
           {personal.name && <h1 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 4px", color: "#1a1a2e", fontFamily: "Georgia, serif" }}>{personal.name}</h1>}
-          {personal.title && <p style={{ fontSize: 13, color: "#7c3aed", margin: "0 0 8px", fontFamily: "Georgia, serif" }}>{personal.title}</p>}
+          {personal.title && <p style={{ fontSize: 13, color: "#ea580c", margin: "0 0 8px", fontFamily: "Georgia, serif" }}>{personal.title}</p>}
           <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "4px 16px", fontSize: 10, color: "#555" }}>
             {personal.email && (
               <a href={`mailto:${personal.email}`} style={{ color: "#555", textDecoration: "none" }}>
@@ -497,7 +499,7 @@ function ResumePreview({ sections }: { sections: any[] }) {
               // Extract username: linkedin.com/in/username → username
               const username = raw.split("/in/")[1] || raw.split("/").pop() || raw
               return (
-                <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: "#7c3aed", textDecoration: "none" }}>
+                <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: "#ea580c", textDecoration: "none" }}>
                   🔗 {username}
                 </a>
               )
@@ -543,7 +545,7 @@ function ResumePreview({ sections }: { sections: any[] }) {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
                   {item.position && <h3 style={h3}>{item.position}</h3>}
-                  {item.company && <p style={{ ...p, color: "#7c3aed", margin: "0 0 2px", fontWeight: 600 }}>{item.company}{item.location && ` · ${item.location}`}</p>}
+                  {item.company && <p style={{ ...p, color: "#ea580c", margin: "0 0 2px", fontWeight: 600 }}>{item.company}{item.location && ` · ${item.location}`}</p>}
                 </div>
                 <span style={small}>{item.startDate}{item.startDate && (item.endDate || item.current) ? " – " : ""}{item.current ? "Present" : item.endDate}</span>
               </div>
@@ -577,9 +579,9 @@ function ResumePreview({ sections }: { sections: any[] }) {
                         style={{
                           display: "inline-flex", alignItems: "center", justifyContent: "center",
                           width: 16, height: 16, borderRadius: 3, marginLeft: 6,
-                          background: "#7c3aed20", color: "#7c3aed",
+                          background: "rgba(234,88,12,0.1)", color: "#ea580c",
                           fontSize: 9, textDecoration: "none", fontWeight: 700,
-                          border: "1px solid #7c3aed40", flexShrink: 0,
+                          border: "1px solid rgba(234,88,12,0.25)", flexShrink: 0,
                         }}
                       >
                         ↗
@@ -602,7 +604,7 @@ function ResumePreview({ sections }: { sections: any[] }) {
                       </a>
                     )}
                   </h3>
-                  {item.tech && <p style={{ ...p, color: "#7c3aed", margin: "0 0 2px", fontSize: 10 }}>{item.tech}</p>}
+                  {item.tech && <p style={{ ...p, color: "#ea580c", margin: "0 0 2px", fontSize: 10 }}>{item.tech}</p>}
                 </div>
               </div>
               {item.bullets?.filter((b: string) => b).length > 0 && (
@@ -628,7 +630,7 @@ function ResumePreview({ sections }: { sections: any[] }) {
                   <h3 style={h3}>{item.institution}</h3>
                   <p style={{ ...p, margin: "0 0 2px" }}>
                     {[item.degree, item.field].filter(Boolean).join(" in ")}
-                    {item.gpa && <span style={{ color: "#7c3aed" }}> · {item.gpa}</span>}
+                    {item.gpa && <span style={{ color: "#ea580c" }}> · {item.gpa}</span>}
                   </p>
                 </div>
                 <span style={small}>{item.startDate}{item.startDate && item.endDate ? " – " : ""}{item.endDate}{item.location && ` · ${item.location}`}</span>
@@ -679,7 +681,7 @@ function ResumePreview({ sections }: { sections: any[] }) {
                 {item.title && <h3 style={h3}>{item.title}</h3>}
                 {item.date && <span style={small}>{item.date}</span>}
               </div>
-              {item.subtitle && <p style={{ ...p, color: "#7c3aed", margin: "0 0 2px" }}>{item.subtitle}</p>}
+              {item.subtitle && <p style={{ ...p, color: "#ea580c", margin: "0 0 2px" }}>{item.subtitle}</p>}
               {item.description && <p style={p}>{item.description}</p>}
             </div>
           ))}
@@ -695,14 +697,17 @@ export default function ResumeBuilderPage() {
   const token     = useAuthStore((s) => s.token)
   const hydrated  = useAuthStore((s) => s.hydrated)
   const { data: saved, isLoading } = useResumeBuilder()
+  const { data: resumes }          = useResumes()
   const saveBuilder = useSaveResumeBuilder()
   const aiFill      = useAIFillResume()
 
+  const [selectedResumeId, setSelectedResumeId] = useState<string>("")
   const [sections, setSections]             = useState<any[]>(DEFAULT_SECTIONS)
   const [activeSection, setActiveSection]   = useState<string>("personal")
   const [showAddPanel, setShowAddPanel]     = useState(false)
   const [customName, setCustomName]         = useState("")
   const [saved_, setSaved_]                 = useState(false)
+  const [aiError, setAiError]               = useState<string | null>(null)
   const previewRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -763,8 +768,14 @@ export default function ResumeBuilderPage() {
   }
 
   async function handleAIFill() {
-    const filled = await aiFill.mutateAsync(sections)
-    if (Array.isArray(filled)) setSections(filled)
+    setAiError(null)
+    try {
+      const filled = await aiFill.mutateAsync({ sections, resumeId: selectedResumeId || undefined })
+      if (Array.isArray(filled)) setSections(filled)
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || err?.message || "Failed to generate AI content"
+      setAiError(msg)
+    }
   }
 
   function handleExportPDF() {
@@ -793,42 +804,79 @@ export default function ResumeBuilderPage() {
   if (!hydrated || !token) return null
 
   if (isLoading) return (
-    <div style={{ background: "#0d0d1a", minHeight: "calc(100vh-56px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <p style={{ color: "#5a5780", fontFamily: mono }}>Loading builder...</p>
+    <div style={{ background: "#171210", minHeight: "calc(100vh-56px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <p style={{ color: "#8a7a6a", fontFamily: mono }}>Loading builder...</p>
     </div>
   )
 
   return (
-    <div style={{ background: "#0d0d1a", height: "calc(100vh - 56px)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div style={{ background: "#171210", height: "calc(100vh - 56px)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
       {/* ── Top bar ── */}
       <div style={{
-        height: 52, flexShrink: 0, borderBottom: "1px solid #1f1f45",
-        background: "#12122b", display: "flex", alignItems: "center",
+        height: 52, flexShrink: 0, borderBottom: "1px solid rgba(255,180,120,0.14)",
+        background: "rgba(255,237,213,0.02)", display: "flex", alignItems: "center",
         justifyContent: "space-between", padding: "0 20px",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <button
             onClick={() => router.push("/resume")}
-            style={{ background: "#1c1c45", border: "1px solid #2a2a5a", borderRadius: 8, padding: "5px 12px", cursor: "pointer", color: "#a09dc0", fontSize: 11, fontFamily: mono }}
+            style={{ background: "rgba(255,237,213,0.05)", border: "1px solid rgba(255,180,120,0.14)", borderRadius: 8, padding: "5px 12px", cursor: "pointer", color: "#8a7a6a", fontSize: 11, fontFamily: mono }}
           >
             ← Resume
           </button>
-          <div style={{ width: 1, height: 20, background: "#1f1f45" }} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: "#f1f0ff", fontFamily: mono }}>Resume Builder</span>
-          <span style={{ fontSize: 10, padding: "3px 10px", borderRadius: 99, background: "#7c3aed15", color: "#a855f7", border: "1px solid #7c3aed30", fontFamily: mono }}>
+          <div style={{ width: 1, height: 20, background: "rgba(255,180,120,0.14)" }} />
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#fdf6f0", fontFamily: mono }}>Resume Builder</span>
+          <span style={{ fontSize: 10, padding: "3px 10px", borderRadius: 99, background: "rgba(234,88,12,0.15)", color: "#ea580c", border: "1px solid rgba(234,88,12,0.3)", fontFamily: mono }}>
             Live Preview
           </span>
         </div>
 
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {/* AI Error Alert */}
+          {aiError && (
+            <div style={{
+              background: "#ef444415", border: "1px solid #ef444440", color: "#ef4444",
+              padding: "4px 10px", borderRadius: 8, fontSize: 11, fontFamily: mono,
+              display: "flex", alignItems: "center", gap: 6,
+            }}>
+              <span>⚠️ {aiError}</span>
+              <button
+                onClick={() => setAiError(null)}
+                style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", padding: 0, fontSize: 11 }}
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {/* Resume Context Selector */}
+          {resumes && resumes.length > 0 && (
+            <select
+              value={selectedResumeId}
+              onChange={(e) => setSelectedResumeId(e.target.value)}
+              style={{
+                padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(255,180,120,0.14)",
+                background: "rgba(255,237,213,0.05)", color: "#8a7a6a", fontSize: 11, fontFamily: mono,
+                outline: "none", cursor: "pointer", maxWidth: 180,
+              }}
+            >
+              <option value="">Context: Latest Profile</option>
+              {resumes.map((r: Resume) => (
+                <option key={r.id} value={r.id}>
+                  {r.profileName} ({r.targetRole || "General"})
+                </option>
+              ))}
+            </select>
+          )}
+
           {/* AI Fill */}
           <button
             onClick={handleAIFill}
             disabled={aiFill.isPending}
             style={{
-              padding: "7px 16px", borderRadius: 8, border: "1px solid #7c3aed40",
-              background: "#7c3aed15", color: aiFill.isPending ? "#5a5780" : "#a855f7",
+              padding: "7px 16px", borderRadius: 8, border: "1px solid rgba(234,88,12,0.4)",
+              background: "rgba(234,88,12,0.15)", color: aiFill.isPending ? "#8a7a6a" : "#ea580c",
               fontSize: 12, fontFamily: mono, cursor: aiFill.isPending ? "not-allowed" : "pointer",
               transition: "all 0.2s",
             }}
@@ -841,9 +889,9 @@ export default function ResumeBuilderPage() {
             onClick={handleSave}
             disabled={saveBuilder.isPending}
             style={{
-              padding: "7px 16px", borderRadius: 8, border: "1px solid #2a2a5a",
-              background: saved_ ? "#10b98120" : "#1c1c45",
-              color: saved_ ? "#10b981" : "#a09dc0",
+              padding: "7px 16px", borderRadius: 8, border: "1px solid rgba(255,180,120,0.14)",
+              background: saved_ ? "#10b98120" : "rgba(255,237,213,0.05)",
+              color: saved_ ? "#10b981" : "#8a7a6a",
               fontSize: 12, fontFamily: mono, cursor: "pointer", transition: "all 0.2s",
             }}
           >
@@ -855,9 +903,9 @@ export default function ResumeBuilderPage() {
             onClick={handleExportPDF}
             style={{
               padding: "7px 16px", borderRadius: 8, border: "none",
-              background: "linear-gradient(135deg, #7c3aed, #6366f1)",
+              background: "linear-gradient(135deg, #ea580c, #d97706)",
               color: "#fff", fontSize: 12, fontFamily: mono, cursor: "pointer",
-              boxShadow: "0 2px 12px #7c3aed30",
+              boxShadow: "0 2px 12px rgba(234,88,12,0.3)",
             }}
           >
             ↓ Export PDF
@@ -869,15 +917,15 @@ export default function ResumeBuilderPage() {
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
         {/* ── LEFT: Section Manager + Editor ── */}
-        <div style={{ width: "46%", borderRight: "1px solid #1f1f45", display: "flex", overflow: "hidden" }}>
+        <div style={{ width: "46%", borderRight: "1px solid rgba(255,180,120,0.14)", display: "flex", overflow: "hidden" }}>
 
           {/* Section list */}
           <div style={{
-            width: 200, flexShrink: 0, borderRight: "1px solid #1f1f45",
-            background: "#0a0a14", display: "flex", flexDirection: "column",
+            width: 200, flexShrink: 0, borderRight: "1px solid rgba(255,180,120,0.14)",
+            background: "rgba(0,0,0,0.2)", display: "flex", flexDirection: "column",
           }}>
-            <div style={{ padding: "12px 12px 8px", borderBottom: "1px solid #1f1f45" }}>
-              <p style={{ fontSize: 10, color: "#3a3760", fontFamily: mono, textTransform: "uppercase", letterSpacing: 1.5, margin: 0 }}>Sections</p>
+            <div style={{ padding: "12px 12px 8px", borderBottom: "1px solid rgba(255,180,120,0.14)" }}>
+              <p style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, textTransform: "uppercase", letterSpacing: 1.5, margin: 0 }}>Sections</p>
             </div>
             <div style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
               {sections.map(s => (
@@ -886,13 +934,13 @@ export default function ResumeBuilderPage() {
                   style={{
                     display: "flex", alignItems: "center", gap: 6,
                     padding: "7px 12px", cursor: "pointer", transition: "all 0.15s",
-                    background: activeSection === s.id ? "#7c3aed15" : "transparent",
-                    borderLeft: `2px solid ${activeSection === s.id ? "#7c3aed" : "transparent"}`,
+                    background: activeSection === s.id ? "rgba(234,88,12,0.15)" : "transparent",
+                    borderLeft: `2px solid ${activeSection === s.id ? "#ea580c" : "transparent"}`,
                     opacity: s.enabled ? 1 : 0.4,
                   }}
                   onClick={() => setActiveSection(s.id)}
                 >
-                  <span style={{ flex: 1, fontSize: 12, color: activeSection === s.id ? "#a855f7" : "#a09dc0", fontFamily: mono, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <span style={{ flex: 1, fontSize: 12, color: activeSection === s.id ? "#ea580c" : "#8a7a6a", fontFamily: mono, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {s.title}
                   </span>
                   <div style={{ display: "flex", gap: 2, flexShrink: 0 }}>
@@ -902,7 +950,7 @@ export default function ResumeBuilderPage() {
                       title={s.enabled ? "Hide" : "Show"}
                       style={{
                         background: "none", border: "none", cursor: "pointer",
-                        color: s.enabled ? "#5a5780" : "#3a3760", fontSize: 10, padding: "2px 3px",
+                        color: s.enabled ? "#8a7a6a" : "#5a5780", fontSize: 10, padding: "2px 3px",
                       }}
                     >
                       {s.enabled ? "👁" : "👁"}
@@ -912,9 +960,9 @@ export default function ResumeBuilderPage() {
                       <button
                         onClick={(e) => { e.stopPropagation(); removeSection(s.id) }}
                         title="Remove"
-                        style={{ background: "none", border: "none", cursor: "pointer", color: "#3a3760", fontSize: 10, padding: "2px 3px" }}
+                        style={{ background: "none", border: "none", cursor: "pointer", color: "#8a7a6a", fontSize: 10, padding: "2px 3px" }}
                         onMouseEnter={(e) => (e.currentTarget.style.color = "#ef4444")}
-                        onMouseLeave={(e) => (e.currentTarget.style.color = "#3a3760")}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = "#8a7a6a")}
                       >
                         ✕
                       </button>
@@ -925,7 +973,7 @@ export default function ResumeBuilderPage() {
             </div>
 
             {/* Add section */}
-            <div style={{ padding: 10, borderTop: "1px solid #1f1f45" }}>
+            <div style={{ padding: 10, borderTop: "1px solid rgba(255,180,120,0.14)" }}>
               {showAddPanel ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {/* Preset sections */}
@@ -934,8 +982,8 @@ export default function ResumeBuilderPage() {
                       key={s.type}
                       onClick={() => addAvailableSection(s.type, s.title)}
                       style={{
-                        padding: "6px 8px", borderRadius: 6, border: "1px solid #1f1f45",
-                        background: "#16163a", color: "#a09dc0", fontSize: 11,
+                        padding: "6px 8px", borderRadius: 6, border: "1px solid rgba(255,180,120,0.14)",
+                        background: "rgba(255,237,213,0.05)", color: "#8a7a6a", fontSize: 11,
                         fontFamily: mono, cursor: "pointer", textAlign: "left",
                       }}
                     >
@@ -949,13 +997,13 @@ export default function ResumeBuilderPage() {
                       onChange={(e) => setCustomName(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && addCustomSection()}
                       placeholder="Custom name..."
-                      style={{ flex: 1, padding: "5px 8px", borderRadius: 6, border: "1px solid #7c3aed40", background: "#0d0d1a", color: "#f1f0ff", fontSize: 11, fontFamily: mono, outline: "none" }}
+                      style={{ flex: 1, padding: "5px 8px", borderRadius: 6, border: "1px solid rgba(234,88,12,0.4)", background: "#171210", color: "#fdf6f0", fontSize: 11, fontFamily: mono, outline: "none" }}
                     />
-                    <button onClick={addCustomSection} style={{ padding: "5px 8px", borderRadius: 6, border: "none", background: "#7c3aed", color: "#fff", fontSize: 11, cursor: "pointer" }}>+</button>
+                    <button onClick={addCustomSection} style={{ padding: "5px 8px", borderRadius: 6, border: "none", background: "#ea580c", color: "#fff", fontSize: 11, cursor: "pointer" }}>+</button>
                   </div>
                   <button
                     onClick={() => setShowAddPanel(false)}
-                    style={{ padding: "5px", borderRadius: 6, border: "1px solid #1f1f45", background: "none", color: "#5a5780", fontSize: 11, fontFamily: mono, cursor: "pointer" }}
+                    style={{ padding: "5px", borderRadius: 6, border: "1px solid rgba(255,180,120,0.14)", background: "none", color: "#8a7a6a", fontSize: 11, fontFamily: mono, cursor: "pointer" }}
                   >
                     Cancel
                   </button>
@@ -965,8 +1013,8 @@ export default function ResumeBuilderPage() {
                   onClick={() => setShowAddPanel(true)}
                   style={{
                     width: "100%", padding: "8px", borderRadius: 8,
-                    border: "1px dashed #7c3aed40", background: "#7c3aed08",
-                    color: "#a855f7", fontSize: 11, fontFamily: mono, cursor: "pointer",
+                    border: "1px dashed rgba(234,88,12,0.4)", background: "rgba(234,88,12,0.08)",
+                    color: "#ea580c", fontSize: 11, fontFamily: mono, cursor: "pointer",
                   }}
                 >
                   + Add Section
@@ -981,15 +1029,15 @@ export default function ResumeBuilderPage() {
               <>
                 {/* Section header */}
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                  <h2 style={{ fontSize: 14, fontWeight: 700, color: "#f1f0ff", fontFamily: mono, margin: 0 }}>{activeS.title}</h2>
+                  <h2 style={{ fontSize: 14, fontWeight: 700, color: "#fdf6f0", fontFamily: mono, margin: 0 }}>{activeS.title}</h2>
                   {activeS.removable && (
                     <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: "auto" }}>
-                      <span style={{ fontSize: 10, color: "#5a5780", fontFamily: mono }}>{activeS.enabled ? "Visible" : "Hidden"}</span>
+                      <span style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono }}>{activeS.enabled ? "Visible" : "Hidden"}</span>
                       <div
                         onClick={() => toggleSection(activeS.id)}
                         style={{
                           width: 36, height: 20, borderRadius: 99, cursor: "pointer",
-                          background: activeS.enabled ? "#7c3aed" : "#1f1f45",
+                          background: activeS.enabled ? "#ea580c" : "rgba(255,180,120,0.14)",
                           position: "relative", transition: "all 0.2s",
                         }}
                       >
@@ -1020,7 +1068,7 @@ export default function ResumeBuilderPage() {
         </div>
 
         {/* ── RIGHT: Live Preview ── */}
-        <div style={{ flex: 1, background: "#07070f", overflowY: "auto", padding: "20px 24px" }}>
+        <div style={{ flex: 1, background: "#0a0807", overflowY: "auto", padding: "20px 24px" }}>
           <div style={{ maxWidth: 680, margin: "0 auto" }}>
             <div ref={previewRef}>
               <ResumePreview sections={sections} />

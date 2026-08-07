@@ -18,8 +18,20 @@ export async function loadResumeBuilder(userId: string) {
   return prisma.resumeBuilder.findUnique({ where: { userId } })
 }
 
-export async function generateResumeWithAI(userId: string, sections: any[]) {
-  const resume = await prisma.resume.findUnique({ where: { userId } })
+export async function generateResumeWithAI(userId: string, sections: any[], resumeId?: string) {
+  let resume = null
+
+  if (resumeId) {
+    resume = await prisma.resume.findFirst({ where: { id: resumeId, userId } })
+    if (!resume) {
+      throw new Error("Specified resume profile not found")
+    }
+  } else {
+    resume = await prisma.resume.findFirst({
+      where: { userId },
+      orderBy: { updatedAt: "desc" },
+    })
+  }
 
   const context = resume
     ? `Skills: ${resume.skills.join(", ")}\nExperience Level: ${resume.experienceLevel}\nTarget Role: ${resume.targetRole || "Software Developer"}`

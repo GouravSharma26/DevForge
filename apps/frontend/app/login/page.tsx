@@ -72,20 +72,20 @@ async function handleSubmit() {
     width: "100%",
     padding: "12px 16px",
     borderRadius: 12,
-    border: `1px solid ${focused === name ? "#7c3aed80" : "#1f1f45"}`,
-    background: "#0d0d1a",
-    color: "#f1f0ff",
+    border: `1px solid ${focused === name ? "rgba(234,88,12,0.8)" : "rgba(255,180,120,0.14)"}`,
+    background: "#171210",
+    color: "#fdf6f0",
     fontSize: 13,
     fontFamily: mono,
     outline: "none",
-    boxShadow: focused === name ? "0 0 0 3px #7c3aed18" : "none",
+    boxShadow: focused === name ? "0 0 0 3px rgba(234,88,12,0.18)" : "none",
     transition: "all 0.2s",
   })
 
   return (
     <main style={{
       minHeight: "calc(100vh - 56px)",
-      background: "#0d0d1a",
+      background: "#171210",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -99,13 +99,13 @@ async function handleSubmit() {
         <div style={{
           position: "absolute", top: "10%", left: "50%", transform: "translateX(-50%)",
           width: 500, height: 500,
-          background: "radial-gradient(circle, #7c3aed14, transparent 70%)",
+          background: "radial-gradient(circle, rgba(234,88,12,0.1), transparent 70%)",
           borderRadius: "50%",
         }} />
         <div style={{
           position: "absolute", bottom: "5%", right: "10%",
           width: 300, height: 300,
-          background: "radial-gradient(circle, #6366f110, transparent 70%)",
+          background: "radial-gradient(circle, rgba(245,158,11,0.08), transparent 70%)",
           borderRadius: "50%",
         }} />
       </div>
@@ -120,17 +120,17 @@ async function handleSubmit() {
         <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
           <div style={{
             width: 52, height: 52, borderRadius: 16,
-            background: "linear-gradient(135deg, #7c3aed, #6366f1)",
+            background: "linear-gradient(135deg, #ea580c, #d97706)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 22, boxShadow: "0 4px 24px #7c3aed40",
+            fontSize: 22, boxShadow: "0 4px 24px rgba(234,88,12,0.4)",
           }}>
             ⚔
           </div>
           <div>
-            <h1 style={{ fontSize: 20, fontWeight: 800, color: "#f1f0ff", fontFamily: mono, margin: 0 }}>
-              Dev<span style={{ color: "#a855f7" }}>Forge</span>
+            <h1 style={{ fontSize: 20, fontWeight: 800, color: "#fdf6f0", fontFamily: mono, margin: 0 }}>
+              Dev<span style={{ color: "#ea580c" }}>Forge</span>
             </h1>
-            <p style={{ fontSize: 12, color: "#5a5780", fontFamily: mono, marginTop: 4 }}>
+            <p style={{ fontSize: 12, color: "#8a7a6a", fontFamily: mono, marginTop: 4 }}>
               {isRegister ? "Create your account" : "Welcome back"}
             </p>
           </div>
@@ -138,19 +138,19 @@ async function handleSubmit() {
 
         {/* Form card */}
         <div style={{
-          background: "#16163a",
-          border: "1px solid #1f1f45",
+          background: "rgba(255,237,213,0.05)",
+          border: "1px solid rgba(255,180,120,0.14)",
           borderRadius: 20,
           padding: 28,
           display: "flex",
           flexDirection: "column",
           gap: 16,
-          boxShadow: "0 8px 40px rgba(0,0,0,0.4), 0 0 0 1px #7c3aed10",
+          boxShadow: "0 8px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(234,88,12,0.1)",
         }}>
 
           {isRegister && (
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label style={{ fontSize: 11, color: "#5a5780", fontFamily: mono }}>Username</label>
+              <label style={{ fontSize: 11, color: "#8a7a6a", fontFamily: mono }}>Username</label>
               <input
                 type="text"
                 placeholder="gourav"
@@ -164,7 +164,7 @@ async function handleSubmit() {
           )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <label style={{ fontSize: 11, color: "#5a5780", fontFamily: mono }}>Email</label>
+            <label style={{ fontSize: 11, color: "#8a7a6a", fontFamily: mono }}>Email</label>
             <input
               type="email"
               placeholder="you@example.com"
@@ -177,7 +177,7 @@ async function handleSubmit() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <label style={{ fontSize: 11, color: "#5a5780", fontFamily: mono }}>Password</label>
+            <label style={{ fontSize: 11, color: "#8a7a6a", fontFamily: mono }}>Password</label>
             <input
               type="password"
               placeholder="••••••••"
@@ -211,21 +211,21 @@ async function handleSubmit() {
               border: "none",
               cursor: loading ? "not-allowed" : "pointer",
               background: loading
-                ? "#2a2a5a"
-                : "linear-gradient(135deg, #7c3aed, #6366f1)",
-              color: loading ? "#5a5780" : "#fff",
+                ? "rgba(255,255,255,0.05)"
+                : "linear-gradient(135deg, #ea580c, #d97706)",
+              color: loading ? "#8a7a6a" : "#fdf6f0",
               fontSize: 14,
               fontWeight: 700,
               fontFamily: mono,
-              boxShadow: loading ? "none" : "0 4px 20px #7c3aed40",
+              boxShadow: loading ? "none" : "0 4px 20px rgba(234,88,12,0.4)",
               transition: "all 0.2s",
               marginTop: 4,
             }}
             onMouseEnter={(e) => {
-              if (!loading) (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 28px #7c3aed60"
+              if (!loading) (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 28px rgba(234,88,12,0.6)"
             }}
             onMouseLeave={(e) => {
-              if (!loading) (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 20px #7c3aed40"
+              if (!loading) (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 20px rgba(234,88,12,0.4)"
             }}
           >
             {loading
@@ -235,9 +235,9 @@ async function handleSubmit() {
 
           {/* Divider */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ flex: 1, height: 1, background: "#1f1f45" }} />
-            <span style={{ fontSize: 11, color: "#3a3760", fontFamily: mono }}>or</span>
-            <div style={{ flex: 1, height: 1, background: "#1f1f45" }} />
+            <div style={{ flex: 1, height: 1, background: "rgba(255,180,120,0.14)" }} />
+            <span style={{ fontSize: 11, color: "#5a5780", fontFamily: mono }}>or</span>
+            <div style={{ flex: 1, height: 1, background: "rgba(255,180,120,0.14)" }} />
           </div>
 
           {/* Toggle register/login */}
@@ -247,21 +247,21 @@ async function handleSubmit() {
               width: "100%",
               padding: "11px 0",
               borderRadius: 12,
-              border: "1px solid #2a2a5a",
+              border: "1px solid rgba(255,180,120,0.14)",
               cursor: "pointer",
-              background: "#1c1c45",
-              color: "#a09dc0",
+              background: "rgba(255,237,213,0.05)",
+              color: "#8a7a6a",
               fontSize: 13,
               fontFamily: mono,
               transition: "all 0.2s",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "#7c3aed40"
-              ;(e.currentTarget as HTMLButtonElement).style.color = "#f1f0ff"
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(234,88,12,0.4)"
+              ;(e.currentTarget as HTMLButtonElement).style.color = "#fdf6f0"
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "#2a2a5a"
-              ;(e.currentTarget as HTMLButtonElement).style.color = "#a09dc0"
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,180,120,0.14)"
+              ;(e.currentTarget as HTMLButtonElement).style.color = "#8a7a6a"
             }}
           >
             {isRegister ? "Already have an account? Sign in" : "New here? Create an account"}
@@ -274,19 +274,19 @@ async function handleSubmit() {
         }}>
           {["DSA Practice", "PvP Arena", "AI Resume Scan"].map((f) => (
             <span key={f} style={{
-              fontSize: 11, color: "#3a3760", fontFamily: mono,
+              fontSize: 11, color: "#8a7a6a", fontFamily: mono,
               display: "flex", alignItems: "center", gap: 4,
             }}>
-              <span style={{ color: "#7c3aed" }}>✓</span> {f}
+              <span style={{ color: "#ea580c" }}>✓</span> {f}
             </span>
           ))}
         </div>
 
         {/* Landing link */}
-        <p style={{ textAlign: "center", fontSize: 11, color: "#3a3760", fontFamily: mono }}>
-          <a href="/landing" style={{ color: "#5a5780", textDecoration: "none" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#a855f7")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#5a5780")}
+        <p style={{ textAlign: "center", fontSize: 11, color: "#5a5780", fontFamily: mono }}>
+          <a href="/landing" style={{ color: "#8a7a6a", textDecoration: "none" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#ea580c")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "#8a7a6a")}
           >
             ← Back to home
           </a>

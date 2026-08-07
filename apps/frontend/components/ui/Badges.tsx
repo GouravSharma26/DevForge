@@ -4,11 +4,11 @@ interface BadgeProps {
 }
 
 const VARIANTS = {
-  purple: "border-[#7c3aed40] text-[#a855f7] bg-[#7c3aed15]",
+  purple: "border-[#ea580c40] text-[#f59e0b] bg-[#ea580c15]",
   green:  "border-[#10b98140] text-[#10b981] bg-[#10b98115]",
   red:    "border-[#ef444440] text-[#ef4444] bg-[#ef444415]",
-  yellow: "border-[#f59e0b40] text-[#f59e0b] bg-[#f59e0b15]",
-  gray:   "border-[#2a2a5a] text-[#5a5780] bg-[#ffffff05]",
+  yellow: "border-[#eab30840] text-[#eab308] bg-[#eab30815]",
+  gray:   "border-[rgba(255,180,120,0.14)] text-[#d4a373] bg-[#1c1712]",
 }
 
 export function Badge({ children, variant = "gray" }: BadgeProps) {

@@ -4,7 +4,10 @@ import { PrismaClient } from "@prisma/client"
 import {
   analyzeResume,
   analyzeResumeFromText,
-  getResume,
+  getUserResumes,
+  getResumeById,
+  deleteResume,
+  forkResume
 } from "../services/resume.service"
 import {
   generateInterview,
@@ -12,12 +15,20 @@ import {
   completeInterview,
   getInterview,
   getUserInterviews,
+  deleteInterview,
+  appendGrandmasterChallenge,
+  runGrandmasterCode,
 } from "../services/interview.service"
 import {
   saveResumeBuilder,
   loadResumeBuilder,
   generateResumeWithAI,
 } from "../services/resume-builder.service"
+import {
+  matchJD,
+  matchJDPdf,
+  getJDMatchesForResume,
+} from "../services/jd-match.service"
 
 const prisma = new PrismaClient()
 
@@ -46,13 +57,14 @@ export async function resumeRoutes(app: FastifyInstance) {
   app.post(
     "/builder/ai-fill",
     { preHandler: [authenticate] },
-    async (req: FastifyRequest<{ Body: { sections: any[] } }>, reply) => {
+    async (req: FastifyRequest<{ Body: { sections: any[]; resumeId?: string } }>, reply) => {
       const { id: userId } = req.user as { id: string }
       try {
-        const filled = await generateResumeWithAI(userId, req.body.sections)
+        const filled = await generateResumeWithAI(userId, req.body.sections, req.body.resumeId)
         return reply.send({ success: true, data: filled })
       } catch (err: any) {
-        return reply.status(500).send({ success: false, error: err.message })
+        const statusCode = err.message === "Specified resume profile not found" ? 404 : 500
+        return reply.status(statusCode).send({ success: false, error: err.message })
       }
     }
   )
@@ -152,47 +164,166 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
     }
   )
 
+  // ─── NEW: List all resumes for user ───
   // GET /api/resume
   app.get(
     "/",
     { preHandler: [authenticate] },
     async (req, reply) => {
       const { id: userId } = req.user as { id: string }
-      const resume = await getResume(userId)
+      const resumes = await getUserResumes(userId)
+      return reply.send({ success: true, data: resumes })
+    }
+  )
+
+  // ─── NEW: Get a specific resume ───
+  // GET /api/resume/:id
+  app.get(
+    "/:id",
+    { preHandler: [authenticate] },
+    async (req: FastifyRequest<{ Params: { id: string } }>, reply) => {
+      const { id: userId } = req.user as { id: string }
+      const resume = await getResumeById(req.params.id, userId)
+      if (!resume) return reply.status(404).send({ success: false, error: "Resume not found" })
       return reply.send({ success: true, data: resume })
     }
   )
 
-  // DELETE /api/resume
-  app.delete(
-    "/",
+  // ─── NEW: Fork a specific resume ───
+  // POST /api/resume/:id/fork
+  app.post(
+    "/:id/fork",
     { preHandler: [authenticate] },
-    async (req, reply) => {
+    async (
+      req: FastifyRequest<{ Params: { id: string }; Body: { profileName: string } }>,
+      reply
+    ) => {
       const { id: userId } = req.user as { id: string }
+      const { profileName } = req.body
+      if (!profileName) {
+        return reply.status(400).send({ success: false, error: "Profile name is required" })
+      }
       try {
-        await prisma.resume.delete({ where: { userId } })
-        return reply.send({ success: true, data: { message: "Resume deleted" } })
-      } catch {
-        return reply.status(404).send({ success: false, error: "No resume found" })
+        const forkedResume = await forkResume(req.params.id, userId, profileName)
+        return reply.send({ success: true, data: forkedResume })
+      } catch (err: any) {
+        if (err.message.includes("not found or access denied")) {
+          return reply.status(404).send({ success: false, error: err.message })
+        }
+        return reply.status(500).send({ success: false, error: err.message })
       }
     }
   )
 
-  // PATCH /api/resume
+  // ─── NEW: JD Matching ───
+  // GET /api/resume/:id/jd-matches
+  app.get(
+    "/:id/jd-matches",
+    { preHandler: [authenticate] },
+    async (req: FastifyRequest<{ Params: { id: string } }>, reply) => {
+      const { id: userId } = req.user as { id: string }
+      const matches = await getJDMatchesForResume(userId, req.params.id)
+      return reply.send({ success: true, data: matches })
+    }
+  )
+
+  // POST /api/resume/:id/jd-match
+  app.post(
+    "/:id/jd-match",
+    { preHandler: [authenticate] },
+    async (
+      req: FastifyRequest<{ Params: { id: string }; Body: { jdText: string } }>,
+      reply
+    ) => {
+      const { id: userId } = req.user as { id: string }
+      const { jdText } = req.body
+      if (!jdText) {
+        return reply.status(400).send({ success: false, error: "jdText is required" })
+      }
+      try {
+        const match = await matchJD(userId, req.params.id, jdText)
+        return reply.send({ success: true, data: match })
+      } catch (err: any) {
+        if (err.message.includes("not found or unauthorized")) {
+          return reply.status(404).send({ success: false, error: err.message })
+        }
+        return reply.status(500).send({ success: false, error: err.message })
+      }
+    }
+  )
+
+  // POST /api/resume/:id/jd-match/upload
+  app.post(
+    "/:id/jd-match/upload",
+    { preHandler: [authenticate] },
+    async (req: FastifyRequest<{ Params: { id: string } }>, reply) => {
+      const { id: userId } = req.user as { id: string }
+      const data = await req.file()
+      
+      if (!data) {
+        return reply.status(400).send({ success: false, error: "No file uploaded" })
+      }
+      
+      if (data.mimetype !== "application/pdf") {
+        return reply.status(400).send({ success: false, error: "Only PDF files are supported" })
+      }
+
+      const buffer = await data.toBuffer()
+      if (buffer.length > 5 * 1024 * 1024) {
+        return reply.status(400).send({ success: false, error: "File size exceeds 5MB limit" })
+      }
+
+      try {
+        const match = await matchJDPdf(userId, req.params.id, buffer)
+        return reply.send({ success: true, data: match })
+      } catch (err: any) {
+        if (err.message.includes("not found or unauthorized")) {
+          return reply.status(404).send({ success: false, error: err.message })
+        }
+        return reply.status(500).send({ success: false, error: err.message })
+      }
+    }
+  )
+
+  // ─── CHANGED: Delete a specific resume ───
+  // DELETE /api/resume/:id
+  app.delete(
+    "/:id",
+    { preHandler: [authenticate] },
+    async (req: FastifyRequest<{ Params: { id: string } }>, reply) => {
+      const { id: userId } = req.user as { id: string }
+      const result = await deleteResume(req.params.id, userId)
+      if (!result || result.count === 0) {
+        return reply.status(404).send({ success: false, error: "Resume not found or already deleted" })
+      }
+      return reply.send({ success: true, data: { message: "Resume deleted" } })
+    }
+  )
+
+  // ─── CHANGED: Patch a specific resume ───
+  // PATCH /api/resume/:id
   app.patch(
-    "/",
+    "/:id",
     { preHandler: [authenticate] },
     async (
       req: FastifyRequest<{
-        Body: { skills?: string[]; gaps?: string[]; targetRole?: string; suggestions?: any[] }
+        Params: { id: string }
+        Body: { skills?: string[]; gaps?: string[]; targetRole?: string; suggestions?: any[]; profileName?: string }
       }>,
       reply
     ) => {
       const { id: userId } = req.user as { id: string }
-      const { skills, gaps, targetRole, suggestions } = req.body
+      const { skills, gaps, targetRole, suggestions, profileName } = req.body
+      
+      // 1. Verify ownership first since id is no longer tied 1:1 to user
+      const existing = await getResumeById(req.params.id, userId)
+      if (!existing) return reply.status(404).send({ success: false, error: "Resume not found" })
+
+      // 2. Perform update
       const resume = await prisma.resume.update({
-        where: { userId },
+        where: { id: req.params.id },
         data: {
+          ...(profileName !== undefined && { profileName }),
           ...(skills      !== undefined && { skills }),
           ...(gaps        !== undefined && { gaps }),
           ...(targetRole  !== undefined && { targetRole }),
@@ -255,6 +386,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
         const result = await submitAnswer(questionId, answer, interview.resume.skills)
         return reply.send({ success: true, data: result })
       } catch (err: any) {
+        console.error("[Submit Answer Error]:", err)
         return reply.status(500).send({ success: false, error: err.message })
       }
     }
@@ -268,6 +400,63 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
       try {
         const interview = await completeInterview(req.params.id)
         return reply.send({ success: true, data: interview })
+      } catch (err: any) {
+        return reply.status(500).send({ success: false, error: err.message })
+      }
+    }
+  )
+
+  // POST /api/resume/interview/:id/grandmaster
+  app.post(
+    "/interview/:id/grandmaster",
+    { preHandler: [authenticate] },
+    async (req: FastifyRequest<{ Params: { id: string } }>, reply) => {
+      const { id: userId } = req.user as { id: string }
+      try {
+        const interview = await getInterview(req.params.id)
+        if (!interview) return reply.status(404).send({ success: false, error: "Interview not found" })
+        if (interview.userId !== userId) return reply.status(403).send({ success: false, error: "Unauthorized" })
+        if (interview.status !== "COMPLETED") return reply.status(400).send({ success: false, error: "Interview must be completed before starting the Grandmaster challenge" })
+        
+        const updated = await appendGrandmasterChallenge(req.params.id, userId)
+        return reply.send({ success: true, data: updated })
+      } catch (err: any) {
+        return reply.status(500).send({ success: false, error: err.message })
+      }
+    }
+  )
+
+  // POST /api/resume/interview/:id/question/:questionId/run
+  app.post(
+    "/interview/:id/question/:questionId/run",
+    { preHandler: [authenticate] },
+    async (req: FastifyRequest<{ Params: { id: string; questionId: string }, Body: { code: string } }>, reply) => {
+      const { id: userId } = req.user as { id: string }
+      try {
+        const interview = await getInterview(req.params.id)
+        if (!interview) return reply.status(404).send({ success: false, error: "Interview not found" })
+        if (interview.userId !== userId) return reply.status(403).send({ success: false, error: "Unauthorized" })
+        
+        const result = await runGrandmasterCode(req.params.questionId, req.body.code)
+        return reply.send({ success: true, data: result })
+      } catch (err: any) {
+        return reply.status(500).send({ success: false, error: err.message })
+      }
+    }
+  )
+
+  // DELETE /api/resume/interview/:id
+  app.delete(
+    "/interview/:id",
+    { preHandler: [authenticate] },
+    async (req: FastifyRequest<{ Params: { id: string } }>, reply) => {
+      const { id: userId } = req.user as { id: string }
+      try {
+        const result = await deleteInterview(req.params.id, userId)
+        if (!result || result.count === 0) {
+          return reply.status(404).send({ success: false, error: "Interview not found or unauthorized" })
+        }
+        return reply.send({ success: true, data: { message: "Interview deleted" } })
       } catch (err: any) {
         return reply.status(500).send({ success: false, error: err.message })
       }
