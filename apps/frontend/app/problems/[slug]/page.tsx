@@ -152,7 +152,7 @@ export default function ProblemPage() {
             onClick={handleSubmit}
             disabled={submit.isPending}
             style={{
-              padding: "6px 20px", borderRadius: 8, border: "none",
+              padding: "6px 20px", borderRadius: 8,
               cursor: submit.isPending ? "not-allowed" : "pointer",
               background: submit.isPending
                 ? "rgba(255,237,213,0.05)"

@@ -171,7 +171,7 @@ export default function InterviewHubPage() {
                     {new Date(interview.createdAt).toLocaleDateString()}
                   </p>
                   <span style={{ fontSize: 11, color: "#a09dc0", fontFamily: mono }}>
-                    {interview.questions.filter(q => q.score != null).length} / {interview.questions.length} Ans
+                    {(interview.questions || []).filter((q: any) => q.score != null).length} / {(interview.questions || []).length} Ans
                   </span>
                 </div>
               </div>

@@ -46,7 +46,7 @@ export default function InterviewPage() {
   }, [submitCountdown])
 
   useEffect(() => {
-    const q = interview?.questions?.[currentIdx]
+    const q = interview?.questions?.[currentIdx] as any
     if (q && q.isGrandmaster) {
       setAnswer(q.buggyCode || "")
     } else if (q) {
@@ -91,13 +91,13 @@ export default function InterviewPage() {
 
   if (!interview) return null
 
-  const questions    = interview.questions
-  const currentQ     = questions[currentIdx]
+  const questions    = interview.questions || []
+  const currentQ     = questions[currentIdx] as any
   const isLastQ      = currentIdx === questions.length - 1
   const isCompleted  = interview.status === "COMPLETED"
   const answeredCount = questions.filter((q: any) => q.userAnswer).length
   const currentRound = ROUND_META[currentQ?.round] || ROUND_META[1]
-  const latestQ      = interview.questions[currentIdx]
+  const latestQ      = questions[currentIdx]
   const hasFeedback  = latestQ?.feedback || submittedId === currentQ?.id
 
   // ── COMPLETED ────────────────────────────────────────────────────────────────
