@@ -1,17 +1,36 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Navbar } from "./Navbar"
 import { useAuthStore } from "@/store/auth.store"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const token = useAuthStore((s) => s.token)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   return (
     <>
-      {/* Persistent top strip — always reserves its own space, nothing sits on top of it */}
-      <header className="sticky top-0 z-[60] h-14 flex items-center gap-3 px-4 border-b border-[#ffb478]/14 bg-[#171210]/50 backdrop-blur-xl">
+      {/* Spacer for fixed header */}
+      <div className="h-14 w-full" />
+      
+      {/* Dynamic Header */}
+      <header 
+        className={`fixed z-[60] h-14 flex items-center justify-between px-4 transition-all duration-700 ease-in-out backdrop-blur-xl ${
+          scrolled 
+            ? "top-4 left-4 right-4 rounded-2xl bg-surface-container/80 border border-white/10 shadow-lg max-w-[1200px] mx-auto"
+            : "top-0 left-0 right-0 border-b border-white/10 bg-background/50"
+        }`}
+      >
+        <div className="flex items-center gap-3">
         {token && (
           <button
             onClick={() => setOpen((o) => !o)}
@@ -33,6 +52,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             DevForge
           </span>
         </a>
+        </div>
       </header>
 
       <Navbar open={open} />

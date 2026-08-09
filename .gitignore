@@ -12,3 +12,5 @@ test.sh
 test-e2e.js
 temp_landing.html
 apps/backend/scripts/
+docs/
+ui-prototype/
