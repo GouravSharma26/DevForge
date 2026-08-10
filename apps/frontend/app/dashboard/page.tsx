@@ -2,219 +2,259 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { Flame, Crown, Mic, Puzzle, Zap, FileText, Route } from "lucide-react"
 import { useAuthStore } from "@/store/auth.store"
 import { useResumes, useInterviews } from "@/hooks/useResume"
-
-const mono = "JetBrains Mono, monospace"
 
 export default function DashboardPage() {
   const router = useRouter()
   const token = useAuthStore((s) => s.token)
   const hydrated = useAuthStore((s) => s.hydrated)
+  const user = useAuthStore((s) => s.user)
 
   const { data: resumes, isLoading: resumesLoading } = useResumes()
   const { data: interviews, isLoading: interviewsLoading } = useInterviews()
+
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
 
   useEffect(() => {
     if (hydrated && !token) router.push("/login")
   }, [hydrated, token])
 
-  if (!hydrated || !token) return null
+  if (!hydrated || !token || !mounted) return null
 
-  // Calculate stats
+  // Process data from existing backend hooks
   const completedInterviews = interviews?.filter((i: any) => i.status === "COMPLETED") || []
+  
+  // Same calculation logic the old dashboard used for the raw average score:
   const avgScore = completedInterviews.length > 0 
     ? Math.round(completedInterviews.reduce((acc: number, i: any) => acc + (i.score || 0), 0) / completedInterviews.length)
     : 0
+    
+  // Use avgScore as readiness percentage
+  const readinessScore = avgScore
+  const lastInterviewScore = completedInterviews.length > 0 ? completedInterviews[0].score : 0
+  const activeResumesCount = resumes?.length || 0
+  const interviewsCount = interviews?.length || 0
+  
+  // Format dates for log
+  const formatDate = (dateString: string) => {
+    const d = new Date(dateString)
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    return `${months[d.getMonth()]} ${d.getDate()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
+  }
+
+  // Calculate gauge SVG dash offset based on percentage
+  const circumference = 452.4 // 2 * pi * 72
+  const dashOffset = circumference - (readinessScore / 100) * circumference
 
   return (
-    <main style={{ minHeight: "calc(100vh - 56px)" }} className="p-4 md:p-8 bg-background">
-      <div className="max-w-7xl mx-auto flex flex-col gap-8">
+    <>
+      <div className="fixed inset-0 z-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 800px 500px at 80% -10%, rgba(234,88,12,0.08), transparent 60%)' }} />
+      
+      <main className="relative z-10 px-10 pt-8 pb-16 max-w-[1180px] font-mono text-[#fdf6f0] selection:bg-[#ea580c]/30">
         
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-on-surface font-mono tracking-tight">Command Center</h1>
-          <p className="text-sm text-code-gray mt-2 font-mono">
-            Welcome back, Operator. System status is nominal.
-          </p>
+        <div className="flex justify-between items-start mb-7">
+          <div>
+            <h1 className="text-[22px] font-extrabold tracking-[-0.01em] mb-1">Welcome back, {user?.username || "Developer"}</h1>
+            <p className="text-[13px] text-[#8a7a6a]">Your forge has been idle for 2 days — the readiness score is still holding.</p>
+          </div>
+          <div className="flex items-center gap-2 bg-[rgba(255,237,213,0.05)] border border-[rgba(255,180,120,0.14)] px-3.5 py-2 rounded-[10px] text-[12px]">
+            <Flame size={14} className="text-[#ea580c]" /> {user?.streak || 0}-day streak
+          </div>
         </div>
 
-        {/* Hero Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          
-          <div className="glass-panel p-6 rounded-2xl flex flex-col gap-2 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <span className="text-4xl">⚔</span>
+        {/* ── Signature element: Forge Heat Gauge ── */}
+        <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-0 bg-[rgba(255,237,213,0.05)] backdrop-blur-[16px] border border-[rgba(255,180,120,0.14)] rounded-[18px] overflow-hidden mb-6">
+          <div className="p-7.5 flex flex-col items-center justify-center border-r border-[rgba(255,180,120,0.14)] relative p-8">
+            <div className="text-[11px] text-[#8a7a6a] uppercase tracking-[0.06em] mb-3.5">Interview Readiness</div>
+            <div className="relative w-[168px] h-[168px]">
+              <svg width="168" height="168" viewBox="0 0 168 168">
+                <circle cx="84" cy="84" r="72" fill="none" stroke="rgba(255,180,120,0.1)" strokeWidth="10"/>
+                <circle cx="84" cy="84" r="72" fill="none" stroke="url(#gaugeGrad)" strokeWidth="10"
+                  strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={dashOffset}
+                  transform="rotate(-90 84 84)"
+                  style={{ transition: 'stroke-dashoffset 1s ease-out' }}/>
+                <defs>
+                  <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#ea580c"/>
+                    <stop offset="100%" stopColor="#f59e0b"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <div className="text-[34px] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-[#ea580c] to-[#f59e0b] leading-none">
+                  {readinessScore}%
+                </div>
+                <div className="text-[10.5px] text-[#8a7a6a] mt-1">
+                  {readinessScore > 80 ? "Hot enough to interview" : "Requires practice"}
+                </div>
+              </div>
             </div>
-            <span className="text-xs text-code-gray font-mono uppercase tracking-widest">Arena Rating</span>
-            <div className="text-3xl font-bold font-mono text-glow text-white">1450</div>
-            <span className="text-xs text-[var(--color-ember)] font-mono">Grandmaster Tier</span>
+            <div className="flex gap-1.5 mt-4.5">
+              <div className="text-[9.5px] px-2 py-0.5 rounded-full border border-[rgba(234,88,12,0.4)] text-[#f59e0b]">↑ Based on {completedInterviews.length} sessions</div>
+            </div>
           </div>
 
-          <div className="glass-panel p-6 rounded-2xl flex flex-col gap-2 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <span className="text-4xl">🎙️</span>
+          <div className="p-6 md:p-[26px_30px]">
+            <div className="flex justify-between items-baseline mb-4.5">
+              <h2 className="text-[15px] font-bold">Next up in the forge</h2>
+              <a href="/paths" className="text-[11.5px] text-[#ea580c] hover:underline">View full plan →</a>
             </div>
-            <span className="text-xs text-code-gray font-mono uppercase tracking-widest">Mock Interviews</span>
-            <div className="text-3xl font-bold font-mono text-white">
-              {interviewsLoading ? "..." : completedInterviews.length}
-            </div>
-            <span className="text-xs text-[var(--color-ember)] font-mono">Completed Sessions</span>
-          </div>
+            <div className="flex flex-col gap-2">
+              
+              <div className="flex items-center gap-3 p-3 rounded-[10px] border border-[rgba(255,180,120,0.14)] bg-[rgba(0,0,0,0.1)]">
+                <div className="w-[30px] h-[30px] rounded-lg bg-[rgba(234,88,12,0.1)] flex items-center justify-center shrink-0">
+                  <Crown size={14} className="text-[#ea580c]" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-[12.5px] font-semibold mb-0.5">Finish Grandmaster: Off-by-one hunt</div>
+                  <div className="text-[11px] text-[#8a7a6a]">2 of 4 run attempts used — pick it back up</div>
+                </div>
+                <button onClick={() => router.push('/interview')} className="text-[11px] text-[#ea580c] font-bold">Resume →</button>
+              </div>
 
-          <div className="glass-panel p-6 rounded-2xl flex flex-col gap-2 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <span className="text-4xl">📈</span>
+              <div className="flex items-center gap-3 p-3 rounded-[10px] border border-[rgba(255,180,120,0.14)] bg-[rgba(0,0,0,0.1)]">
+                <div className="w-[30px] h-[30px] rounded-lg bg-[rgba(234,88,12,0.1)] flex items-center justify-center shrink-0">
+                  <Mic size={14} className="text-[#ea580c]" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-[12.5px] font-semibold mb-0.5">Round 3 mock interview — Senior Frontend</div>
+                  <div className="text-[11px] text-[#8a7a6a]">Generated from your latest resume match</div>
+                </div>
+                <button onClick={() => router.push('/interview')} className="text-[11px] text-[#ea580c] font-bold">Start →</button>
+              </div>
+
+              {/* Explicitly flagged as missing backend endpoint */}
+              <div className="flex items-center gap-3 p-3 rounded-[10px] border border-[rgba(255,180,120,0.14)] bg-[rgba(0,0,0,0.1)] opacity-70">
+                <div className="w-[30px] h-[30px] rounded-lg bg-[rgba(234,88,12,0.1)] flex items-center justify-center shrink-0">
+                  <Puzzle size={14} className="text-[#ea580c]" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-[12.5px] font-semibold mb-0.5">Recommended DSA problems</div>
+                  <div className="text-[11px] text-[#8a7a6a]">Feature unavailable: Recommendation engine endpoint missing</div>
+                </div>
+                <div className="text-[11px] text-[#8a7a6a]">Pending</div>
+              </div>
+
             </div>
-            <div className="flex justify-between items-start">
-              <span className="text-xs text-code-gray font-mono uppercase tracking-widest">Avg Score</span>
-              <span className="text-xs text-[var(--color-ember-light)] font-mono">Proficiency</span>
+          </div>
+        </div>
+
+        {/* ── Tools + Forge Log ── */}
+        <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-5">
+          <div className="bg-[rgba(255,237,213,0.05)] backdrop-blur-[16px] border border-[rgba(255,180,120,0.14)] rounded-[16px] p-[22px]">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-[13.5px] font-bold">Quick launch</h3>
+              <span className="text-[11px] text-[#8a7a6a]">6 tools</span>
             </div>
             
-            <div className="flex items-end gap-4 mt-2">
-              <div className="text-3xl font-bold font-mono text-white">
-                {interviewsLoading ? "..." : `${avgScore}%`}
+            <div className="grid grid-cols-3 gap-2.5">
+              <button onClick={() => router.push('/arena')} className="p-3 border border-[rgba(255,180,120,0.14)] rounded-[12px] text-center transition-all hover:border-[rgba(234,88,12,0.4)] hover:-translate-y-0.5 group">
+                <div className="flex justify-center mb-2 opacity-60 group-hover:opacity-100 group-hover:text-[#ea580c] transition-all"><Zap size={20} /></div>
+                <div className="text-[11.5px] font-bold mb-0.5">PvP Arena</div>
+                <div className="text-[10px] text-[#8a7a6a]">Live battles</div>
+              </button>
+              
+              <button onClick={() => router.push('/resume')} className="p-3 border border-[rgba(255,180,120,0.14)] rounded-[12px] text-center transition-all hover:border-[rgba(234,88,12,0.4)] hover:-translate-y-0.5 group">
+                <div className="flex justify-center mb-2 opacity-60 group-hover:opacity-100 group-hover:text-[#ea580c] transition-all"><FileText size={20} /></div>
+                <div className="text-[11.5px] font-bold mb-0.5">Resumes</div>
+                <div className="text-[10px] text-[#8a7a6a]">{resumesLoading ? "..." : activeResumesCount} profiles</div>
+              </button>
+              
+              <button onClick={() => router.push('/interview')} className="p-3 border border-[rgba(255,180,120,0.14)] rounded-[12px] text-center transition-all hover:border-[rgba(234,88,12,0.4)] hover:-translate-y-0.5 group">
+                <div className="flex justify-center mb-2 opacity-60 group-hover:opacity-100 group-hover:text-[#ea580c] transition-all"><Crown size={20} /></div>
+                <div className="text-[11.5px] font-bold mb-0.5">Grandmaster</div>
+                <div className="text-[10px] text-[#8a7a6a]">Sandbox mode</div>
+              </button>
+              
+              <button onClick={() => router.push('/problems')} className="p-3 border border-[rgba(255,180,120,0.14)] rounded-[12px] text-center transition-all hover:border-[rgba(234,88,12,0.4)] hover:-translate-y-0.5 group">
+                <div className="flex justify-center mb-2 opacity-60 group-hover:opacity-100 group-hover:text-[#ea580c] transition-all"><Puzzle size={20} /></div>
+                <div className="text-[11.5px] font-bold mb-0.5">Problems</div>
+                <div className="text-[10px] text-[#8a7a6a]">DSA Editor</div>
+              </button>
+              
+              <button onClick={() => router.push('/interview')} className="p-3 border border-[rgba(255,180,120,0.14)] rounded-[12px] text-center transition-all hover:border-[rgba(234,88,12,0.4)] hover:-translate-y-0.5 group">
+                <div className="flex justify-center mb-2 opacity-60 group-hover:opacity-100 group-hover:text-[#ea580c] transition-all"><Mic size={20} /></div>
+                <div className="text-[11.5px] font-bold mb-0.5">Interview</div>
+                <div className="text-[10px] text-[#8a7a6a]">{interviewsLoading ? "..." : interviewsCount} total</div>
+              </button>
+              
+              <button onClick={() => router.push('/paths')} className="p-3 border border-[rgba(255,180,120,0.14)] rounded-[12px] text-center transition-all hover:border-[rgba(234,88,12,0.4)] hover:-translate-y-0.5 group">
+                <div className="flex justify-center mb-2 opacity-60 group-hover:opacity-100 group-hover:text-[#ea580c] transition-all"><Route size={20} /></div>
+                <div className="text-[11.5px] font-bold mb-0.5">Paths</div>
+                <div className="text-[10px] text-[#8a7a6a]">Tracks</div>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mt-5">
+              <div className="bg-[rgba(255,237,213,0.05)] border border-[rgba(255,180,120,0.14)] rounded-[14px] p-4">
+                <div className="text-[10.5px] text-[#8a7a6a] uppercase tracking-[0.05em] mb-2.5">Resume match</div>
+                <div className="h-1.5 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden mb-2.5">
+                  <div className="h-full bg-gradient-to-r from-[#ea580c] to-[#f59e0b] rounded-full" style={{ width: '0%' }}></div>
+                </div>
+                <div className="text-[20px] font-extrabold text-[#8a7a6a]">N/A <span className="text-[11px] font-medium opacity-70">/ 100</span></div>
+                <div className="text-[9px] text-[#8a7a6a] mt-1 leading-tight">Global score API missing</div>
               </div>
               
-              {/* SVG Sparkline Graph */}
-              <div className="flex-1 h-10 ml-2 relative">
-                <svg viewBox="0 0 100 40" className="w-full h-full overflow-visible" preserveAspectRatio="none">
-                  <defs>
-                    <linearGradient id="sparkline-gradient" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0%" stopColor="rgba(var(--color-ember-light-rgb), 0.4)" />
-                      <stop offset="100%" stopColor="rgba(var(--color-ember-light-rgb), 0)" />
-                    </linearGradient>
-                  </defs>
-                  {/* Fill */}
-                  <path d="M0,40 L0,30 L20,35 L40,20 L60,25 L80,10 L100,15 L100,40 Z" fill="url(#sparkline-gradient)" />
-                  {/* Line */}
-                  <polyline points="0,30 20,35 40,20 60,25 80,10 100,15" fill="none" stroke="var(--color-ember-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  {/* End Dot */}
-                  <circle cx="100" cy="15" r="3" fill="var(--color-ember-light)" className="animate-pulse" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="glass-panel p-6 rounded-2xl flex flex-col gap-2 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <span className="text-4xl">📄</span>
-            </div>
-            <span className="text-xs text-code-gray font-mono uppercase tracking-widest">Active Resumes</span>
-            <div className="text-3xl font-bold font-mono text-white">
-              {resumesLoading ? "..." : resumes?.length || 0}
-            </div>
-            <span className="text-xs text-code-gray font-mono">Targeted Profiles</span>
-          </div>
-
-        </div>
-
-        {/* Split Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Left Column: Quick Launch & Feed */}
-          <div className="lg:col-span-2 flex flex-col gap-8">
-            
-            {/* Quick Launch */}
-            <div className="glass-panel rounded-2xl p-6">
-              <h2 className="text-sm text-code-gray font-mono uppercase tracking-widest mb-4">Quick Launch</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <button 
-                  onClick={() => router.push('/interview')}
-                  className="p-4 rounded-xl flex flex-col items-center justify-center gap-2 border border-[rgba(var(--color-ember-rgb),0.3)] bg-[rgba(var(--color-ember-rgb),0.1)] hover:bg-[rgba(var(--color-ember-rgb),0.2)] hover:border-[rgba(var(--color-ember-rgb),0.5)] transition-all shadow-[0_0_15px_rgba(var(--color-ember-rgb),0.1)] hover:shadow-[0_0_25px_rgba(var(--color-ember-rgb),0.2)]"
-                >
-                  <span className="text-2xl mb-1">🤖</span>
-                  <span className="text-sm font-bold font-mono text-white">Mock Interview</span>
-                </button>
-                <button 
-                  onClick={() => router.push('/arena')}
-                  className="p-4 rounded-xl flex flex-col items-center justify-center gap-2 border border-[rgba(var(--color-ember-light-rgb),0.3)] bg-[rgba(var(--color-ember-light-rgb),0.1)] hover:bg-[rgba(var(--color-ember-light-rgb),0.2)] hover:border-[rgba(var(--color-ember-light-rgb),0.5)] transition-all shadow-[0_0_15px_rgba(var(--color-ember-light-rgb),0.1)] hover:shadow-[0_0_25px_rgba(var(--color-ember-light-rgb),0.2)]"
-                >
-                  <span className="text-2xl mb-1">⚔</span>
-                  <span className="text-sm font-bold font-mono text-white">Live Arena</span>
-                </button>
-                <button 
-                  onClick={() => router.push('/problems')}
-                  className="p-4 rounded-xl flex flex-col items-center justify-center gap-2 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all"
-                >
-                  <span className="text-2xl mb-1">💻</span>
-                  <span className="text-sm font-bold font-mono text-white">DSA Practice</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Activity Stream */}
-            <div className="glass-panel rounded-2xl p-6 flex-1">
-              <h2 className="text-sm text-code-gray font-mono uppercase tracking-widest mb-6">Activity Stream</h2>
-              <div className="flex flex-col gap-6 font-mono text-sm">
-                
-                {completedInterviews.slice(0, 3).map((interview: any) => (
-                  <div key={interview.id} className="flex items-start gap-4">
-                    <div className="w-8 h-8 rounded-full bg-[var(--color-ember)]/10 border border-[var(--color-ember)]/30 flex items-center justify-center text-[var(--color-ember)] shrink-0 mt-0.5">
-                      🎙️
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <div className="text-white">
-                        Completed mock interview <span className="text-[var(--color-ember-light)]">({interview.resume?.targetRole || "General"})</span>
-                      </div>
-                      <div className="text-xs text-code-gray flex items-center gap-3">
-                        <span>{new Date(interview.createdAt).toLocaleDateString()}</span>
-                        <span className="text-[var(--color-ember)]">Score: {interview.score}%</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {completedInterviews.length === 0 && (
-                  <div className="text-code-gray/50 italic">No recent activity found. Initialize a module from Quick Launch.</div>
-                )}
-                
-              </div>
-            </div>
-
-          </div>
-
-          {/* Right Column: Proficiency Radar */}
-          <div className="glass-panel rounded-2xl p-6 flex flex-col gap-6">
-            <h2 className="text-sm text-code-gray font-mono uppercase tracking-widest">Skill Proficiency</h2>
-            
-            <div className="flex flex-col gap-5 mt-2">
-              {[
-                { skill: "Data Structures", value: 85, color: "#ea580c" },
-                { skill: "System Design", value: 65, color: "#f59e0b" },
-                { skill: "Communication", value: 92, color: "#10b981" },
-                { skill: "Concurrency", value: 45, color: "#ef4444" },
-                { skill: "Debugging", value: 78, color: "#ea580c" }
-              ].map((stat, i) => (
-                <div key={i} className="flex flex-col gap-2">
-                  <div className="flex justify-between items-end font-mono text-xs">
-                    <span className="text-white">{stat.skill}</span>
-                    <span className="text-code-gray">{stat.value}%</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/5">
-                    <div 
-                      className="h-full rounded-full transition-all duration-1000 ease-out" 
-                      style={{ 
-                        width: `${stat.value}%`, 
-                        backgroundColor: stat.color,
-                        boxShadow: `0 0 10px ${stat.color}`
-                      }}
-                    />
-                  </div>
+              <div className="bg-[rgba(255,237,213,0.05)] border border-[rgba(255,180,120,0.14)] rounded-[14px] p-4">
+                <div className="text-[10.5px] text-[#8a7a6a] uppercase tracking-[0.05em] mb-2.5">Last interview</div>
+                <div className="h-1.5 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden mb-2.5">
+                  <div className="h-full bg-gradient-to-r from-[#ea580c] to-[#f59e0b] rounded-full" style={{ width: `${lastInterviewScore}%` }}></div>
                 </div>
-              ))}
-            </div>
-
-            <div className="mt-auto pt-6 border-t border-white/10">
-              <div className="flex items-center gap-3 text-xs font-mono text-code-gray">
-                <span className="w-2 h-2 rounded-full bg-[var(--color-ember)] animate-pulse" />
-                <span>AI Recruiter analysis active</span>
+                <div className="text-[20px] font-extrabold">{lastInterviewScore} <span className="text-[11px] text-[#8a7a6a] font-medium">/ 100</span></div>
+              </div>
+              
+              <div className="bg-[rgba(255,237,213,0.05)] border border-[rgba(255,180,120,0.14)] rounded-[14px] p-4">
+                <div className="text-[10.5px] text-[#8a7a6a] uppercase tracking-[0.05em] mb-2.5">Arena rating</div>
+                <div className="h-1.5 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden mb-2.5">
+                  <div className="h-full bg-gradient-to-r from-[#ea580c] to-[#f59e0b] rounded-full" style={{ width: '0%' }}></div>
+                </div>
+                <div className="text-[20px] font-extrabold text-[#8a7a6a]">--- <span className="text-[11px] font-medium opacity-70">ELO</span></div>
+                <div className="text-[9px] text-[#8a7a6a] mt-1 leading-tight">ELO API missing</div>
               </div>
             </div>
+          </div>
+
+          <div className="bg-[rgba(255,237,213,0.05)] backdrop-blur-[16px] border border-[rgba(255,180,120,0.14)] rounded-[16px] p-[22px]">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-[13.5px] font-bold">Forge log</h3>
+              <span className="text-[11px] text-[#8a7a6a]">Recent Activity</span>
+            </div>
             
+            <div className="flex flex-col">
+              {completedInterviews.length > 0 ? (
+                // Only populated with real data (interviews)
+                completedInterviews.slice(0, 5).map((interview: any) => (
+                  <div key={interview.id} className="flex gap-2.5 py-2.5 border-b border-[rgba(255,180,120,0.14)] last:border-0 text-[11.5px]">
+                    <div className={`w-1.5 h-1.5 rounded-full mt-[5px] shrink-0 ${interview.score > 80 ? 'bg-[#10b981]' : interview.score > 60 ? 'bg-[#eab308]' : 'bg-[#ef4444]'}`}></div>
+                    <div>
+                      <div className="font-semibold text-white">Mock Interview Protocol Graded — {interview.score}/100</div>
+                      <div className="text-[#8a7a6a] text-[10.5px] mt-0.5">{interview.jobTitle || 'General Software Engineer'} · {formatDate(interview.createdAt)}</div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-[11.5px] text-[#8a7a6a] italic py-2">
+                  No mock interviews completed yet.
+                </div>
+              )}
+              
+              {/* Visible fallback for missing unified activity log */}
+              <div className="flex gap-2.5 py-2.5 border-t border-[rgba(255,180,120,0.14)] mt-2 text-[11.5px] opacity-60 bg-[rgba(0,0,0,0.2)] rounded px-2">
+                <div className="w-1.5 h-1.5 rounded-full mt-[5px] shrink-0 bg-[#8a7a6a]"></div>
+                <div>
+                  <div className="font-semibold text-[#8a7a6a]">System Note</div>
+                  <div className="text-[#8a7a6a] text-[10.5px] mt-0.5">Resume edits and Arena battles are not yet tracked in the activity feed (API missing).</div>
+                </div>
+              </div>
+              
+            </div>
           </div>
         </div>
-      </div>
-    </main>
+
+      </main>
+    </>
   )
 }

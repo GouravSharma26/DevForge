@@ -3,6 +3,7 @@
 import { useAuthStore } from "@/store/auth.store"
 import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
+import { Anvil } from "lucide-react"
 
 // ─── Tiny reusable styles ────────────────────────────────────────────────────
 const mono = "JetBrains Mono, monospace"
@@ -298,12 +299,22 @@ export default function LandingPage() {
   const hydrated = useAuthStore((s) => s.hydrated)
   const [hoveredFeature, setHoveredFeature] = useState<number | null>(null)
 
+  useEffect(() => {
+    if (hydrated && token) {
+      router.push("/dashboard")
+    }
+  }, [hydrated, token, router])
+
   function handleCTA() {
     if (hydrated && token) {
-      router.push("/")       // already logged in → go to news feed
+      router.push("/dashboard")
     } else {
-      router.push("/login")  // not logged in → go to login
+      router.push("/login")
     }
+  }
+  
+  if (!hydrated) {
+    return <div style={{ background: "#171210", minHeight: "100vh" }} />
   }
 
   return (
@@ -337,7 +348,7 @@ export default function LandingPage() {
         {/* ════════════════════════════════════════════
             HERO
         ════════════════════════════════════════════ */}
-        <section style={{
+        <section id="hero" style={{
           minHeight: "92vh", display: "flex", flexDirection: "column",
           alignItems: "center", justifyContent: "center",
           padding: "80px 24px 60px", textAlign: "center",
@@ -582,7 +593,7 @@ export default function LandingPage() {
         {/* ════════════════════════════════════════════
             CTA
         ════════════════════════════════════════════ */}
-        <section style={{ padding: "100px 24px", borderTop: "1px solid rgba(255,180,120,0.14)" }}>
+        <section id="cta" style={{ padding: "100px 24px", borderTop: "1px solid rgba(255,180,120,0.14)" }}>
           <div style={{
             maxWidth: 700, margin: "0 auto", textAlign: "center",
             background: "linear-gradient(135deg, rgba(234,88,12,0.05), rgba(217,119,6,0.02))",
@@ -600,7 +611,9 @@ export default function LandingPage() {
             }} />
 
             <div style={{ position: "relative" }}>
-              <div style={{ fontSize: 48, marginBottom: 24 }}>⚔️</div>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 24, color: "#ea580c" }}>
+                <Anvil size={48} strokeWidth={2} />
+              </div>
               <h2 style={{
                 fontSize: "clamp(22px, 4vw, 36px)", fontWeight: 900,
                 color: "#fdf6f0", marginBottom: 16, fontFamily: mono,
@@ -670,7 +683,7 @@ export default function LandingPage() {
                 background: "linear-gradient(135deg, #ea580c, #d97706)",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                <span style={{ color: "#fff", fontSize: 12 }}>⚔</span>
+                <Anvil size={14} className="text-white" strokeWidth={3} />
               </div>
               <span style={{ fontWeight: 700, fontSize: 14, color: "#fdf6f0", fontFamily: mono }}>
                 Dev<span style={{ color: "#ea580c" }}>Forge</span>
