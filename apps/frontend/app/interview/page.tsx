@@ -99,9 +99,10 @@ export default function InterviewHubPage() {
               height: 140,
               background: "linear-gradient(135deg, rgba(234,88,12,0.15) 0%, rgba(217,119,6,0.05) 100%)",
               borderBottom: "1px solid rgba(255,180,120,0.14)",
-              display: "flex", alignItems: "center", justifyContent: "center"
+              display: "flex", alignItems: "center", justifyContent: "center",
+              overflow: "hidden"
             }}>
-              <span style={{ fontSize: 48 }}>⚔️</span>
+              <img src="/images/interview_standard_banner.png" alt="Standard Mock" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
             <div style={{ padding: 20, flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div>
@@ -140,9 +141,10 @@ export default function InterviewHubPage() {
               height: 140,
               background: "linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(5,150,105,0.05) 100%)",
               borderBottom: "1px solid rgba(255,180,120,0.14)",
-              display: "flex", alignItems: "center", justifyContent: "center"
+              display: "flex", alignItems: "center", justifyContent: "center",
+              overflow: "hidden"
             }}>
-              <span style={{ fontSize: 48 }}>🤖</span>
+              <img src="/images/interview_ai_banner.png" alt="AI Agent" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
             <div style={{ padding: 20, flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div>

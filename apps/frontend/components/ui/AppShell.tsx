@@ -1,13 +1,19 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { Anvil } from "lucide-react"
 import { Navbar } from "./Navbar"
 import { useAuthStore } from "@/store/auth.store"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(true)
   const [scrolled, setScrolled] = useState(false)
   const token = useAuthStore((s) => s.token)
+  const hydrated = useAuthStore((s) => s.hydrated)
+  const pathname = usePathname()
+  const isLandingPage = pathname === "/"
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,7 +31,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Dynamic Header */}
       <header 
         className={`fixed z-[60] h-14 flex items-center justify-between px-4 transition-all duration-700 ease-in-out backdrop-blur-xl ${
-          scrolled 
+          scrolled && isLandingPage
             ? "top-4 left-4 right-4 rounded-2xl bg-surface-container/80 border border-white/10 shadow-lg max-w-[1200px] mx-auto"
             : "top-0 left-0 right-0 border-b border-white/10 bg-background/50"
         }`}
@@ -44,24 +50,42 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </button>
         )}
-        <a href="/" className="flex items-center gap-2.5">
+        <Link href={token ? "/dashboard" : "/"} className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#ea580c] to-[#f59e0b] flex items-center justify-center">
-            <span className="text-white text-xs font-bold">⚔</span>
+            <Anvil size={14} className="text-white" strokeWidth={3} />
           </div>
           <span className="font-mono font-bold text-sm text-transparent bg-clip-text bg-gradient-to-r from-[#ea580c] to-[#f59e0b]">
             DevForge
           </span>
-        </a>
+        </Link>
         </div>
+        
+        {!token && hydrated && (
+          <>
+            <nav className="hidden md:flex items-center gap-6 font-mono text-sm text-[#8a7a6a]">
+              <button onClick={() => document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" })} className="hover:text-[#fdf6f0] transition-colors cursor-pointer">Master the Code</button>
+              <button onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })} className="hover:text-[#fdf6f0] transition-colors cursor-pointer">7 features</button>
+              <button onClick={() => document.getElementById("cta")?.scrollIntoView({ behavior: "smooth" })} className="hover:text-[#fdf6f0] transition-colors cursor-pointer">Level up</button>
+            </nav>
+            <div className="flex items-center gap-4 font-mono">
+              <Link href="/login" className="text-sm font-medium text-[#d4a373] hover:text-[#fdf6f0] transition-colors">
+                Log in
+              </Link>
+              <Link href="/login?register=true" className="text-sm font-bold bg-[linear-gradient(135deg,#ea580c,#d97706)] text-[#fdf6f0] px-4 py-1.5 rounded-lg shadow-[0_4px_24px_rgba(234,88,12,0.4)] hover:shadow-[0_8px_32px_rgba(234,88,12,0.6)] transition-all">
+                Sign up
+              </Link>
+            </div>
+          </>
+        )}
       </header>
 
       <Navbar open={open} />
 
       <div
-        className={`transition-[margin] duration-300 ${token && open ? "ml-56" : "ml-0"}`}
+        className={`transition-[margin] duration-300 ${token && open ? "ml-[252px]" : "ml-0"}`}
         style={{ minHeight: "calc(100vh - 56px)" }}
       >
-        {children}
+        {hydrated ? children : null}
       </div>
     </>
   )

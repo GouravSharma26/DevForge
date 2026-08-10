@@ -1,15 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { api } from "@/lib/api"
 import type { Resume, Interview, JDMatch } from "@devforge/shared-types"
+import { useAuthStore } from "@/store/auth.store"
 
 // ─── Fetch List of Resumes ───
 export function useResumes() {
+  const token = useAuthStore((s) => s.token)
   return useQuery<Resume[]>({
     queryKey: ["resumes"],
     queryFn: async () => {
       const res = await api.get("/resume")
       return res.data.data
     },
+    enabled: !!token,
   })
 }
 
@@ -154,12 +157,14 @@ export function useRunGrandmasterCode(interviewId: string) {
 }
 
 export function useInterviews() {
+  const token = useAuthStore((s) => s.token)
   return useQuery<Interview[]>({
     queryKey: ["interviews"],
     queryFn: async () => {
       const res = await api.get("/resume/interviews")
       return res.data.data
     },
+    enabled: !!token,
   })
 }
 
