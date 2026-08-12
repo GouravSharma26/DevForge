@@ -71,7 +71,7 @@ export default function ResumeHubPage() {
     if (!file) return
     setIsUploading(true)
     try {
-      const res = await uploadResume.mutateAsync(file)
+      const res = await uploadResume.mutateAsync({ file, skipAI: false })
       router.push(`/resume/${res.id}`)
     } catch (err: any) {
       alert("Upload failed: " + err.message)

@@ -28,6 +28,20 @@ export function useResume(id: string) {
   })
 }
 
+export function useAnalyzeResume(id: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async () => {
+      const res = await api.post(`/resume/${id}/analyze`)
+      return res.data.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["resume", id] })
+      queryClient.invalidateQueries({ queryKey: ["resumes"] })
+    }
+  })
+}
+
 export function useUpdateResume(id: string) {
   const queryClient = useQueryClient()
   return useMutation({
@@ -51,10 +65,11 @@ export function useUpdateResume(id: string) {
 export function useUploadResume() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async ({ file, skipAI = false }: { file: File, skipAI?: boolean }) => {
       const form = new FormData()
       form.append("file", file)
-      const res = await api.post("/resume/upload", form, {
+      const url = skipAI ? "/resume/upload?skipAI=true" : "/resume/upload"
+      const res = await api.post(url, form, {
         headers: { "Content-Type": "multipart/form-data" },
       })
       return res.data.data
