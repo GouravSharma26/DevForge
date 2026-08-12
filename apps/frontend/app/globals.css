@@ -1,9 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@450;600;700&display=swap');
 @import "tailwindcss";
-@config "../tailwind.config.mjs";
-
 @layer base {
-  :root {
+  :root, .ember {
+    /* EMBER GLASS THEME (Default) */
+    --bg-base: #171210;
+    --bg-surface: #1c1614;
+    --bg-card: rgba(255, 237, 213, 0.05);
+    --text-primary: #fdf6f0;
+    --text-secondary: #d4a373;
+    --text-muted: #8a7a6a;
+    --accent-primary: #ea580c;
+    --accent-light: #f59e0b;
+    --border-subtle: rgba(255, 180, 120, 0.14);
+    --glass-bg: rgba(255, 237, 213, 0.05);
+    --glass-border: rgba(255, 180, 120, 0.14);
+  }
+
+  .light {
     /* LIGHT THEME */
     --bg-base: #fdf6f0;
     --bg-surface: #ffffff;
@@ -31,21 +44,6 @@
     --border-subtle: rgba(255, 255, 255, 0.1);
     --glass-bg: rgba(25, 25, 25, 0.5);
     --glass-border: rgba(255, 255, 255, 0.1);
-  }
-
-  [data-theme="ember"] {
-    /* EMBER GLASS THEME */
-    --bg-base: #171210;
-    --bg-surface: #1c1614;
-    --bg-card: rgba(255, 237, 213, 0.05);
-    --text-primary: #fdf6f0;
-    --text-secondary: #d4a373;
-    --text-muted: #8a7a6a;
-    --accent-primary: #ea580c;
-    --accent-light: #f59e0b;
-    --border-subtle: rgba(255, 180, 120, 0.14);
-    --glass-bg: rgba(255, 237, 213, 0.05);
-    --glass-border: rgba(255, 180, 120, 0.14);
   }
 }
 
