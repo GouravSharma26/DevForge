@@ -12,6 +12,8 @@ export default function ProfilePage() {
   const deleteResume = useDeleteResume()
   const uploadResume = useUploadResume()
 
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -205,11 +207,7 @@ export default function ProfilePage() {
                       Check Score <ArrowRight size={14} />
                     </button>
                     <button 
-                      onClick={() => {
-                        if (confirm("Are you sure you want to delete this resume?")) {
-                          deleteResume.mutate(r.id)
-                        }
-                      }}
+                      onClick={() => setDeleteConfirmId(r.id)}
                       className="w-10 h-[38px] bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg text-red-500 flex items-center justify-center transition-colors shrink-0"
                     >
                       <Trash2 size={16} />
@@ -222,6 +220,41 @@ export default function ProfilePage() {
         </div>
 
       </div>
+
+      {/* ── Delete Confirmation Modal ── */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-[#1c1614] border border-white/10 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center mx-auto mb-4">
+                <Trash2 size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-[#fdf6f0] font-mono mb-2">Delete Resume?</h3>
+              <p className="text-[#8a7a6a] text-sm">
+                This action cannot be undone. This resume will be permanently removed from your profile.
+              </p>
+            </div>
+            <div className="flex border-t border-white/5">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 py-4 text-sm font-bold text-[#8a7a6a] hover:text-[#fdf6f0] hover:bg-white/5 transition-colors border-r border-white/5"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  deleteResume.mutate(deleteConfirmId)
+                  setDeleteConfirmId(null)
+                }}
+                className="flex-1 py-4 text-sm font-bold text-red-500 hover:bg-red-500/10 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </main>
   )
 }
