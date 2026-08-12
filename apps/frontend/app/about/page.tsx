@@ -71,17 +71,17 @@ export default function AboutPage() {
         
         <div className="p-6 rounded-2xl border border-white/5 bg-gradient-to-br from-[#1c1614] to-[#ef4444]/5 backdrop-blur-xl">
           <p className="text-[#8a7a6a] mb-6 leading-relaxed">
-            The Arena is where you put your skills to the ultimate test against AI bots representing different skill levels. It's a high-stakes environment where your performance heavily impacts your XP.
+            The Arena is where you put your skills to the ultimate test against real developers from around the world. It's a high-stakes competitive environment where your performance heavily impacts your XP. Compete, win, and level yourself up.
           </p>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="p-5 rounded-xl bg-white/5 border border-white/5">
               <h4 className="text-white font-bold mb-2 flex items-center gap-2 font-mono"><Zap size={16} className="text-[#eab308]" /> Matchmaking</h4>
-              <p className="text-sm text-[#8a7a6a]">You can challenge bots matching your current tier. Winning a match grants a massive XP boost, but losing will cost you. Choose your opponents wisely.</p>
+              <p className="text-sm text-[#8a7a6a]">You can challenge real developers matching your current tier. Winning a match grants a massive XP boost, but losing will cost you. Choose your opponents wisely.</p>
             </div>
             <div className="p-5 rounded-xl bg-white/5 border border-white/5">
-              <h4 className="text-white font-bold mb-2 flex items-center gap-2 font-mono"><Trophy size={16} className="text-[#eab308]" /> Grandmaster Bots</h4>
-              <p className="text-sm text-[#8a7a6a]">The ultimate challenge. Grandmaster bots possess near-perfect system design and algorithmic knowledge. Defeating one proves you are ready for top-tier tech companies.</p>
+              <h4 className="text-white font-bold mb-2 flex items-center gap-2 font-mono"><Trophy size={16} className="text-[#eab308]" /> Top Tier Competitors</h4>
+              <p className="text-sm text-[#8a7a6a]">The ultimate challenge. Face off against Grandmaster-level developers who possess near-perfect system design and algorithmic knowledge. Defeating them proves you belong at the top.</p>
             </div>
           </div>
         </div>
