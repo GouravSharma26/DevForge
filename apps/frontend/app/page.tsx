@@ -314,11 +314,11 @@ export default function LandingPage() {
   }
   
   if (!hydrated) {
-    return <div style={{ background: "#171210", minHeight: "100vh" }} />
+    return <div className="bg-base" />
   }
 
   return (
-    <div style={{ background: "#171210", minHeight: "100vh", fontFamily: mono, overflowX: "hidden" }}>
+    <div className="bg-base">
 
       {/* ── Background ambient glows & WebGL Shader ── */}
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}>
@@ -669,7 +669,7 @@ export default function LandingPage() {
         ════════════════════════════════════════════ */}
         <footer style={{
           borderTop: "1px solid rgba(255,180,120,0.14)", padding: "40px 24px",
-          background: "#171210",
+          background: "var(--bg-base)",
         }}>
           <div style={{
             maxWidth: 1100, margin: "0 auto",

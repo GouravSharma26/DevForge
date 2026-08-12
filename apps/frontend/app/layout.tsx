@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 import { Providers } from "@/components/Providers"
 import { AppShell } from "@/components/ui/AppShell"
+import { ThemeProvider } from "@/components/ThemeProvider"
 
 export const metadata: Metadata = {
   title: "DevForge",
@@ -10,18 +11,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body
-        className="min-h-screen antialiased"
-        style={{ 
-          background: "radial-gradient(circle at 30% 20%, #c2591b33, transparent 60%), radial-gradient(circle at 80% 80%, #7c2d1233, transparent 60%), #171210", 
-          color: "#fdf6f0" 
-        }}
-        suppressHydrationWarning
-      >
-        <Providers>
-          <AppShell>{children}</AppShell>
-        </Providers>
+    <html lang="en" suppressHydrationWarning>
+      <body className="min-h-screen antialiased bg-base text-primary">
+        <ThemeProvider attribute="class" defaultTheme="ember" enableSystem={false}>
+          <Providers>
+            <AppShell>{children}</AppShell>
+          </Providers>
+        </ThemeProvider>
       </body>
     </html>
   )

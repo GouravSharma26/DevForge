@@ -33,7 +33,7 @@ export default function ProblemsPage() {
   if (!hydrated || !token) return null
 
   return (
-    <main style={{ background: "#171210", minHeight: "100%" }}>
+    <main className="bg-base">
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 24px" }}>
         <div style={{ marginBottom: 28 }}>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "#f1f0ff", fontFamily: "JetBrains Mono, monospace" }}>

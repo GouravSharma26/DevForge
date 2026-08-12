@@ -7,6 +7,7 @@ import { Anvil, User, Settings, LogOut, Moon, Sun, Flame, HelpCircle } from "luc
 import { Navbar } from "./Navbar"
 import { useAuthStore } from "@/store/auth.store"
 import { useMe } from "@/hooks/useUser"
+import { useTheme } from "next-themes"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(true)
@@ -19,6 +20,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isLandingPage = pathname === "/"
   const [profileOpen, setProfileOpen] = useState(false)
   const { data: user } = useMe()
+  const { theme, setTheme } = useTheme()
 
   // Calculate Credits
   let displayCredits = ""
@@ -53,8 +55,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <header 
         className={`fixed z-[60] h-14 flex items-center justify-between px-4 transition-all duration-700 ease-in-out backdrop-blur-xl ${
           scrolled && isLandingPage
-            ? "top-4 left-4 right-4 rounded-2xl bg-surface-container/80 border border-white/10 shadow-lg max-w-[1200px] mx-auto"
-            : "top-0 left-0 right-0 border-b border-white/10 bg-background/50"
+            ? "top-4 left-4 right-4 rounded-2xl bg-surface-container/80 border border-border shadow-lg max-w-[1200px] mx-auto"
+            : "top-0 left-0 right-0 border-b border-border bg-background/50"
         }`}
       >
         <div className="flex items-center gap-3">
@@ -62,7 +64,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <button
             onClick={() => setOpen((o) => !o)}
             aria-label={open ? "Close menu" : "Open menu"}
-            className="w-9 h-9 rounded-lg bg-[#ea580c]/5 border border-[#ffb478]/14 flex items-center justify-center text-[#d4a373] hover:text-[#fdf6f0] hover:border-[#ea580c]/50 transition-all duration-200 shrink-0"
+            className="w-9 h-9 rounded-lg bg-accent/5 border border-[#ffb478]/14 flex items-center justify-center text-secondary hover:text-primary hover:border-accent/50 transition-all duration-200 shrink-0"
           >
             <div className="w-4 flex flex-col gap-[3px]">
               <span className={`h-[1.5px] bg-current transition-transform duration-200 ${open ? "rotate-45 translate-y-[4.5px]" : ""}`} />
@@ -72,10 +74,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         )}
         <Link href={token ? "/dashboard" : "/"} className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#ea580c] to-[#f59e0b] flex items-center justify-center">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-highlight flex items-center justify-center">
             <Anvil size={14} className="text-white" strokeWidth={3} />
           </div>
-          <span className="font-mono font-bold text-sm text-transparent bg-clip-text bg-gradient-to-r from-[#ea580c] to-[#f59e0b]">
+          <span className="font-mono font-bold text-sm text-transparent bg-clip-text bg-gradient-to-r from-accent to-highlight">
             DevForge
           </span>
         </Link>
@@ -83,16 +85,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         
         {!token && hydrated && (
           <>
-            <nav className="hidden md:flex items-center gap-6 font-mono text-sm text-[#8a7a6a]">
-              <button onClick={() => document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" })} className="hover:text-[#fdf6f0] transition-colors cursor-pointer">Master the Code</button>
-              <button onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })} className="hover:text-[#fdf6f0] transition-colors cursor-pointer">7 features</button>
-              <button onClick={() => document.getElementById("cta")?.scrollIntoView({ behavior: "smooth" })} className="hover:text-[#fdf6f0] transition-colors cursor-pointer">Level up</button>
+            <nav className="hidden md:flex items-center gap-6 font-mono text-sm text-muted">
+              <button onClick={() => document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" })} className="hover:text-primary transition-colors cursor-pointer">Master the Code</button>
+              <button onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })} className="hover:text-primary transition-colors cursor-pointer">7 features</button>
+              <button onClick={() => document.getElementById("cta")?.scrollIntoView({ behavior: "smooth" })} className="hover:text-primary transition-colors cursor-pointer">Level up</button>
             </nav>
             <div className="flex items-center gap-4 font-mono">
-              <Link href="/login" className="text-sm font-medium text-[#d4a373] hover:text-[#fdf6f0] transition-colors">
+              <Link href="/login" className="text-sm font-medium text-secondary hover:text-primary transition-colors">
                 Log in
               </Link>
-              <Link href="/login?register=true" className="text-sm font-bold bg-[linear-gradient(135deg,#ea580c,#d97706)] text-[#fdf6f0] px-4 py-1.5 rounded-lg shadow-[0_4px_24px_rgba(234,88,12,0.4)] hover:shadow-[0_8px_32px_rgba(234,88,12,0.6)] transition-all">
+              <Link href="/login?register=true" className="text-sm font-bold bg-[linear-gradient(135deg,#ea580c,#d97706)] text-primary px-4 py-1.5 rounded-lg shadow-[0_4px_24px_rgba(234,88,12,0.4)] hover:shadow-[0_8px_32px_rgba(234,88,12,0.6)] transition-all">
                 Sign up
               </Link>
             </div>
@@ -101,14 +103,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {token && hydrated && !isLandingPage && (
           <div className="relative flex items-center gap-3">
             {user && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1c1614] border border-[#ea580c]/30 shadow-[0_0_10px_rgba(234,88,12,0.1)]">
-                <span className="text-xs font-mono text-[#a39486]">Credits:</span>
-                <span className={`text-xs font-bold font-mono ${displayCredits === 'ult' ? 'text-[#f59e0b]' : 'text-[#ea580c]'}`}>{displayCredits}</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-theme border border-accent/30 shadow-[0_0_10px_rgba(234,88,12,0.1)]">
+                <span className="text-xs font-mono text-muted">Credits:</span>
+                <span className={`text-xs font-bold font-mono ${displayCredits === 'ult' ? 'text-highlight' : 'text-accent'}`}>{displayCredits}</span>
               </div>
             )}
             <button 
               onClick={() => setProfileOpen(!profileOpen)}
-              className="w-9 h-9 rounded-full bg-[#1f1a18] border border-white/5 flex items-center justify-center hover:bg-[#ea580c]/10 hover:border-[#ea580c]/30 hover:text-[#ea580c] transition-all text-[#8a7a6a]"
+              className="w-9 h-9 rounded-full bg-surface-theme border border-border flex items-center justify-center hover:bg-accent/10 hover:border-accent/30 hover:text-accent transition-all text-muted"
             >
               <User size={16} strokeWidth={2.5} />
             </button>
@@ -116,37 +118,46 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {profileOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
-                <div className="absolute right-0 top-12 w-56 rounded-xl border border-white/10 bg-[#171210]/95 backdrop-blur-xl shadow-2xl z-50 overflow-hidden font-mono text-sm">
+                <div className="absolute right-0 top-12 w-56 rounded-xl border border-border bg-base/95 backdrop-blur-xl shadow-2xl z-50 overflow-hidden font-mono text-sm">
                   <div className="p-2 space-y-1">
-                    <Link href="/profile" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#fdf6f0] hover:bg-white/5 transition-colors">
-                      <User size={16} className="text-[#a39486]" /> Profile
+                    <Link href="/profile" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-primary hover:bg-card transition-colors">
+                      <User size={16} className="text-muted" /> Profile
                     </Link>
-                    <Link href="/settings" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#fdf6f0] hover:bg-white/5 transition-colors">
-                      <Settings size={16} className="text-[#a39486]" /> Settings
+                    <Link href="/settings" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-primary hover:bg-card transition-colors">
+                      <Settings size={16} className="text-muted" /> Settings
                     </Link>
-                    <Link href="/about" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#fdf6f0] hover:bg-white/5 transition-colors">
-                      <HelpCircle size={16} className="text-[#a39486]" /> About
+                    <Link href="/about" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-primary hover:bg-card transition-colors">
+                      <HelpCircle size={16} className="text-muted" /> About
                     </Link>
                   </div>
                   
-                  <div className="h-px bg-white/5 w-full my-1" />
+                  <div className="h-px bg-card w-full my-1" />
                   
                   <div className="p-2">
-                    <div className="px-3 py-1.5 text-xs text-[#8a7a6a] uppercase tracking-wider mb-1">Theme</div>
+                    <div className="px-3 py-1.5 text-xs text-muted uppercase tracking-wider mb-1">Theme</div>
                     <div className="flex items-center justify-between gap-1">
-                      <button onClick={() => setProfileOpen(false)} className="flex-1 flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-white/5 text-[#8a7a6a] hover:text-[#fdf6f0] transition-colors">
+                      <button 
+                        onClick={() => { setTheme("dark"); setProfileOpen(false) }} 
+                        className={`flex-1 flex flex-col items-center gap-1.5 p-2 rounded-lg transition-colors ${theme === 'dark' ? 'text-accent bg-accent/10' : 'text-muted hover:bg-surface-theme/50 hover:text-primary'}`}
+                      >
                         <Moon size={16} /> <span className="text-[10px]">Dark</span>
                       </button>
-                      <button onClick={() => setProfileOpen(false)} className="flex-1 flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-white/5 text-[#ea580c] bg-[#ea580c]/10 transition-colors">
+                      <button 
+                        onClick={() => { setTheme("ember"); setProfileOpen(false) }} 
+                        className={`flex-1 flex flex-col items-center gap-1.5 p-2 rounded-lg transition-colors ${theme === 'ember' ? 'text-accent bg-accent/10' : 'text-muted hover:bg-surface-theme/50 hover:text-primary'}`}
+                      >
                         <Flame size={16} /> <span className="text-[10px]">Ember</span>
                       </button>
-                      <button onClick={() => setProfileOpen(false)} className="flex-1 flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-white/5 text-[#8a7a6a] hover:text-[#fdf6f0] transition-colors">
+                      <button 
+                        onClick={() => { setTheme("light"); setProfileOpen(false) }} 
+                        className={`flex-1 flex flex-col items-center gap-1.5 p-2 rounded-lg transition-colors ${theme === 'light' ? 'text-accent bg-accent/10' : 'text-muted hover:bg-surface-theme/50 hover:text-primary'}`}
+                      >
                         <Sun size={16} /> <span className="text-[10px]">Light</span>
                       </button>
                     </div>
                   </div>
                   
-                  <div className="h-px bg-white/5 w-full my-1" />
+                  <div className="h-px bg-card w-full my-1" />
                   
                   <div className="p-2">
                     <button 

@@ -73,7 +73,7 @@ async function handleSubmit() {
     padding: "12px 16px",
     borderRadius: 12,
     border: `1px solid ${focused === name ? "rgba(234,88,12,0.8)" : "rgba(255,180,120,0.14)"}`,
-    background: "#171210",
+    background: "var(--bg-base)",
     color: "#fdf6f0",
     fontSize: 13,
     fontFamily: mono,
@@ -85,7 +85,7 @@ async function handleSubmit() {
   return (
     <main style={{
       minHeight: "calc(100vh - 56px)",
-      background: "#171210",
+      background: "var(--bg-base)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",

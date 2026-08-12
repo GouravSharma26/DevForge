@@ -123,14 +123,14 @@ export default function ResumeDetailView() {
         <div style={{ background: "rgba(255,237,213,0.05)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,180,120,0.14)", borderRadius: 16, padding: 24 }}>
           {resume.score === 0 ? (
             <div className="flex flex-col items-center justify-center text-center py-8">
-              <h3 className="text-[#fdf6f0] font-bold text-lg mb-2 font-mono">Resume Not Analyzed</h3>
-              <p className="text-[#8a7a6a] text-sm max-w-md mb-6">
+              <h3 className="text-primary font-bold text-lg mb-2 font-mono">Resume Not Analyzed</h3>
+              <p className="text-muted text-sm max-w-md mb-6">
                 This resume was uploaded directly to your profile. Click the button below to parse it with our AI to generate a detailed score breakdown, skill extraction, and improvement suggestions.
               </p>
               <button
                 onClick={() => analyzeResume.mutate()}
                 disabled={analyzeResume.isPending}
-                className="bg-[#ea580c] hover:bg-[#ea580c]/80 text-white font-bold py-3 px-6 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="bg-accent hover:bg-[#ea580c]/80 text-white font-bold py-3 px-6 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {analyzeResume.isPending ? "Analyzing..." : "Calculate Score with AI"}
               </button>
@@ -266,10 +266,10 @@ export default function ResumeDetailView() {
                 value={jdText}
                 onChange={(e) => setJdText(e.target.value)}
                 placeholder="Paste the raw text of the job description here..."
-                style={{ width: "100%", height: 300, background: "#171210", border: "1px solid rgba(255,180,120,0.14)", borderRadius: 8, padding: 12, color: "#fdf6f0", fontFamily: "sans-serif", fontSize: 14, resize: "none", marginBottom: 16 }}
+                style={{ width: "100%", height: 300, background: "var(--bg-base)", border: "1px solid rgba(255,180,120,0.14)", borderRadius: 8, padding: 12, color: "#fdf6f0", fontFamily: "sans-serif", fontSize: 14, resize: "none", marginBottom: 16 }}
               />
             ) : (
-              <div style={{ width: "100%", height: 300, background: "#171210", border: "1px dashed rgba(255,180,120,0.14)", borderRadius: 8, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+              <div style={{ width: "100%", height: 300, background: "var(--bg-base)", border: "1px dashed rgba(255,180,120,0.14)", borderRadius: 8, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
                 <input 
                   type="file" 
                   accept="application/pdf"

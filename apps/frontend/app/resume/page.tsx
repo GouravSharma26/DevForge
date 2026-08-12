@@ -102,7 +102,7 @@ export default function ResumeHubPage() {
   const PreviewComponent = TEMPLATES.find(t => t.id === selectedPreviewId)?.component || ModernProfessional
 
   return (
-    <main style={{ display: "flex", height: "calc(100vh - 56px)", background: "#171210" }}>
+    <main style={{ display: "flex", height: "calc(100vh - 56px)", background: "var(--bg-base)" }}>
       
       {/* ── Left Column: Template Gallery ── */}
       <div style={{ width: "55%", minWidth: 600, display: "flex", flexDirection: "column", borderRight: "1px solid rgba(255,180,120,0.1)" }}>
@@ -117,7 +117,7 @@ export default function ResumeHubPage() {
           </div>
           <button 
             onClick={() => setScoreModalOpen(true)}
-            className="flex items-center gap-2 bg-[#ea580c]/10 hover:bg-[#ea580c]/20 border border-[#ea580c]/30 text-[#ea580c] px-4 py-2.5 rounded-xl font-bold text-sm transition-colors"
+            className="flex items-center gap-2 bg-accent/10 hover:bg-[#ea580c]/20 border border-accent/30 text-accent px-4 py-2.5 rounded-xl font-bold text-sm transition-colors"
           >
             <Target size={18} />
             Check Resume Score
@@ -212,62 +212,62 @@ export default function ResumeHubPage() {
       {/* Score Modal */}
       {scoreModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-[#1c1614] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-5 border-b border-white/5">
-              <h2 className="text-xl font-bold text-[#fdf6f0] font-mono flex items-center gap-2">
-                <Target className="text-[#ea580c]" /> Check Resume Score
+          <div className="bg-surface-theme border border-border rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-5 border-b border-border">
+              <h2 className="text-xl font-bold text-primary font-mono flex items-center gap-2">
+                <Target className="text-accent" /> Check Resume Score
               </h2>
-              <button onClick={() => setScoreModalOpen(false)} className="text-[#8a7a6a] hover:text-white transition-colors">
+              <button onClick={() => setScoreModalOpen(false)} className="text-muted hover:text-white transition-colors">
                 <X size={20} />
               </button>
             </div>
             
             <div className="p-6 flex flex-col gap-6">
               {/* Option 1: Upload */}
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center hover:bg-white/10 transition-colors">
+              <div className="bg-card border border-border rounded-xl p-6 text-center hover:bg-card transition-colors">
                 <input type="file" id="resume-upload" accept="application/pdf" className="hidden" onChange={handleUpload} disabled={isUploading} />
                 <label htmlFor="resume-upload" className="cursor-pointer flex flex-col items-center justify-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-[#ea580c]/20 text-[#ea580c] flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-[#ea580c]/20 text-accent flex items-center justify-center">
                     {isUploading ? (
-                      <div className="w-5 h-5 border-2 border-white/20 border-t-[#ea580c] rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-border border-t-[#ea580c] rounded-full animate-spin" />
                     ) : (
                       <Upload size={24} />
                     )}
                   </div>
                   <div>
-                    <h3 className="text-[#fdf6f0] font-bold font-mono">Upload New Resume</h3>
-                    <p className="text-[#8a7a6a] text-xs font-mono mt-1">Upload a PDF to instantly check its score</p>
+                    <h3 className="text-primary font-bold font-mono">Upload New Resume</h3>
+                    <p className="text-muted text-xs font-mono mt-1">Upload a PDF to instantly check its score</p>
                   </div>
                 </label>
               </div>
 
-              <div className="flex items-center gap-4 text-[#8a7a6a] font-mono text-xs uppercase before:content-[''] before:flex-1 before:h-[1px] before:bg-white/10 after:content-[''] after:flex-1 after:h-[1px] after:bg-white/10">
+              <div className="flex items-center gap-4 text-muted font-mono text-xs uppercase before:content-[''] before:flex-1 before:h-[1px] before:bg-card after:content-[''] after:flex-1 after:h-[1px] after:bg-card">
                 OR
               </div>
 
               {/* Option 2: Select Existing */}
               <div>
-                <h3 className="text-sm font-bold text-[#fdf6f0] font-mono mb-3">Select Existing Resume</h3>
+                <h3 className="text-sm font-bold text-primary font-mono mb-3">Select Existing Resume</h3>
                 <div className="max-h-48 overflow-y-auto pr-2 space-y-2 custom-scrollbar">
                   {resumesLoading ? (
-                    <p className="text-[#8a7a6a] text-xs font-mono text-center py-4">Loading...</p>
+                    <p className="text-muted text-xs font-mono text-center py-4">Loading...</p>
                   ) : resumes.length === 0 ? (
-                    <p className="text-[#8a7a6a] text-xs font-mono text-center py-4">No resumes found.</p>
+                    <p className="text-muted text-xs font-mono text-center py-4">No resumes found.</p>
                   ) : (
                     resumes.map(r => (
                       <button 
                         key={r.id}
                         onClick={() => router.push(`/resume/${r.id}`)}
-                        className="w-full text-left p-3 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-between group"
+                        className="w-full text-left p-3 rounded-lg border border-border bg-card hover:bg-card hover:border-border transition-all flex items-center justify-between group"
                       >
                         <div className="flex items-center gap-3">
-                          <FileText size={16} className="text-[#ea580c]" />
+                          <FileText size={16} className="text-accent" />
                           <div>
-                            <p className="text-sm font-bold text-[#fdf6f0]">{r.profileName}</p>
-                            <p className="text-xs text-[#8a7a6a] font-mono mt-0.5">Score: {r.score}/100</p>
+                            <p className="text-sm font-bold text-primary">{r.profileName}</p>
+                            <p className="text-xs text-muted font-mono mt-0.5">Score: {r.score}/100</p>
                           </div>
                         </div>
-                        <span className="text-xs text-[#8a7a6a] opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
+                        <span className="text-xs text-muted opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
                       </button>
                     ))
                   )}

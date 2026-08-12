@@ -104,7 +104,7 @@ export default function AdminDashboard() {
                     type="number" 
                     value={config.botQueueWaitTime}
                     onChange={e => setConfig({...config, botQueueWaitTime: Number(e.target.value)})}
-                    style={{ width: "100%", background: "#171210", border: "1px solid #332b26", borderRadius: 8, padding: "10px 14px", color: "#fdf6f0", fontFamily: "JetBrains Mono, monospace" }}
+                    style={{ width: "100%", background: "var(--bg-base)", border: "1px solid #332b26", borderRadius: 8, padding: "10px 14px", color: "#fdf6f0", fontFamily: "JetBrains Mono, monospace" }}
                   />
                   <p style={{ fontSize: 11, color: "#5a5780", marginTop: 6 }}>How long to wait before injecting a bot if no human joins.</p>
                 </div>
@@ -115,7 +115,7 @@ export default function AdminDashboard() {
                     type="number" 
                     value={config.baseTimeEasy}
                     onChange={e => setConfig({...config, baseTimeEasy: Number(e.target.value)})}
-                    style={{ width: "100%", background: "#171210", border: "1px solid #332b26", borderRadius: 8, padding: "10px 14px", color: "#fdf6f0", fontFamily: "JetBrains Mono, monospace" }}
+                    style={{ width: "100%", background: "var(--bg-base)", border: "1px solid #332b26", borderRadius: 8, padding: "10px 14px", color: "#fdf6f0", fontFamily: "JetBrains Mono, monospace" }}
                   />
                 </div>
               </div>
@@ -128,7 +128,7 @@ export default function AdminDashboard() {
                     type="number" step="0.1"
                     value={config.multBeginner}
                     onChange={e => setConfig({...config, multBeginner: Number(e.target.value)})}
-                    style={{ width: "100%", background: "#171210", border: "1px solid #332b26", borderRadius: 8, padding: "10px 14px", color: "#fdf6f0", fontFamily: "JetBrains Mono, monospace" }}
+                    style={{ width: "100%", background: "var(--bg-base)", border: "1px solid #332b26", borderRadius: 8, padding: "10px 14px", color: "#fdf6f0", fontFamily: "JetBrains Mono, monospace" }}
                   />
                 </div>
 
@@ -138,7 +138,7 @@ export default function AdminDashboard() {
                     type="number" step="0.1"
                     value={config.multIntermediate}
                     onChange={e => setConfig({...config, multIntermediate: Number(e.target.value)})}
-                    style={{ width: "100%", background: "#171210", border: "1px solid #332b26", borderRadius: 8, padding: "10px 14px", color: "#fdf6f0", fontFamily: "JetBrains Mono, monospace" }}
+                    style={{ width: "100%", background: "var(--bg-base)", border: "1px solid #332b26", borderRadius: 8, padding: "10px 14px", color: "#fdf6f0", fontFamily: "JetBrains Mono, monospace" }}
                   />
                 </div>
 
