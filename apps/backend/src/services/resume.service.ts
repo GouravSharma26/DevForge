@@ -19,7 +19,7 @@ You are an expert technical recruiter and resume analyst. Read this candidate's 
 
 Return ONLY valid JSON in this exact format (no markdown, no backticks):
 {
-  "redactedText": "Full extracted text of the resume, but with any emails, phone numbers, and physical addresses replaced with [EMAIL REDACTED], [PHONE REDACTED], or [ADDRESS REDACTED]. Do not summarize the text, preserve the full content as closely as possible, just redact the contact info.",
+  "originalText": "Full extracted text of the resume. Do not summarize the text, preserve the full content exactly as it is including emails, phone numbers, and addresses.",
   "skills": ["skill1", "skill2"],
   "experienceLevel": "JUNIOR" | "MID" | "SENIOR",
   "targetRole": "most likely role they're applying for",
@@ -93,7 +93,7 @@ Scoring criteria:
     const skillsMatch = rawText.match(/(?:skills|technologies|expertise)[^\n]*\n(.*?)(?:\n\n|\n[A-Z]|$)/is)
     
     parsed = {
-      redactedText: rawText,
+      originalText: rawText,
       skills: skillsMatch ? skillsMatch[1].split(/[,•|]/).map(s => s.trim()).filter(Boolean).slice(0, 10) : [],
       experienceLevel: "MID",
       targetRole: "Software Engineer",
@@ -113,13 +113,12 @@ Scoring criteria:
     }
   }
 
-  // Handle redaction fallback and regex backstop
-  let finalOriginalText = "[REDACTION_FAILED_OR_MISSING]"
-  if (parsed.redactedText && typeof parsed.redactedText === 'string' && parsed.redactedText.trim().length > 0) {
-    // Run our local regex backstop just in case the AI missed something
-    finalOriginalText = redactPII(parsed.redactedText)
+  // Handle text fallback
+  let finalOriginalText = "[TEXT_EXTRACTION_FAILED_OR_MISSING]"
+  if (parsed.originalText && typeof parsed.originalText === 'string' && parsed.originalText.trim().length > 0) {
+    finalOriginalText = parsed.originalText
   } else {
-    console.warn("⚠️ analyzeResume: redactedText was missing or empty in Gemini's response. Falling back to placeholder.")
+    console.warn("⚠️ analyzeResume: originalText was missing or empty in Gemini's response. Falling back to placeholder.")
   }
 
   // CHANGED: from upsert to create
