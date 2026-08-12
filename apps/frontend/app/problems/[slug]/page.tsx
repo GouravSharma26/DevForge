@@ -62,17 +62,53 @@ export default function ProblemPage() {
   if (!hydrated || !token) return null
 
   if (isLoading) return (
-    <div style={{ background: "#0d0d1a", height: "calc(100vh - 56px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 32, marginBottom: 12 }}>⚙️</div>
-        <p style={{ color: "#5a5780", fontFamily: mono, fontSize: 13 }}>Loading problem...</p>
+    <div className="bg-base" style={{ height: "calc(100vh - 56px)", overflow: "hidden" }}>
+      {/* Skeleton Top Bar */}
+      <div style={{
+        height: 48, borderBottom: "1px solid var(--border-subtle)",
+        background: "var(--glass-bg)", display: "flex", alignItems: "center",
+        padding: "0 16px", justifyContent: "space-between"
+      }}>
+        <div style={{ width: 120, height: 24, borderRadius: 8, background: "var(--bg-card)", animation: "pulse 2s infinite" }} />
+        <div style={{ width: 80, height: 28, borderRadius: 8, background: "var(--bg-card)", animation: "pulse 2s infinite" }} />
+      </div>
+
+      {/* Skeleton Split Panes */}
+      <div style={{ display: "flex", height: "calc(100vh - 56px - 48px)" }}>
+        {/* Left Pane (Description) */}
+        <div style={{ flex: 1, borderRight: "1px solid var(--border-subtle)", padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ width: "60%", height: 32, borderRadius: 8, background: "var(--bg-card)", animation: "pulse 2s infinite" }} />
+          <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ width: 60, height: 24, borderRadius: 12, background: "var(--bg-card)", animation: "pulse 2s infinite" }} />
+            <div style={{ width: 80, height: 24, borderRadius: 12, background: "var(--bg-card)", animation: "pulse 2s infinite" }} />
+          </div>
+          <div style={{ width: "100%", height: 16, borderRadius: 4, background: "var(--bg-card)", animation: "pulse 2s infinite", marginTop: 16 }} />
+          <div style={{ width: "90%", height: 16, borderRadius: 4, background: "var(--bg-card)", animation: "pulse 2s infinite" }} />
+          <div style={{ width: "95%", height: 16, borderRadius: 4, background: "var(--bg-card)", animation: "pulse 2s infinite" }} />
+          <div style={{ width: "80%", height: 16, borderRadius: 4, background: "var(--bg-card)", animation: "pulse 2s infinite" }} />
+        </div>
+        
+        {/* Right Pane (Editor) */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          {/* Editor Header */}
+          <div style={{ height: 40, borderBottom: "1px solid var(--border-subtle)", background: "var(--glass-bg)", display: "flex", alignItems: "center", padding: "0 16px" }}>
+            <div style={{ width: 100, height: 20, borderRadius: 4, background: "var(--bg-card)", animation: "pulse 2s infinite" }} />
+          </div>
+          {/* Editor Body */}
+          <div style={{ flex: 1, padding: 24, display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ width: "40%", height: 16, borderRadius: 4, background: "var(--bg-card)", animation: "pulse 2s infinite" }} />
+            <div style={{ width: "50%", height: 16, borderRadius: 4, background: "var(--bg-card)", animation: "pulse 2s infinite", marginLeft: 24 }} />
+            <div style={{ width: "60%", height: 16, borderRadius: 4, background: "var(--bg-card)", animation: "pulse 2s infinite", marginLeft: 24 }} />
+            <div style={{ width: "30%", height: 16, borderRadius: 4, background: "var(--bg-card)", animation: "pulse 2s infinite" }} />
+          </div>
+        </div>
       </div>
     </div>
   )
 
   if (!problem) return (
-    <div style={{ background: "#0d0d1a", height: "calc(100vh - 56px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <p style={{ color: "#5a5780", fontFamily: mono }}>Problem not found</p>
+    <div style={{ background: "var(--bg-base)", height: "calc(100vh - 56px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <p style={{ color: "var(--text-muted)", fontFamily: mono }}>Problem not found</p>
     </div>
   )
 
@@ -85,7 +121,7 @@ export default function ProblemPage() {
       <div style={{
         height: 48, flexShrink: 0,
         borderBottom: "1px solid var(--border-subtle)",
-        background: "rgba(23,18,16,0.5)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+        background: "var(--glass-bg)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
         display: "flex", alignItems: "center",
         justifyContent: "space-between",
         padding: "0 16px", gap: 12,
@@ -113,7 +149,7 @@ export default function ProblemPage() {
             ← Problems
           </button>
 
-          <div style={{ width: 1, height: 20, background: "#1f1f45", flexShrink: 0 }} />
+          <div style={{ width: 1, height: 20, background: "var(--border-subtle)", flexShrink: 0 }} />
 
           <span style={{
             fontSize: 13, fontWeight: 700, color: "var(--text-primary)",
@@ -405,7 +441,7 @@ export default function ProblemPage() {
                             padding: "6px 10px", fontSize: 11, fontFamily: mono,
                             color: r.passed ? "#10b981" : "#ef4444",
                           }}>
-                            {r.output || <span style={{ color: "#3a3760" }}>no output</span>}
+                            {r.output || <span style={{ color: "var(--text-muted)" }}>no output</span>}
                           </div>
                         </div>
                       </div>
@@ -430,7 +466,7 @@ export default function ProblemPage() {
             {activeTab === "results" && !results && (
               <div style={{ textAlign: "center", padding: "60px 0" }}>
                 <div style={{ fontSize: 32, marginBottom: 12 }}>🧪</div>
-                <p style={{ color: "#5a5780", fontFamily: mono, fontSize: 13 }}>
+                <p style={{ color: "var(--text-muted)", fontFamily: mono, fontSize: 13 }}>
                   Run your code to see results here
                 </p>
               </div>
@@ -448,12 +484,12 @@ export default function ProblemPage() {
             display: "flex", alignItems: "center",
             padding: "0 16px", gap: 8,
           }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#5a5780" }} />
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--text-muted)" }} />
             <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: mono }}>
               solution.{language === "javascript" ? "js" : "py"}
             </span>
             <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 10, color: "#3a3760", fontFamily: mono }}>
+              <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: mono }}>
                 {code.split("\n").length} lines
               </span>
             </div>
@@ -496,10 +532,10 @@ export default function ProblemPage() {
             display: "flex", alignItems: "center",
             padding: "0 16px", gap: 16,
           }}>
-            <span style={{ fontSize: 10, color: "#3a3760", fontFamily: mono }}>
+            <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: mono }}>
               {language === "javascript" ? "JavaScript (Node.js)" : "Python 3"}
             </span>
-            <span style={{ fontSize: 10, color: "#3a3760", fontFamily: mono }}>
+            <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: mono }}>
               UTF-8
             </span>
             {submit.isPending && (
