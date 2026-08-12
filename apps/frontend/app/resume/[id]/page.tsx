@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react"
 import { useRouter, useParams } from "next/navigation"
-import { useResume, useStartInterview, useDeleteResume, useForkResume, useJDMatches, useCreateJDMatch, useUploadJDMatch } from "@/hooks/useResume"
+import { useResume, useAnalyzeResume, useStartInterview, useDeleteResume, useForkResume, useJDMatches, useCreateJDMatch, useUploadJDMatch } from "@/hooks/useResume"
 
 const mono = "JetBrains Mono, monospace"
 const scoreColor = (s: number) => s >= 80 ? "#10b981" : s >= 60 ? "#eab308" : "#ef4444"
@@ -14,7 +14,8 @@ export default function ResumeDetailView() {
 
   const { data: resume, isLoading } = useResume(id)
   const { data: jdMatches = [], isLoading: jdMatchesLoading } = useJDMatches(id)
-
+  
+  const analyzeResume = useAnalyzeResume(id)
   const startInterview = useStartInterview()
   const deleteResume = useDeleteResume()
   const forkResume = useForkResume()
@@ -100,9 +101,15 @@ export default function ResumeDetailView() {
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <span style={{ fontSize: 26, fontWeight: 800, color: scoreColor(resume.score), fontFamily: mono }}>
-              {resume.score}<span style={{ fontSize: 14, color: "#8a7a6a" }}>/100</span>
-            </span>
+            {resume.score > 0 ? (
+              <span style={{ fontSize: 26, fontWeight: 800, color: scoreColor(resume.score), fontFamily: mono }}>
+                {resume.score}<span style={{ fontSize: 14, color: "#8a7a6a" }}>/100</span>
+              </span>
+            ) : (
+              <span style={{ fontSize: 26, fontWeight: 800, color: "#8a7a6a", fontFamily: mono }}>
+                NA
+              </span>
+            )}
             <button onClick={handleFork} disabled={forkResume.isPending} style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(253,186,116,0.45)", background: "rgba(217,119,6,0.18)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", color: "#fed7aa", cursor: "pointer", fontFamily: mono, fontSize: 13 }}>
               Fork
             </button>
@@ -114,25 +121,43 @@ export default function ResumeDetailView() {
 
         {/* Score breakdown */}
         <div style={{ background: "rgba(255,237,213,0.05)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,180,120,0.14)", borderRadius: 16, padding: 24 }}>
-          <p style={{ fontSize: 11, color: "#8a7a6a", fontFamily: mono, textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Score Breakdown</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {[
-              { label: "Skills Relevance",  score: resume.skillsScore },
-              { label: "Project Impact",     score: resume.projectsScore },
-              { label: "Writing Quality",    score: resume.writingScore },
-              { label: "ATS Compatibility",  score: resume.atsScore },
-            ].map(item => (
-              <div key={item.label}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                  <span style={{ fontSize: 12, color: "#8a7a6a", fontFamily: mono }}>{item.label}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: scoreColor(item.score), fontFamily: mono }}>{item.score}%</span>
-                </div>
-                <div style={{ height: 6, background: "rgba(255,237,213,0.05)", borderRadius: 99, overflow: "hidden" }}>
-                  <div style={{ height: "100%", borderRadius: 99, background: scoreGrad(item.score), width: `${item.score}%` }} />
-                </div>
+          {resume.score === 0 ? (
+            <div className="flex flex-col items-center justify-center text-center py-8">
+              <h3 className="text-[#fdf6f0] font-bold text-lg mb-2 font-mono">Resume Not Analyzed</h3>
+              <p className="text-[#8a7a6a] text-sm max-w-md mb-6">
+                This resume was uploaded directly to your profile. Click the button below to parse it with our AI to generate a detailed score breakdown, skill extraction, and improvement suggestions.
+              </p>
+              <button
+                onClick={() => analyzeResume.mutate()}
+                disabled={analyzeResume.isPending}
+                className="bg-[#ea580c] hover:bg-[#ea580c]/80 text-white font-bold py-3 px-6 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {analyzeResume.isPending ? "Analyzing..." : "Calculate Score with AI"}
+              </button>
+            </div>
+          ) : (
+            <>
+              <p style={{ fontSize: 11, color: "#8a7a6a", fontFamily: mono, textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Score Breakdown</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {[
+                  { label: "Skills Relevance",  score: resume.skillsScore },
+                  { label: "Project Impact",     score: resume.projectsScore },
+                  { label: "Writing Quality",    score: resume.writingScore },
+                  { label: "ATS Compatibility",  score: resume.atsScore },
+                ].map(item => (
+                  <div key={item.label}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                      <span style={{ fontSize: 12, color: "#8a7a6a", fontFamily: mono }}>{item.label}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: scoreColor(item.score), fontFamily: mono }}>{item.score}%</span>
+                    </div>
+                    <div style={{ height: 6, background: "rgba(255,237,213,0.05)", borderRadius: 99, overflow: "hidden" }}>
+                      <div style={{ height: "100%", borderRadius: 99, background: scoreGrad(item.score), width: `${item.score}%` }} />
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </div>
 
         {/* ─── NEW: JD Matching Section ─── */}

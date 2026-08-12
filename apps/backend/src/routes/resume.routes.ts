@@ -7,7 +7,10 @@ import {
   getUserResumes,
   getResumeById,
   deleteResume,
-  forkResume
+  forkResume,
+  getJDMatchesForResume,
+  matchJD,
+  matchJDPdf,
 } from "../services/resume.service"
 import {
   generateInterview,
@@ -147,15 +150,18 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
   app.post(
     "/upload",
     { preHandler: [authenticate] },
-    async (req, reply) => {
+    async (req: FastifyRequest<{ Querystring: { skipAI?: string } }>, reply) => {
       const { id: userId } = req.user as { id: string }
       const data = await req.file()
       if (!data) return reply.status(400).send({ success: false, error: "No file uploaded" })
       if (data.mimetype !== "application/pdf") return reply.status(400).send({ success: false, error: "Only PDF files allowed" })
       const buffer = await data.toBuffer()
       if (buffer.length > 5 * 1024 * 1024) return reply.status(400).send({ success: false, error: "File too large (max 5MB)" })
+      
+      const skipAI = req.query.skipAI === "true"
+      
       try {
-        const result = await analyzeResume(userId, buffer)
+        const result = await analyzeResume(userId, buffer, "PDF Upload", skipAI)
         return reply.send({ success: true, data: result.resume })
       } catch (err: any) {
         console.error("🚨 UPLOAD CRASH:", err)
@@ -186,6 +192,29 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
       const resume = await getResumeById(req.params.id, userId)
       if (!resume) return reply.status(404).send({ success: false, error: "Resume not found" })
       return reply.send({ success: true, data: resume })
+    }
+  )
+
+  // ─── NEW: Analyze existing resume ───
+  // POST /api/resume/:id/analyze
+  app.post(
+    "/:id/analyze",
+    { preHandler: [authenticate] },
+    async (req: FastifyRequest<{ Params: { id: string } }>, reply) => {
+      const { id: userId } = req.user as { id: string }
+      try {
+        const resume = await getResumeById(req.params.id, userId)
+        if (!resume) return reply.status(404).send({ success: false, error: "Resume not found" })
+        if (!resume.originalText) return reply.status(400).send({ success: false, error: "No original text found to analyze" })
+
+        // Re-analyze using the stored text by faking a buffer, or we need to modify analyzeResume to accept text directly.
+        // Actually, analyzeResume takes a pdfBuffer. If we pass a fake buffer, pdfParse will fail, but the AI prompt expects base64 pdf.
+        // We need a text-based analysis endpoint. Let's create it in service.
+        const updatedResume = await analyzeResumeFromText(userId, resume.id, resume.originalText)
+        return reply.send({ success: true, data: updatedResume })
+      } catch (err: any) {
+        return reply.status(500).send({ success: false, error: err.message })
+      }
     }
   )
 

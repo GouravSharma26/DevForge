@@ -11,8 +11,10 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
 
 // ─── Resume Analysis (Native PDF Parsing) ─────────────────────────────────────
 
-export async function analyzeResume(userId: string, pdfBuffer: Buffer, profileName: string = "PDF Upload") {
-  await consumeAiRequest(userId, prisma)
+export async function analyzeResume(userId: string, pdfBuffer: Buffer, profileName: string = "PDF Upload", skipAI: boolean = false) {
+  if (!skipAI) {
+    await consumeAiRequest(userId, prisma)
+  }
 
   const prompt = `
 You are an expert technical recruiter and resume analyst. Read this candidate's resume and return a JSON response.
@@ -52,30 +54,32 @@ Scoring criteria:
   let retries = 5;
   let delay = 5000; 
 
-  while (retries > 0) {
-    try {
-      result = await model.generateContent([
-        prompt,
-        {
-          inlineData: {
-            data: pdfBuffer.toString("base64"),
-            mimeType: "application/pdf",
+  if (!skipAI) {
+    while (retries > 0) {
+      try {
+        result = await model.generateContent([
+          prompt,
+          {
+            inlineData: {
+              data: pdfBuffer.toString("base64"),
+              mimeType: "application/pdf",
+            },
           },
-        },
-      ])
-      break; 
-    } catch (error: any) {
-      const isRateLimit = error.status === 503 || error.status === 429 || 
-                          (error.message && (error.message.includes("429") || error.message.includes("503") || error.message.includes("exhausted") || error.message.includes("quota")));
-      
-      if (isRateLimit && retries > 1) {
-        console.warn(`⏳ Gemini API busy/rate-limited. Retrying in ${delay / 1000} seconds...`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        retries--;
-        delay *= 2; 
-      } else {
-        console.warn("⚠️ Rate limit exhausted! Switching to Regex Fallback in analyzeResume...")
+        ])
         break; 
+      } catch (error: any) {
+        const isRateLimit = error.status === 503 || error.status === 429 || 
+                            (error.message && (error.message.includes("429") || error.message.includes("503") || error.message.includes("exhausted") || error.message.includes("quota")));
+        
+        if (isRateLimit && retries > 1) {
+          console.warn(`⏳ Gemini API busy/rate-limited. Retrying in ${delay / 1000} seconds...`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          retries--;
+          delay *= 2; 
+        } else {
+          console.warn("⚠️ Rate limit exhausted! Switching to Regex Fallback in analyzeResume...")
+          break; 
+        }
       }
     }
   }
@@ -97,8 +101,8 @@ Scoring criteria:
       skills: skillsMatch ? skillsMatch[1].split(/[,•|]/).map(s => s.trim()).filter(Boolean).slice(0, 10) : [],
       experienceLevel: "MID",
       targetRole: "Software Engineer",
-      scores: { skills: 50, projects: 50, writing: 50, ats: 50, overall: 50 },
-      gaps: ["Regex fallback active, details limited."],
+      scores: { skills: 0, projects: 0, writing: 0, ats: 0, overall: 0 },
+      gaps: skipAI ? [] : ["Regex fallback active, details limited."],
       suggestions: []
     }
   } else {
@@ -141,6 +145,100 @@ Scoring criteria:
   })
 
   return { resume, raw: parsed }
+}
+
+export async function analyzeResumeFromText(userId: string, resumeId: string, text: string) {
+  await consumeAiRequest(userId, prisma)
+
+  const prompt = `
+You are an expert technical recruiter and resume analyst. Read this candidate's resume and return a JSON response.
+
+Return ONLY valid JSON in this exact format (no markdown, no backticks):
+{
+  "skills": ["skill1", "skill2"],
+  "experienceLevel": "JUNIOR" | "MID" | "SENIOR",
+  "targetRole": "most likely role they're applying for",
+  "scores": {
+    "skills": 0-100,
+    "projects": 0-100,
+    "writing": 0-100,
+    "ats": 0-100,
+    "overall": 0-100
+  },
+  "gaps": ["missing skill 1", "missing skill 2"],
+  "suggestions": [
+    {
+      "section": "Summary" | "Skills" | "Projects" | "Experience" | "General",
+      "issue": "what is wrong",
+      "fix": "how to fix it"
+    }
+  ]
+}
+
+Scoring criteria:
+- skills: Are they relevant and modern? Are they listed clearly?
+- projects: Do they show impact with metrics? Are they described well?
+- writing: Action verbs, concise bullets, no typos, professional tone?
+- ats: Keywords present, standard section names, no tables/columns?
+- overall: Weighted average
+
+Resume Text:
+${text}
+`
+
+  let result;
+  let retries = 5;
+  let delay = 5000; 
+  let parsed;
+
+  while (retries > 0) {
+    try {
+      result = await model.generateContent(prompt)
+      
+      const responseText = result.response.text().trim()
+      try {
+        parsed = JSON.parse(responseText)
+      } catch {
+        const match = responseText.match(/\{[\s\S]*\}/)
+        if (!match) throw new Error("Failed to parse AI response")
+        parsed = JSON.parse(match[0])
+      }
+      break; 
+    } catch (error: any) {
+      const isRateLimit = error.status === 503 || error.status === 429 || 
+                          (error.message && (error.message.includes("429") || error.message.includes("503") || error.message.includes("exhausted") || error.message.includes("quota")));
+      
+      if (isRateLimit && retries > 1) {
+        console.warn(`⏳ Gemini API busy/rate-limited. Retrying in ${delay / 1000} seconds...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        retries--;
+        delay *= 2; 
+      } else {
+        throw new Error("Failed to analyze resume from text due to AI error or rate limits.")
+      }
+    }
+  }
+
+  if (!parsed) throw new Error("Failed to analyze resume from text")
+
+  // Update Resume in DB
+  const updatedResume = await prisma.resume.update({
+    where: { id: resumeId, userId },
+    data: {
+      skills: parsed.skills || [],
+      experienceLevel: parsed.experienceLevel || "MID",
+      targetRole: parsed.targetRole || "Software Engineer",
+      skillsScore: parsed.scores?.skills || 50,
+      projectsScore: parsed.scores?.projects || 50,
+      writingScore: parsed.scores?.writing || 50,
+      atsScore: parsed.scores?.ats || 50,
+      score: parsed.scores?.overall || 50,
+      gaps: parsed.gaps || [],
+      suggestions: parsed.suggestions || [],
+    },
+  })
+
+  return updatedResume
 }
 
 // ─── Get Multiple Resumes ───────────────────────────────────────────────────

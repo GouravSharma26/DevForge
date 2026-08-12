@@ -18,7 +18,7 @@ export default function ProfilePage() {
     const file = e.target.files?.[0]
     if (!file) return
     try {
-      await uploadResume.mutateAsync(file)
+      await uploadResume.mutateAsync({ file, skipAI: true })
       alert("Resume uploaded successfully!")
     } catch (err: any) {
       alert("Upload failed: " + err.message)
@@ -183,11 +183,12 @@ export default function ProfilePage() {
                     <div className="flex flex-col items-end">
                       <span className="text-xs text-[#8a7a6a] font-mono mb-1">Score</span>
                       <div className={`px-3 py-1 rounded-full text-xs font-bold font-mono ${
+                        r.score === 0 ? 'bg-white/5 text-[#8a7a6a] border border-white/10' :
                         r.score >= 80 ? 'bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20' :
                         r.score >= 60 ? 'bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20' :
                         'bg-[#ef4444]/10 text-[#ef4444] border border-[#ef4444]/20'
                       }`}>
-                        {r.score}/100
+                        {r.score === 0 ? 'NA' : `${r.score}/100`}
                       </div>
                     </div>
                   </div>
