@@ -37,7 +37,7 @@ export async function generateResumeWithAI(userId: string, sections: any[], resu
   }
 
   const context = resume
-    ? `Original Resume Text from PDF:\n${resume.redactedText}\n\nAdditional Info:\nSkills: ${(Array.isArray(resume.skills) ? resume.skills : []).join(", ")}\nExperience Level: ${resume.experienceLevel || "Mid"}\nTarget Role: ${resume.targetRole || "Software Developer"}`
+    ? `Original Resume Text from PDF:\n${resume.originalText}\n\nAdditional Info:\nSkills: ${(Array.isArray(resume.skills) ? resume.skills : []).join(", ")}\nExperience Level: ${resume.experienceLevel || "Mid"}\nTarget Role: ${resume.targetRole || "Software Developer"}`
     : "Software Developer with experience in web development"
 
   const prompt = `
@@ -85,7 +85,7 @@ Do not change section types or IDs. Do not include markdown code block formattin
   }
 
   if (!result) {
-    const rawText = resume?.redactedText || ""
+    const rawText = resume?.originalText || ""
     const emailMatch = rawText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)
     const phoneMatch = rawText.match(/(\+\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/)
     
@@ -98,7 +98,7 @@ Do not change section types or IDs. Do not include markdown code block formattin
           ...sec,
           data: {
             ...sec.data,
-            fullName: nameStr,
+            name: nameStr,
             email: emailMatch ? emailMatch[0] : "candidate@example.com",
             phone: phoneMatch ? phoneMatch[0] : "+1 234 567 8900",
           }
