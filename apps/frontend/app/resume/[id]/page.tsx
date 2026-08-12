@@ -266,10 +266,10 @@ export default function ResumeDetailView() {
                 value={jdText}
                 onChange={(e) => setJdText(e.target.value)}
                 placeholder="Paste the raw text of the job description here..."
-                style={{ width: "100%", height: 300, background: "var(--bg-base)", border: "1px solid var(--border-subtle)", borderRadius: 8, padding: 12, color: "rgb(var(--text-primary))", fontFamily: "sans-serif", fontSize: 14, resize: "none", marginBottom: 16 }}
+                style={{ width: "100%", height: 300, background: "rgb(var(--bg-base))", border: "1px solid var(--border-subtle)", borderRadius: 8, padding: 12, color: "rgb(var(--text-primary))", fontFamily: "sans-serif", fontSize: 14, resize: "none", marginBottom: 16 }}
               />
             ) : (
-              <div style={{ width: "100%", height: 300, background: "var(--bg-base)", border: "1px dashed var(--border-subtle)", borderRadius: 8, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+              <div style={{ width: "100%", height: 300, background: "rgb(var(--bg-base))", border: "1px dashed var(--border-subtle)", borderRadius: 8, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
                 <input 
                   type="file" 
                   accept="application/pdf"

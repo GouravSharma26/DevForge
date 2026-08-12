@@ -335,7 +335,7 @@ export default function InterviewPage() {
                     <div style={{ padding: "14px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
                       <div>
                         <p style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Your answer</p>
-                        <p style={{ fontSize: 12, color: "rgb(var(--text-secondary))", fontFamily: mono, lineHeight: 1.7, margin: 0, background: "var(--bg-base)", padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(var(--border-subtle-rgb),0.08)" }}>
+                        <p style={{ fontSize: 12, color: "rgb(var(--text-secondary))", fontFamily: mono, lineHeight: 1.7, margin: 0, background: "rgb(var(--bg-base))", padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(var(--border-subtle-rgb),0.08)" }}>
                           {q.userAnswer}
                         </p>
                       </div>
