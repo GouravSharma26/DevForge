@@ -3,14 +3,12 @@ import { authenticate } from "../plugins/authenticate"
 import { PrismaClient } from "@prisma/client"
 import {
   analyzeResume,
+  analyzeExistingResumeText,
   analyzeResumeFromText,
   getUserResumes,
   getResumeById,
   deleteResume,
   forkResume,
-  getJDMatchesForResume,
-  matchJD,
-  matchJDPdf,
 } from "../services/resume.service"
 import {
   generateInterview,
@@ -210,7 +208,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
         // Re-analyze using the stored text by faking a buffer, or we need to modify analyzeResume to accept text directly.
         // Actually, analyzeResume takes a pdfBuffer. If we pass a fake buffer, pdfParse will fail, but the AI prompt expects base64 pdf.
         // We need a text-based analysis endpoint. Let's create it in service.
-        const updatedResume = await analyzeResumeFromText(userId, resume.id, resume.originalText)
+        const updatedResume = await analyzeExistingResumeText(userId, resume.id, resume.originalText)
         return reply.send({ success: true, data: updatedResume })
       } catch (err: any) {
         return reply.status(500).send({ success: false, error: err.message })

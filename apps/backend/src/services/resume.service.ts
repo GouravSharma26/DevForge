@@ -147,7 +147,7 @@ Scoring criteria:
   return { resume, raw: parsed }
 }
 
-export async function analyzeResumeFromText(userId: string, resumeId: string, text: string) {
+export async function analyzeExistingResumeText(userId: string, resumeId: string, text: string) {
   await consumeAiRequest(userId, prisma)
 
   const prompt = `
