@@ -5,6 +5,7 @@ import { useMe } from "@/hooks/useUser"
 import { useResumes, useDeleteResume, useUploadResume } from "@/hooks/useResume"
 import { useRouter } from "next/navigation"
 import { Flame, Trophy, Star, Edit3, Mail, Target, Clock, Shield, FileText, Plus, Trash2, ArrowRight } from "lucide-react"
+import { calculateRank } from "@/lib/rank"
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -126,9 +127,25 @@ export default function ProfilePage() {
             <div className="w-12 h-12 rounded-xl bg-[#84cc16]/10 text-[#84cc16] flex items-center justify-center group-hover:scale-110 transition-transform">
               <Star size={24} />
             </div>
-            <div>
+            <div className="flex-1">
               <p className="text-[#8a7a6a] text-xs font-mono uppercase tracking-wider mb-1">Rank</p>
-              <p className="text-2xl font-bold font-mono capitalize">{user.experienceLevel.toLowerCase()}</p>
+              <p className="text-xl font-bold font-mono text-[#fdf6f0] mb-1">
+                {user ? calculateRank(user.xp).title : "Beginner 1"}
+              </p>
+              {user && calculateRank(user.xp).tier !== "Grandmaster" && (
+                <div className="w-full">
+                  <div className="flex justify-between text-[10px] text-[#8a7a6a] font-mono mb-1">
+                    <span>{calculateRank(user.xp).xpInCurrentLevel} XP</span>
+                    <span>{calculateRank(user.xp).xpRequiredForNextLevel} XP</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-[#84cc16] rounded-full transition-all" 
+                      style={{ width: `${calculateRank(user.xp).progressPercentage}%` }} 
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
