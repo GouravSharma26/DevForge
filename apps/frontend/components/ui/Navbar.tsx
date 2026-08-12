@@ -2,14 +2,14 @@
 
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
-import { LayoutDashboard, Newspaper, FileText, Mic, Puzzle, Zap, Anvil } from "lucide-react"
+import { LayoutDashboard, Newspaper, FileText, Mic, Puzzle, Zap, Anvil, Shield } from "lucide-react"
 import { useAuthStore } from "@/store/auth.store"
 import { useInterviews } from "@/hooks/useResume"
 
 export function Navbar({ open }: { open: boolean }) {
   const pathname = usePathname()
   const router = useRouter()
-  const token = useAuthStore((s) => s.token)
+  const { token, user } = useAuthStore()
   
   const { data: interviews } = useInterviews()
   const completedInterviews = interviews?.filter((i: any) => i.status === "COMPLETED") || []
@@ -67,6 +67,13 @@ export function Navbar({ open }: { open: boolean }) {
         <GroupTitle>Practice</GroupTitle>
         <NavItem href="/problems" label="Problems" icon={Puzzle} />
         <NavItem href="/arena" label="PvP Arena" icon={Zap} />
+
+        {user?.role === "ADMIN" && (
+          <>
+            <GroupTitle>System</GroupTitle>
+            <NavItem href="/admin" label="Admin Panel" icon={Shield} />
+          </>
+        )}
       </div>
 
       <div className="mt-auto pt-4 flex flex-col gap-3">

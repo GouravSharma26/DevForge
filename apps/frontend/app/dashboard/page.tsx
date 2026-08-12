@@ -5,15 +5,21 @@ import { useRouter } from "next/navigation"
 import { Flame, Crown, Mic, Puzzle, Zap, FileText, Route } from "lucide-react"
 import { useAuthStore } from "@/store/auth.store"
 import { useResumes, useInterviews } from "@/hooks/useResume"
+import { useMatchHistory } from "@/hooks/useArena"
+import { useMe } from "@/hooks/useUser"
 
 export default function DashboardPage() {
   const router = useRouter()
   const token = useAuthStore((s) => s.token)
   const hydrated = useAuthStore((s) => s.hydrated)
-  const user = useAuthStore((s) => s.user)
+  const authUser = useAuthStore((s) => s.user)
+
+  const { data: dbUser } = useMe()
+  const user = dbUser || authUser
 
   const { data: resumes, isLoading: resumesLoading } = useResumes()
   const { data: interviews, isLoading: interviewsLoading } = useInterviews()
+  const { data: matches, isLoading: matchesLoading } = useMatchHistory()
 
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
@@ -26,6 +32,10 @@ export default function DashboardPage() {
 
   // Process data from existing backend hooks
   const completedInterviews = interviews?.filter((i: any) => i.status === "COMPLETED") || []
+  const completedMatches = matches || []
+  const matchesPlayed = completedMatches.length
+  const matchesWon = completedMatches.filter((m: any) => m.winnerId === user?.id).length
+  const arenaWinRate = matchesPlayed > 0 ? Math.round((matchesWon / matchesPlayed) * 100) : 0
   
   // Same calculation logic the old dashboard used for the raw average score:
   const avgScore = completedInterviews.length > 0 
@@ -45,6 +55,12 @@ export default function DashboardPage() {
     return `${months[d.getMonth()]} ${d.getDate()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
   }
 
+  // Combine interviews and matches for the unified forge log, sorted by date
+  const forgeLogActivities = [
+    ...completedInterviews.map((i: any) => ({ ...i, type: 'INTERVIEW', date: new Date(i.createdAt) })),
+    ...completedMatches.map((m: any) => ({ ...m, type: 'MATCH', date: new Date(m.endedAt || m.createdAt) }))
+  ].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 8)
+
   // Calculate gauge SVG dash offset based on percentage
   const circumference = 452.4 // 2 * pi * 72
   const dashOffset = circumference - (readinessScore / 100) * circumference
@@ -60,8 +76,13 @@ export default function DashboardPage() {
             <h1 className="text-[22px] font-extrabold tracking-[-0.01em] mb-1">Welcome back, {user?.username || "Developer"}</h1>
             <p className="text-[13px] text-[#8a7a6a]">Your forge has been idle for 2 days — the readiness score is still holding.</p>
           </div>
-          <div className="flex items-center gap-2 bg-[rgba(255,237,213,0.05)] border border-[rgba(255,180,120,0.14)] px-3.5 py-2 rounded-[10px] text-[12px]">
-            <Flame size={14} className="text-[#ea580c]" /> {user?.streak || 0}-day streak
+          <div className="flex gap-2">
+            <div className="flex items-center gap-2 bg-[rgba(255,237,213,0.05)] border border-[rgba(255,180,120,0.14)] px-3.5 py-2 rounded-[10px] text-[12px]">
+              <span className="font-bold text-[#fdf6f0]">{user?.xp || 0}</span> <span className="text-[#8a7a6a]">XP</span>
+            </div>
+            <div className="flex items-center gap-2 bg-[rgba(255,237,213,0.05)] border border-[rgba(255,180,120,0.14)] px-3.5 py-2 rounded-[10px] text-[12px]">
+              <Flame size={14} className="text-[#ea580c]" /> {user?.streak || 0}-day streak
+            </div>
           </div>
         </div>
 
@@ -206,13 +227,15 @@ export default function DashboardPage() {
                 <div className="text-[20px] font-extrabold">{lastInterviewScore} <span className="text-[11px] text-[#8a7a6a] font-medium">/ 100</span></div>
               </div>
               
-              <div className="bg-[rgba(255,237,213,0.05)] border border-[rgba(255,180,120,0.14)] rounded-[14px] p-4">
-                <div className="text-[10.5px] text-[#8a7a6a] uppercase tracking-[0.05em] mb-2.5">Arena rating</div>
-                <div className="h-1.5 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden mb-2.5">
-                  <div className="h-full bg-gradient-to-r from-[#ea580c] to-[#f59e0b] rounded-full" style={{ width: '0%' }}></div>
+              <div className="bg-[rgba(255,237,213,0.05)] border border-[rgba(255,180,120,0.14)] rounded-[14px] p-4 flex flex-col justify-between">
+                <div>
+                  <div className="text-[10.5px] text-[#8a7a6a] uppercase tracking-[0.05em] mb-2.5">Arena Win Rate</div>
+                  <div className="h-1.5 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden mb-2.5">
+                    <div className="h-full bg-gradient-to-r from-[#ea580c] to-[#f59e0b] rounded-full" style={{ width: `${arenaWinRate}%` }}></div>
+                  </div>
+                  <div className="text-[20px] font-extrabold">{arenaWinRate}% <span className="text-[11px] font-medium opacity-70">W/R</span></div>
                 </div>
-                <div className="text-[20px] font-extrabold text-[#8a7a6a]">--- <span className="text-[11px] font-medium opacity-70">ELO</span></div>
-                <div className="text-[9px] text-[#8a7a6a] mt-1 leading-tight">ELO API missing</div>
+                <div className="text-[10px] text-[#8a7a6a] leading-tight">Total Matches: {matchesPlayed}</div>
               </div>
             </div>
           </div>
@@ -224,32 +247,42 @@ export default function DashboardPage() {
             </div>
             
             <div className="flex flex-col">
-              {completedInterviews.length > 0 ? (
-                // Only populated with real data (interviews)
-                completedInterviews.slice(0, 5).map((interview: any) => (
-                  <div key={interview.id} className="flex gap-2.5 py-2.5 border-b border-[rgba(255,180,120,0.14)] last:border-0 text-[11.5px]">
-                    <div className={`w-1.5 h-1.5 rounded-full mt-[5px] shrink-0 ${interview.score > 80 ? 'bg-[#10b981]' : interview.score > 60 ? 'bg-[#eab308]' : 'bg-[#ef4444]'}`}></div>
-                    <div>
-                      <div className="font-semibold text-white">Mock Interview Protocol Graded — {interview.score}/100</div>
-                      <div className="text-[#8a7a6a] text-[10.5px] mt-0.5">{interview.jobTitle || 'General Software Engineer'} · {formatDate(interview.createdAt)}</div>
-                    </div>
-                  </div>
-                ))
+              {forgeLogActivities.length > 0 ? (
+                forgeLogActivities.map((activity: any) => {
+                  if (activity.type === 'INTERVIEW') {
+                    return (
+                      <div key={`int-${activity.id}`} className="flex gap-2.5 py-2.5 border-b border-[rgba(255,180,120,0.14)] last:border-0 text-[11.5px]">
+                        <div className={`w-1.5 h-1.5 rounded-full mt-[5px] shrink-0 ${activity.score > 80 ? 'bg-[#10b981]' : activity.score > 60 ? 'bg-[#eab308]' : 'bg-[#ef4444]'}`}></div>
+                        <div>
+                          <div className="font-semibold text-white">Mock Interview Protocol Graded — {activity.score}/100</div>
+                          <div className="text-[#8a7a6a] text-[10.5px] mt-0.5">{activity.jobTitle || 'General Software Engineer'} · {formatDate(activity.createdAt)}</div>
+                        </div>
+                      </div>
+                    )
+                  } else if (activity.type === 'MATCH') {
+                    const isWinner = activity.winnerId === user?.id
+                    const opponent = activity.player1Id === user?.id ? activity.player2 : activity.player1
+                    return (
+                      <div key={`match-${activity.id}`} className="flex gap-2.5 py-2.5 border-b border-[rgba(255,180,120,0.14)] last:border-0 text-[11.5px]">
+                        <div className={`w-1.5 h-1.5 rounded-full mt-[5px] shrink-0 ${isWinner ? 'bg-[#f59e0b]' : 'bg-[#ef4444]'}`}></div>
+                        <div>
+                          <div className="font-semibold text-white">
+                            {isWinner ? "🏆 Won" : "💀 Lost"} PvP Battle vs {opponent?.username || "Unknown"}
+                          </div>
+                          <div className="text-[#8a7a6a] text-[10.5px] mt-0.5">
+                            {activity.problem?.title || "Problem"} {isWinner ? "· +100 XP" : ""} · {formatDate(activity.endedAt || activity.createdAt)}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
+                  return null
+                })
               ) : (
                 <div className="text-[11.5px] text-[#8a7a6a] italic py-2">
-                  No mock interviews completed yet.
+                  No activity tracked yet.
                 </div>
               )}
-              
-              {/* Visible fallback for missing unified activity log */}
-              <div className="flex gap-2.5 py-2.5 border-t border-[rgba(255,180,120,0.14)] mt-2 text-[11.5px] opacity-60 bg-[rgba(0,0,0,0.2)] rounded px-2">
-                <div className="w-1.5 h-1.5 rounded-full mt-[5px] shrink-0 bg-[#8a7a6a]"></div>
-                <div>
-                  <div className="font-semibold text-[#8a7a6a]">System Note</div>
-                  <div className="text-[#8a7a6a] text-[10.5px] mt-0.5">Resume edits and Arena battles are not yet tracked in the activity feed (API missing).</div>
-                </div>
-              </div>
-              
             </div>
           </div>
         </div>

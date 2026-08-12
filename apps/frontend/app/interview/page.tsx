@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { useResumes, useInterviews, useStartInterview, useDeleteInterview } from "@/hooks/useResume"
+import { useResumes, useInterviews, useStartInterview, useDeleteInterview, useUploadResume } from "@/hooks/useResume"
+import { Plus } from "lucide-react"
 import { useAuthStore } from "@/store/auth.store"
 import type { Interview, Resume } from "@devforge/shared-types"
 
@@ -17,6 +18,8 @@ export default function InterviewHubPage() {
   const { data: resumes, isLoading: resumesLoading } = useResumes()
   const startInterview = useStartInterview()
   const deleteInterview = useDeleteInterview()
+  const uploadResume = useUploadResume()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [selectedResumeId, setSelectedResumeId] = useState<string>("")
   const [showModal, setShowModal] = useState(false)
@@ -37,6 +40,26 @@ export default function InterviewHubPage() {
     // NOTE: This calls the existing useStartInterview() hook with the selectedResumeId.
     const interview = await startInterview.mutateAsync(selectedResumeId)
     router.push(`/resume/interview/${interview.id}`)
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.type !== "application/pdf") {
+      return alert("Only PDF files are supported at this time.")
+    }
+    
+    try {
+      const newResume = await uploadResume.mutateAsync(file)
+      if (newResume && newResume.id) {
+        setSelectedResumeId(newResume.id)
+      }
+    } catch (err: any) {
+      // Errors handled by global interceptor or mutation
+      console.error(err)
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = ""
+    }
   }
 
   if (!hydrated || !token) return null
@@ -80,6 +103,29 @@ export default function InterviewHubPage() {
                 </option>
               ))}
             </select>
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadResume.isPending}
+              title="Upload New Resume"
+              style={{
+                width: 32, height: 32, borderRadius: 8, border: "1px solid rgba(255,180,120,0.14)",
+                background: uploadResume.isPending ? "rgba(255,237,213,0.05)" : "#1c1712",
+                color: uploadResume.isPending ? "#8a7a6a" : "#ea580c",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: uploadResume.isPending ? "not-allowed" : "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              <Plus size={16} />
+            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              accept="application/pdf"
+              style={{ display: "none" }}
+            />
           </div>
         </div>
 
@@ -116,14 +162,14 @@ export default function InterviewHubPage() {
                 disabled={startInterview.isPending || !selectedResumeId}
                 style={{
                   width: "100%", padding: "10px", borderRadius: 10, border: "none",
-                  background: startInterview.isPending ? "rgba(255,237,213,0.05)" : "linear-gradient(135deg, #ea580c, #d97706)",
-                  color: startInterview.isPending ? "#8a7a6a" : "#fdf6f0", fontSize: 13,
+                  background: (startInterview.isPending || !selectedResumeId) ? "rgba(255,237,213,0.05)" : "linear-gradient(135deg, #ea580c, #d97706)",
+                  color: (startInterview.isPending || !selectedResumeId) ? "#8a7a6a" : "#fdf6f0", fontSize: 13,
                   fontFamily: mono, cursor: (startInterview.isPending || !selectedResumeId) ? "not-allowed" : "pointer", fontWeight: 700,
                   boxShadow: (startInterview.isPending || !selectedResumeId) ? "none" : "0 4px 16px rgba(234,88,12,0.3)",
                   transition: "all 0.2s"
                 }}
               >
-                {startInterview.isPending ? "Starting..." : "Start Standard"}
+                {startInterview.isPending ? "Starting..." : !selectedResumeId ? "Select Resume First" : "Start Standard"}
               </button>
             </div>
           </div>

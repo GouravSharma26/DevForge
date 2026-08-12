@@ -54,12 +54,17 @@ export default function InterviewPage() {
     }
   }, [currentIdx])
 
-  // Auto-advance to the first unanswered question (e.g. after refresh, or when Grandmaster is appended)
+  // Auto-advance to the correct question after refresh
   useEffect(() => {
     if (interview && interview.status === "IN_PROGRESS" && interview.questions) {
       const firstUnanswered = interview.questions.findIndex((q: any) => !q.userAnswer)
-      if (firstUnanswered !== -1 && currentIdx < firstUnanswered) {
-        setCurrentIdx(firstUnanswered)
+      if (firstUnanswered !== -1) {
+        if (currentIdx !== firstUnanswered) setCurrentIdx(firstUnanswered)
+      } else if (interview.questions.length > 0) {
+        // All questions are answered, go to the last question
+        const lastIdx = interview.questions.length - 1
+        if (currentIdx !== lastIdx) setCurrentIdx(lastIdx)
+        setSubmittedId(interview.questions[lastIdx].id)
       }
     }
   }, [interview?.status, interview?.questions?.length])
@@ -397,25 +402,36 @@ export default function InterviewPage() {
         setSubmittedId(currentQ.id)
       } else {
         if (isLastQ) {
-          await completeInterview.mutateAsync()
+          await completeInterview.mutateAsync().catch(err => {
+            console.error(err)
+            alert("Failed to complete interview. Please try again.")
+          })
         } else {
           setCurrentIdx(i => i + 1)
           setSubmittedId(null)
           setAnswer("")
         }
       }
+    } catch (err: any) {
+      console.error(err)
+      alert("Failed to submit answer. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
   }
 
   async function handleNext() {
-    if (isLastQ) {
-      await completeInterview.mutateAsync()
-    } else {
-      setCurrentIdx(i => i + 1)
-      setSubmittedId(null)
-      setAnswer("")
+    try {
+      if (isLastQ) {
+        await completeInterview.mutateAsync()
+      } else {
+        setCurrentIdx(i => i + 1)
+        setSubmittedId(null)
+        setAnswer("")
+      }
+    } catch (err: any) {
+      console.error(err)
+      alert("Failed to proceed. Please try again.")
     }
   }
 

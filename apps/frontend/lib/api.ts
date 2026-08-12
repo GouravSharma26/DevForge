@@ -25,6 +25,10 @@ api.interceptors.response.use(
       useAuthStore.setState({ token: null, user: null })
       window.location.href = "/login"
     }
+    
+    if (err.response?.status === 429) {
+      alert("Credits exhausted. Credits restores after 24hrs.")
+    }
 
     return Promise.reject(err)
   }

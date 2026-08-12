@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { PrismaClient } from "@prisma/client"
 import { runInSandbox } from "../utils/sandbox"
+import { consumeAiRequest } from "../utils/ai-rate-limit"
 
 const prisma = new PrismaClient()
 
@@ -10,6 +11,10 @@ function getModel() {
 }
 
 export async function generateGrandmasterChallenge(interviewId: string, primaryLanguage: string) {
+  const interview = await prisma.interview.findUnique({ where: { id: interviewId } })
+  if (!interview) throw new Error("Interview not found")
+  await consumeAiRequest(interview.userId, prisma)
+
   const maxRetries = 3;
   let attempt = 0;
 
@@ -71,7 +76,9 @@ Return ONLY valid JSON with exactly this structure:
   throw new Error("Failed to generate a valid grandmaster challenge after 3 attempts.")
 }
 
-export async function evaluateGrandmasterSubmission(scenario: string, expectedOutput: string, submittedCode: string, pistonStdout: string, pistonStderr: string) {
+export async function evaluateGrandmasterSubmission(userId: string, scenario: string, expectedOutput: string, submittedCode: string, pistonStdout: string, pistonStderr: string) {
+  await consumeAiRequest(userId, prisma)
+  
   const prompt = `
 You are an expert code evaluator. The user submitted a fix for a debug challenge.
 

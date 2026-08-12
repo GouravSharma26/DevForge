@@ -1,8 +1,17 @@
 import { FastifyInstance, FastifyRequest } from "fastify"
 import { authenticate } from "../plugins/authenticate"
-import { getMatchById } from "../services/arena.service"
+import { getMatchById, getMatchHistory } from "../services/arena.service"
 
 export async function arenaRoutes(app: FastifyInstance) {
+  app.get(
+    "/history",
+    { preHandler: [authenticate] },
+    async (req: FastifyRequest, reply) => {
+      const user = (req.user as any)
+      const history = await getMatchHistory(user.id)
+      return reply.send({ success: true, data: history })
+    }
+  )
   app.get(
     "/match/:id",
     { preHandler: [authenticate] },

@@ -1,12 +1,13 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuthStore } from "@/store/auth.store"
 import { useResumeBuilder, useSaveResumeBuilder, useAIFillResume } from "@/hooks/useResumeBuilder"
-import { useResumes } from "@/hooks/useResume"
+import { useResumes, useUploadResume } from "@/hooks/useResume"
 import type { Resume } from "@devforge/shared-types"
 import { nanoid } from "nanoid"
+import { ModernProfessional, CreativeMinimalist, ExecutiveProfile, TechInnovator } from "@/components/resume-templates"
 
 const mono = "JetBrains Mono, monospace"
 
@@ -48,6 +49,13 @@ const AVAILABLE_SECTIONS = [
   { type: "languages",      title: "Languages" },
   { type: "volunteer",      title: "Volunteer Work" },
   { type: "publications",   title: "Publications" },
+]
+
+const TEMPLATES = [
+  { id: "modern", name: "Modern Professional", author: "DevForge", component: ModernProfessional },
+  { id: "creative", name: "Creative Minimalist", author: "DevForge", component: CreativeMinimalist },
+  { id: "executive", name: "Executive Profile", author: "DevForge", component: ExecutiveProfile, hasPhoto: true },
+  { id: "innovator", name: "Tech Innovator", author: "DevForge", component: TechInnovator, hasPhoto: true }
 ]
 
 // ─── Shared input style ───────────────────────────────────────────────────────
@@ -694,21 +702,34 @@ function ResumePreview({ sections }: { sections: any[] }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function ResumeBuilderPage() {
   const router    = useRouter()
+  const searchParams = useSearchParams()
   const token     = useAuthStore((s) => s.token)
   const hydrated  = useAuthStore((s) => s.hydrated)
   const { data: saved, isLoading } = useResumeBuilder()
   const { data: resumes }          = useResumes()
   const saveBuilder = useSaveResumeBuilder()
   const aiFill      = useAIFillResume()
+  const upload      = useUploadResume()
+
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [showUploadModal, setShowUploadModal] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState(searchParams.get("template") || "modern")
 
   const [selectedResumeId, setSelectedResumeId] = useState<string>("")
   const [sections, setSections]             = useState<any[]>(DEFAULT_SECTIONS)
   const [activeSection, setActiveSection]   = useState<string>("personal")
+  const [activeTab, setActiveTab]           = useState<string>("Core Sections")
   const [showAddPanel, setShowAddPanel]     = useState(false)
   const [customName, setCustomName]         = useState("")
   const [saved_, setSaved_]                 = useState(false)
   const [aiError, setAiError]               = useState<string | null>(null)
+  
+  // New layout state
+  const [zoom, setZoom] = useState(0.7)
+  const [autoscale, setAutoscale] = useState(true)
+
   const previewRef = useRef<HTMLDivElement>(null)
+  const rightPaneRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (hydrated && !token) router.push("/login")
@@ -718,6 +739,36 @@ export default function ResumeBuilderPage() {
   useEffect(() => {
     if (saved?.sections) setSections(saved.sections)
   }, [saved])
+
+  // Handle auto-fill from query params
+  useEffect(() => {
+    const autoFillId = searchParams.get("autoFillId")
+    if (autoFillId && !aiFill.isPending) {
+      aiFill.mutateAsync({ sections: DEFAULT_SECTIONS, resumeId: autoFillId }).then(parsed => {
+        if (Array.isArray(parsed)) {
+          setSections(parsed)
+          saveBuilder.mutate({ sections: parsed, template: selectedTemplate })
+        }
+      }).catch(err => setAiError("Failed to autofill from URL"))
+      // Clean up the URL so it doesn't run again on refresh
+      router.replace("/resume/builder")
+    }
+  }, [searchParams])
+
+  // Autoscale effect
+  useEffect(() => {
+    if (!autoscale || !rightPaneRef.current) return
+    const handleResize = () => {
+      const width = rightPaneRef.current?.clientWidth || 800
+      // Standard A4 width is ~794px in our preview
+      // Leave some padding
+      const newZoom = Math.min((width - 60) / 794, 1.2)
+      setZoom(newZoom)
+    }
+    handleResize()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [autoscale])
 
   function updateSectionData(id: string, data: any) {
     setSections(prev => prev.map(s => s.id === id ? { ...s, data } : s))
@@ -762,7 +813,7 @@ export default function ResumeBuilderPage() {
   }
 
   async function handleSave() {
-    await saveBuilder.mutateAsync({ sections, template: "modern" })
+    await saveBuilder.mutateAsync({ sections, template: selectedTemplate })
     setSaved_(true)
     setTimeout(() => setSaved_(false), 2000)
   }
@@ -778,13 +829,34 @@ export default function ResumeBuilderPage() {
     }
   }
 
+  async function handleFile(file: File) {
+    if (file.type !== "application/pdf") return alert("Please upload a PDF file")
+    try {
+      const newResume = await upload.mutateAsync(file)
+      setSelectedResumeId(newResume.id)
+      
+      const parsed = await aiFill.mutateAsync({ sections: DEFAULT_SECTIONS, resumeId: newResume.id })
+      if (Array.isArray(parsed)) {
+        setSections(parsed)
+        saveBuilder.mutate({ sections: parsed, template: selectedTemplate })
+      }
+    } catch (e: any) {
+      console.error("Failed to parse resume", e)
+      const msg = e?.response?.data?.error || "Failed to process resume automatically."
+      alert(msg)
+    } finally {
+      setShowUploadModal(false)
+    }
+  }
+
   function handleExportPDF() {
     const style = document.createElement("style")
     style.innerHTML = `
       @media print {
         body > * { display: none !important; }
-        #print-resume { display: block !important; position: fixed; inset: 0; background: white; z-index: 99999; }
+        #print-resume { display: block !important; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 99999; }
       }
+      @page { margin: 0; size: A4; }
     `
     document.head.appendChild(style)
     const div = document.createElement("div")
@@ -799,283 +871,362 @@ export default function ResumeBuilderPage() {
     }, 1000)
   }
 
+  const calculateCompletion = () => {
+    let score = 0
+    sections.forEach(s => {
+      if (!s.enabled) return
+      if (s.type === 'personal' && s.data.name) score += 15
+      if (s.type === 'summary' && s.data.text?.length > 10) score += 15
+      if (s.type === 'experience' && s.data.items[0]?.company) score += 25
+      if (s.type === 'education' && s.data.items[0]?.institution) score += 20
+      if (s.type === 'skills' && s.data.items[0]?.skills) score += 10
+      if (s.type === 'projects' && s.data.items[0]?.name) score += 15
+    })
+    return Math.min(100, score)
+  }
+
   const activeS = sections.find(s => s.id === activeSection)
+  const completionScore = calculateCompletion()
 
   if (!hydrated || !token) return null
-
   if (isLoading) return (
-    <div style={{ background: "#171210", minHeight: "calc(100vh-56px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ background: "#171210", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <p style={{ color: "#8a7a6a", fontFamily: mono }}>Loading builder...</p>
     </div>
   )
 
+  const TABS = ["Core Sections", "More Sections", "Customize", "Templates"]
+  const coreSectionTypes = ["personal", "summary", "experience", "education", "projects", "skills"]
+  const activeSectionObj = sections.find(s => s.id === activeSection)
+
   return (
-    <div style={{ background: "#171210", height: "calc(100vh - 56px)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-
-      {/* ── Top bar ── */}
+    <div style={{ background: "#171210", height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden", color: "#fdf6f0" }}>
+      
+      {/* ── Top Bar ── */}
       <div style={{
-        height: 52, flexShrink: 0, borderBottom: "1px solid rgba(255,180,120,0.14)",
-        background: "rgba(255,237,213,0.02)", display: "flex", alignItems: "center",
-        justifyContent: "space-between", padding: "0 20px",
+        height: 60, flexShrink: 0, borderBottom: "1px solid rgba(255,180,120,0.14)",
+        background: "#110d0c", display: "flex", alignItems: "center",
+        justifyContent: "space-between", padding: "0 24px", zIndex: 10
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button
-            onClick={() => router.push("/resume")}
-            style={{ background: "rgba(255,237,213,0.05)", border: "1px solid rgba(255,180,120,0.14)", borderRadius: 8, padding: "5px 12px", cursor: "pointer", color: "#8a7a6a", fontSize: 11, fontFamily: mono }}
-          >
-            ← Resume
-          </button>
-          <div style={{ width: 1, height: 20, background: "rgba(255,180,120,0.14)" }} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: "#fdf6f0", fontFamily: mono }}>Resume Builder</span>
-          <span style={{ fontSize: 10, padding: "3px 10px", borderRadius: 99, background: "rgba(234,88,12,0.15)", color: "#ea580c", border: "1px solid rgba(234,88,12,0.3)", fontFamily: mono }}>
-            Live Preview
-          </span>
-        </div>
-
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {/* AI Error Alert */}
-          {aiError && (
-            <div style={{
-              background: "#ef444415", border: "1px solid #ef444440", color: "#ef4444",
-              padding: "4px 10px", borderRadius: 8, fontSize: 11, fontFamily: mono,
-              display: "flex", alignItems: "center", gap: 6,
-            }}>
-              <span>⚠️ {aiError}</span>
-              <button
-                onClick={() => setAiError(null)}
-                style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", padding: 0, fontSize: 11 }}
-              >
-                ✕
-              </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <button onClick={() => router.push("/dashboard")} style={{ background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#ea580c] to-[#f59e0b] flex items-center justify-center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
             </div>
-          )}
-
-          {/* Resume Context Selector */}
-          {resumes && resumes.length > 0 && (
-            <select
-              value={selectedResumeId}
-              onChange={(e) => setSelectedResumeId(e.target.value)}
+          </button>
+          
+          {/* Autofill & Score Buttons */}
+          <div style={{ display: "flex", gap: 12 }}>
+            <button
+              onClick={() => setShowUploadModal(true)}
               style={{
-                padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(255,180,120,0.14)",
-                background: "rgba(255,237,213,0.05)", color: "#8a7a6a", fontSize: 11, fontFamily: mono,
-                outline: "none", cursor: "pointer", maxWidth: 180,
+                padding: "8px 16px", borderRadius: 12, border: "1px dashed rgba(255,180,120,0.4)",
+                background: "rgba(255,237,213,0.02)", color: "#8a7a6a", fontSize: 12,
+                fontFamily: mono, cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: 8
               }}
             >
-              <option value="">Context: Latest Profile</option>
-              {resumes.map((r: Resume) => (
-                <option key={r.id} value={r.id}>
-                  {r.profileName} ({r.targetRole || "General"})
-                </option>
-              ))}
-            </select>
-          )}
+              📄 Autofill existing resume
+            </button>
+            <input ref={fileRef} type="file" accept=".pdf" style={{ display: "none" }} onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+            
+            <button
+              onClick={() => alert("Coming soon!")}
+              style={{
+                padding: "8px 16px", borderRadius: 12,
+                background: "rgba(234,88,12,0.15)", border: "1px solid rgba(234,88,12,0.4)",
+                color: "#ea580c", fontSize: 12,
+                fontFamily: mono, cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: 8
+              }}
+            >
+              🎯 Check Resume Score
+            </button>
+          </div>
+          
+          {aiError && <span style={{ color: "#ef4444", fontSize: 11 }}>⚠️ {aiError}</span>}
+        </div>
 
-          {/* AI Fill */}
-          <button
-            onClick={handleAIFill}
-            disabled={aiFill.isPending}
-            style={{
-              padding: "7px 16px", borderRadius: 8, border: "1px solid rgba(234,88,12,0.4)",
-              background: "rgba(234,88,12,0.15)", color: aiFill.isPending ? "#8a7a6a" : "#ea580c",
-              fontSize: 12, fontFamily: mono, cursor: aiFill.isPending ? "not-allowed" : "pointer",
-              transition: "all 0.2s",
-            }}
-          >
-            {aiFill.isPending ? "✨ Generating..." : "✨ AI Fill"}
-          </button>
+        <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
+          {/* Zoom Controls */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12, color: "#8a7a6a", fontFamily: mono }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
+              <input type="checkbox" checked={autoscale} onChange={e => setAutoscale(e.target.checked)} style={{ accentColor: "#ea580c" }} />
+              Autoscale
+            </label>
+            <input 
+              type="range" min="0.3" max="1.5" step="0.05" 
+              value={zoom} 
+              onChange={e => { setAutoscale(false); setZoom(parseFloat(e.target.value)) }} 
+              style={{ width: 100, accentColor: "#ea580c" }} 
+            />
+            <span style={{ width: 36 }}>{Math.round(zoom * 100)}%</span>
+          </div>
+          
+          <div style={{ width: 1, height: 20, background: "rgba(255,180,120,0.14)" }} />
 
-          {/* Save */}
-          <button
-            onClick={handleSave}
-            disabled={saveBuilder.isPending}
-            style={{
-              padding: "7px 16px", borderRadius: 8, border: "1px solid rgba(255,180,120,0.14)",
-              background: saved_ ? "#10b98120" : "rgba(255,237,213,0.05)",
-              color: saved_ ? "#10b981" : "#8a7a6a",
-              fontSize: 12, fontFamily: mono, cursor: "pointer", transition: "all 0.2s",
-            }}
-          >
-            {saved_ ? "✓ Saved" : saveBuilder.isPending ? "Saving..." : "Save"}
-          </button>
-
-          {/* Export PDF */}
-          <button
-            onClick={handleExportPDF}
-            style={{
-              padding: "7px 16px", borderRadius: 8, border: "none",
-              background: "linear-gradient(135deg, #ea580c, #d97706)",
-              color: "#fff", fontSize: 12, fontFamily: mono, cursor: "pointer",
-              boxShadow: "0 2px 12px rgba(234,88,12,0.3)",
-            }}
-          >
-            ↓ Export PDF
-          </button>
+          {/* Action Buttons */}
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={handleSave} disabled={saveBuilder.isPending} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid rgba(255,180,120,0.14)", background: saved_ ? "#10b98120" : "transparent", color: saved_ ? "#10b981" : "#fdf6f0", fontSize: 13, fontWeight: 500, cursor: "pointer", transition: "all 0.2s" }}>
+              {saved_ ? "✓ Saved" : "Save"}
+            </button>
+            <button onClick={handleExportPDF} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "#fdf6f0", color: "#171210", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Download PDF
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* ── Main ── */}
+      {/* ── Main Layout ── */}
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+        
+        {/* ── Left Sidebar (Tabs) ── */}
+        <div style={{ width: 220, flexShrink: 0, borderRight: "1px solid rgba(255,180,120,0.14)", background: "#140f0e", display: "flex", flexDirection: "column", padding: "16px 12px" }}>
+          {TABS.map(tab => (
+            <button
+              key={tab}
+              onClick={() => {
+                setActiveTab(tab)
+                // If clicking Core Sections, auto-select Personal
+                if (tab === "Core Sections" && !coreSectionTypes.includes(activeSectionObj?.type || "")) setActiveSection("personal")
+              }}
+              style={{
+                padding: "10px 14px", borderRadius: 8, border: "none",
+                background: activeTab === tab ? "rgba(234,88,12,0.15)" : "transparent",
+                color: activeTab === tab ? "#ea580c" : "#8a7a6a",
+                fontSize: 13, fontWeight: activeTab === tab ? 600 : 500,
+                textAlign: "left", cursor: "pointer", transition: "all 0.2s",
+                display: "flex", alignItems: "center", gap: 8, marginBottom: 4
+              }}
+            >
+              {tab === "Core Sections" && "📝"}
+              {tab === "More Sections" && "➕"}
+              {tab === "Customize" && "🎨"}
+              {tab === "Templates" && "📄"}
+              {tab}
+            </button>
+          ))}
 
-        {/* ── LEFT: Section Manager + Editor ── */}
-        <div style={{ width: "46%", borderRight: "1px solid rgba(255,180,120,0.14)", display: "flex", overflow: "hidden" }}>
-
-          {/* Section list */}
-          <div style={{
-            width: 200, flexShrink: 0, borderRight: "1px solid rgba(255,180,120,0.14)",
-            background: "rgba(0,0,0,0.2)", display: "flex", flexDirection: "column",
-          }}>
-            <div style={{ padding: "12px 12px 8px", borderBottom: "1px solid rgba(255,180,120,0.14)" }}>
-              <p style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, textTransform: "uppercase", letterSpacing: 1.5, margin: 0 }}>Sections</p>
-            </div>
-            <div style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
-              {sections.map(s => (
+          {/* Sub-navigation for sections (Pills) */}
+          {(activeTab === "Core Sections" || activeTab === "More Sections") && (
+            <div style={{ marginTop: 12, marginLeft: 16, display: "flex", flexDirection: "column", gap: 4 }}>
+              {sections
+                .filter(s => activeTab === "Core Sections" ? coreSectionTypes.includes(s.type) : !coreSectionTypes.includes(s.type))
+                .map(s => (
                 <div
                   key={s.id}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 6,
-                    padding: "7px 12px", cursor: "pointer", transition: "all 0.15s",
-                    background: activeSection === s.id ? "rgba(234,88,12,0.15)" : "transparent",
-                    borderLeft: `2px solid ${activeSection === s.id ? "#ea580c" : "transparent"}`,
-                    opacity: s.enabled ? 1 : 0.4,
-                  }}
                   onClick={() => setActiveSection(s.id)}
+                  style={{
+                    padding: "6px 12px", borderRadius: 99,
+                    background: activeSection === s.id ? "rgba(255,255,255,0.08)" : "transparent",
+                    color: activeSection === s.id ? "#fdf6f0" : "#8a7a6a",
+                    fontSize: 12, cursor: "pointer", transition: "all 0.2s",
+                    display: "flex", alignItems: "center", justifyContent: "space-between"
+                  }}
                 >
-                  <span style={{ flex: 1, fontSize: 12, color: activeSection === s.id ? "#ea580c" : "#8a7a6a", fontFamily: mono, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {s.title}
-                  </span>
-                  <div style={{ display: "flex", gap: 2, flexShrink: 0 }}>
-                    {/* Toggle */}
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleSection(s.id) }}
-                      title={s.enabled ? "Hide" : "Show"}
-                      style={{
-                        background: "none", border: "none", cursor: "pointer",
-                        color: s.enabled ? "#8a7a6a" : "#5a5780", fontSize: 10, padding: "2px 3px",
-                      }}
-                    >
-                      {s.enabled ? "👁" : "👁"}
-                    </button>
-                    {/* Remove */}
-                    {s.removable && (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); removeSection(s.id) }}
-                        title="Remove"
-                        style={{ background: "none", border: "none", cursor: "pointer", color: "#8a7a6a", fontSize: 10, padding: "2px 3px" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.color = "#ef4444")}
-                        onMouseLeave={(e) => (e.currentTarget.style.color = "#8a7a6a")}
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
+                  {s.title}
+                  {!s.enabled && <span style={{ opacity: 0.5 }}>Hidden</span>}
                 </div>
               ))}
-            </div>
-
-            {/* Add section */}
-            <div style={{ padding: 10, borderTop: "1px solid rgba(255,180,120,0.14)" }}>
-              {showAddPanel ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {/* Preset sections */}
-                  {AVAILABLE_SECTIONS.map(s => (
-                    <button
-                      key={s.type}
-                      onClick={() => addAvailableSection(s.type, s.title)}
-                      style={{
-                        padding: "6px 8px", borderRadius: 6, border: "1px solid rgba(255,180,120,0.14)",
-                        background: "rgba(255,237,213,0.05)", color: "#8a7a6a", fontSize: 11,
-                        fontFamily: mono, cursor: "pointer", textAlign: "left",
-                      }}
-                    >
-                      + {s.title}
-                    </button>
-                  ))}
-                  {/* Custom section */}
-                  <div style={{ display: "flex", gap: 4, marginTop: 4 }}>
-                    <input
-                      value={customName}
-                      onChange={(e) => setCustomName(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && addCustomSection()}
-                      placeholder="Custom name..."
-                      style={{ flex: 1, padding: "5px 8px", borderRadius: 6, border: "1px solid rgba(234,88,12,0.4)", background: "#171210", color: "#fdf6f0", fontSize: 11, fontFamily: mono, outline: "none" }}
-                    />
-                    <button onClick={addCustomSection} style={{ padding: "5px 8px", borderRadius: 6, border: "none", background: "#ea580c", color: "#fff", fontSize: 11, cursor: "pointer" }}>+</button>
-                  </div>
-                  <button
-                    onClick={() => setShowAddPanel(false)}
-                    style={{ padding: "5px", borderRadius: 6, border: "1px solid rgba(255,180,120,0.14)", background: "none", color: "#8a7a6a", fontSize: 11, fontFamily: mono, cursor: "pointer" }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
+              
+              {/* Add Custom Section Button */}
+              {activeTab === "More Sections" && (
                 <button
-                  onClick={() => setShowAddPanel(true)}
-                  style={{
-                    width: "100%", padding: "8px", borderRadius: 8,
-                    border: "1px dashed rgba(234,88,12,0.4)", background: "rgba(234,88,12,0.08)",
-                    color: "#ea580c", fontSize: 11, fontFamily: mono, cursor: "pointer",
-                  }}
+                  onClick={() => setShowAddPanel(!showAddPanel)}
+                  style={{ marginTop: 8, padding: "6px 12px", borderRadius: 99, border: "1px dashed rgba(255,180,120,0.3)", background: "transparent", color: "#ea580c", fontSize: 12, cursor: "pointer", textAlign: "left" }}
                 >
-                  + Add Section
+                  + Add Custom Section
                 </button>
               )}
             </div>
-          </div>
-
-          {/* Section editor */}
-          <div style={{ flex: 1, overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
-            {activeS && (
-              <>
-                {/* Section header */}
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                  <h2 style={{ fontSize: 14, fontWeight: 700, color: "#fdf6f0", fontFamily: mono, margin: 0 }}>{activeS.title}</h2>
-                  {activeS.removable && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: "auto" }}>
-                      <span style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono }}>{activeS.enabled ? "Visible" : "Hidden"}</span>
-                      <div
-                        onClick={() => toggleSection(activeS.id)}
-                        style={{
-                          width: 36, height: 20, borderRadius: 99, cursor: "pointer",
-                          background: activeS.enabled ? "#ea580c" : "rgba(255,180,120,0.14)",
-                          position: "relative", transition: "all 0.2s",
-                        }}
-                      >
-                        <div style={{
-                          position: "absolute", top: 3, left: activeS.enabled ? 18 : 3,
-                          width: 14, height: 14, borderRadius: "50%", background: "#fff",
-                          transition: "all 0.2s",
-                        }} />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Form */}
-                {activeS.type === "personal"       && <PersonalEditor       data={activeS.data} onChange={(d: any) => updateSectionData(activeS.id, d)} />}
-                {activeS.type === "summary"         && <SummaryEditor        data={activeS.data} onChange={(d: any) => updateSectionData(activeS.id, d)} />}
-                {activeS.type === "experience"      && <ExperienceEditor     data={activeS.data} onChange={(d: any) => updateSectionData(activeS.id, d)} />}
-                {activeS.type === "education"       && <EducationEditor      data={activeS.data} onChange={(d: any) => updateSectionData(activeS.id, d)} />}
-                {activeS.type === "skills"          && <SkillsEditor         data={activeS.data} onChange={(d: any) => updateSectionData(activeS.id, d)} />}
-                {activeS.type === "projects"        && <ProjectsEditor       data={activeS.data} onChange={(d: any) => updateSectionData(activeS.id, d)} />}
-                {activeS.type === "certifications"  && <CertificationsEditor data={activeS.data} onChange={(d: any) => updateSectionData(activeS.id, d)} />}
-                {!["personal","summary","experience","education","skills","projects","certifications"].includes(activeS.type) && (
-                  <CustomEditor data={activeS.data} onChange={(d: any) => updateSectionData(activeS.id, d)} />
-                )}
-              </>
-            )}
-          </div>
+          )}
         </div>
 
-        {/* ── RIGHT: Live Preview ── */}
-        <div style={{ flex: 1, background: "#0a0807", overflowY: "auto", padding: "20px 24px" }}>
-          <div style={{ maxWidth: 680, margin: "0 auto" }}>
-            <div ref={previewRef}>
-              <ResumePreview sections={sections} />
+        {/* ── Middle Pane (Form Editor) ── */}
+        <div style={{ width: 450, flexShrink: 0, borderRight: "1px solid rgba(255,180,120,0.14)", background: "#171210", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+          
+          {/* Editor Content */}
+          {activeTab === "Core Sections" || activeTab === "More Sections" ? (
+            <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 20 }}>
+              {activeS && (
+                <>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                    <h2 style={{ fontSize: 16, fontWeight: 700, color: "#fdf6f0", textTransform: "uppercase", letterSpacing: 1, margin: 0 }}>
+                      {activeS.title}
+                    </h2>
+                    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                      <button
+                        onClick={() => toggleSection(activeS.id)}
+                        style={{ background: "none", border: "none", color: activeS.enabled ? "#10b981" : "#8a7a6a", fontSize: 12, cursor: "pointer", fontWeight: 500 }}
+                      >
+                        {activeS.enabled ? "✅ Enabled" : "❌ Disabled"}
+                      </button>
+                      <button onClick={() => {
+                        // Reset logic: just clear data based on type
+                        if (confirm("Reset this section?")) updateSectionData(activeS.id, DEFAULT_SECTIONS.find(d => d.type === activeS.type)?.data || { items: [] })
+                      }} style={{ padding: "4px 10px", borderRadius: 99, border: "1px solid rgba(255,180,120,0.2)", background: "transparent", color: "#8a7a6a", fontSize: 11, cursor: "pointer" }}>
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Render the specific editor form */}
+                  {activeS.type === "personal"       && <PersonalEditor       data={activeS.data} onChange={(d: any) => updateSectionData(activeS.id, d)} />}
+                  {activeS.type === "summary"         && <SummaryEditor        data={activeS.data} onChange={(d: any) => updateSectionData(activeS.id, d)} />}
+                  {activeS.type === "experience"      && <ExperienceEditor     data={activeS.data} onChange={(d: any) => updateSectionData(activeS.id, d)} />}
+                  {activeS.type === "education"       && <EducationEditor      data={activeS.data} onChange={(d: any) => updateSectionData(activeS.id, d)} />}
+                  {activeS.type === "skills"          && <SkillsEditor         data={activeS.data} onChange={(d: any) => updateSectionData(activeS.id, d)} />}
+                  {activeS.type === "projects"        && <ProjectsEditor       data={activeS.data} onChange={(d: any) => updateSectionData(activeS.id, d)} />}
+                  {activeS.type === "certifications"  && <CertificationsEditor data={activeS.data} onChange={(d: any) => updateSectionData(activeS.id, d)} />}
+                  {!coreSectionTypes.includes(activeS.type) && activeS.type !== "certifications" && (
+                    <CustomEditor data={activeS.data} onChange={(d: any) => updateSectionData(activeS.id, d)} />
+                  )}
+                </>
+              )}
+
+              {/* Add Custom Section Panel overlay */}
+              {showAddPanel && (
+                <div style={{ padding: 16, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,180,120,0.14)", marginTop: 20 }}>
+                  <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Add New Section</h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {AVAILABLE_SECTIONS.map(s => (
+                      <button key={s.type} onClick={() => addAvailableSection(s.type, s.title)} style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(255,180,120,0.14)", background: "transparent", color: "#fdf6f0", fontSize: 12, textAlign: "left", cursor: "pointer" }}>
+                        + {s.title}
+                      </button>
+                    ))}
+                    <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                      <input value={customName} onChange={e => setCustomName(e.target.value)} placeholder="Custom name..." style={{ flex: 1, padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(234,88,12,0.4)", background: "#0a0807", color: "#fdf6f0", fontSize: 12, outline: "none" }} />
+                      <button onClick={addCustomSection} style={{ padding: "0 16px", borderRadius: 8, border: "none", background: "#ea580c", color: "#fff", cursor: "pointer", fontWeight: 600 }}>Add</button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
+          ) : activeTab === "Templates" ? (
+            <div style={{ padding: 24 }}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: "#fdf6f0", textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Choose Template</h2>
+              
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                {TEMPLATES.map(t => {
+                  const isSelected = selectedTemplate === t.id
+                  return (
+                    <div 
+                      key={t.id} 
+                      onClick={() => setSelectedTemplate(t.id)} 
+                      style={{ border: isSelected ? "2px solid #ea580c" : "1px solid rgba(255,180,120,0.2)", borderRadius: 12, padding: 4, cursor: "pointer", transition: "all 0.2s" }}
+                    >
+                      <div style={{ aspectRatio: "794/1123", background: "#fff", borderRadius: 8, overflow: "hidden", position: "relative" }}>
+                         <div style={{ position: "absolute", top: 0, left: 0, width: "794px", height: "1123px", transform: "scale(0.243)", transformOrigin: "top left", pointerEvents: "none" }}>
+                            <t.component sections={sections.length > 0 ? sections : DEFAULT_SECTIONS} />
+                         </div>
+                      </div>
+                      <p style={{ textAlign: "center", fontSize: 11, fontWeight: isSelected ? 600 : 500, marginTop: 8, color: isSelected ? "#ea580c" : "#8a7a6a" }}>{t.name}</p>
+                    </div>
+                  )
+                })}
+
+                <button style={{ marginTop: 20, width: "100%", padding: "12px", borderRadius: 8, border: "1px dashed rgba(234,88,12,0.5)", background: "rgba(234,88,12,0.05)", color: "#ea580c", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                   🎨 Import from Canva
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding: 24 }}>
+               <h2 style={{ fontSize: 16, fontWeight: 700, color: "#fdf6f0", textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Customize</h2>
+               <p style={{ color: "#8a7a6a", fontSize: 13 }}>Custom fonts, spacing, and accent colors coming soon!</p>
+            </div>
+          )}
+        </div>
+
+        {/* ── Right Pane (Live Preview A4) ── */}
+        <div ref={rightPaneRef} style={{ flex: 1, background: "#1f1a18", overflowY: "auto", position: "relative" }}>
+          <div style={{ 
+            minHeight: "100%", padding: "40px 0", 
+            display: "flex", justifyContent: "center", alignItems: "flex-start" 
+          }}>
+            <div style={{ 
+              transform: `scale(${zoom})`, 
+              transformOrigin: "top center", 
+              transition: autoscale ? "none" : "transform 0.2s" 
+            }}>
+              <div ref={previewRef} style={{ 
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)", 
+                background: "#fff",
+                // A4 sizing approx 210mm x 297mm 
+              }}>
+                {(() => {
+                  const PreviewComponent = TEMPLATES.find(t => t.id === selectedTemplate)?.component || ModernProfessional
+                  return <PreviewComponent sections={sections} />
+                })()}
+              </div>
+            </div>
+          </div>
+
+          {/* Floating Completion Pill */}
+          <div style={{
+            position: "fixed", bottom: 32, right: 32,
+            background: "rgba(10, 8, 7, 0.8)", backdropFilter: "blur(12px)",
+            border: "1px solid rgba(255,180,120,0.14)", borderRadius: 99,
+            padding: "8px 16px", display: "flex", alignItems: "center", gap: 12,
+            boxShadow: "0 10px 25px rgba(0,0,0,0.3)", zIndex: 50
+          }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#8a7a6a" }}>Completion</div>
+            <div style={{ width: 100, height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 99, overflow: "hidden" }}>
+              <div style={{ width: `${completionScore}%`, height: "100%", background: completionScore > 80 ? "#10b981" : "#ea580c", transition: "width 0.5s ease" }} />
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#fdf6f0", minWidth: 32 }}>{completionScore}%</div>
           </div>
         </div>
       </div>
+      
+      {/* ── Modal Overlay ── */}
+      {showUploadModal && (
+         <div style={{
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+            background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            zIndex: 9999
+         }}>
+            <div style={{
+               background: "#171210", borderRadius: 16, width: "100%", maxWidth: 600,
+               padding: 40, position: "relative", boxShadow: "0 20px 40px rgba(0,0,0,0.6)",
+               textAlign: "center", border: "1px solid rgba(255,180,120,0.14)"
+            }}>
+               <button 
+                  onClick={() => setShowUploadModal(false)}
+                  style={{ position: "absolute", top: 16, right: 16, background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "#8a7a6a", fontFamily: mono }}
+               >
+                  ✕
+               </button>
+               
+               <div style={{
+                  border: "2px dashed rgba(234,88,12,0.4)", borderRadius: 16, padding: "40px 20px",
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 16,
+                  background: "rgba(255,237,213,0.02)"
+               }}>
+                  <div style={{ fontSize: 48 }}>📄</div>
+                  <h2 style={{ fontSize: 18, color: "#fdf6f0", margin: 0, fontWeight: 600, fontFamily: mono }}>
+                     Browse a pdf file or drop it here
+                  </h2>
+                  <p style={{ fontSize: 13, color: "#8a7a6a", margin: 0, display: "flex", alignItems: "center", gap: 6, fontFamily: mono }}>
+                     🔒 File data is securely parsed directly into your builder session
+                  </p>
+                  
+                  <button
+                     onClick={() => fileRef.current?.click()}
+                     disabled={upload.isPending || aiFill.isPending}
+                     style={{
+                        padding: "10px 24px", borderRadius: 12, border: "1px solid rgba(234,88,12,0.4)",
+                        background: "rgba(234,88,12,0.15)",
+                        color: "#ea580c", fontSize: 12,
+                        fontFamily: mono, cursor: "pointer", fontWeight: 600, marginTop: 12
+                     }}
+                  >
+                     {upload.isPending ? "Uploading..." : aiFill.isPending ? "Parsing with AI ✨..." : "Browse file"}
+                  </button>
+               </div>
+            </div>
+         </div>
+      )}
     </div>
   )
 }

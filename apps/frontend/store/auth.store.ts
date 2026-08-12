@@ -6,6 +6,8 @@ interface User {
   email: string
   xp: number
   streak: number
+  role?: string
+  aiRequestCount?: number
 }
 
 interface AuthStore {

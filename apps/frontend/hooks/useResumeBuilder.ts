@@ -8,6 +8,8 @@ export function useResumeBuilder() {
       const res = await api.get("/resume/builder")
       return res.data.data
     },
+    retry: false,
+    refetchOnWindowFocus: false
   })
 }
 
