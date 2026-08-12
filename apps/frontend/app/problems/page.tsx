@@ -36,10 +36,10 @@ export default function ProblemsPage() {
     <main className="bg-base">
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 24px" }}>
         <div style={{ marginBottom: 28 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: "#f1f0ff", fontFamily: "JetBrains Mono, monospace" }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" }}>
             DSA Practice
           </h1>
-          <p style={{ fontSize: 12, color: "#5a5780", marginTop: 4, fontFamily: "JetBrains Mono, monospace" }}>
+          <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4, fontFamily: "JetBrains Mono, monospace" }}>
             Solve problems, run real code, level up
           </p>
         </div>
@@ -57,8 +57,8 @@ export default function ProblemsPage() {
                   fontFamily: "JetBrains Mono, monospace", transition: "all 0.2s",
                   background: active ? "rgba(217,119,6,0.18)" : "var(--glass-bg)",
                   backdropFilter: active ? "blur(8px)" : "blur(16px)", WebkitBackdropFilter: active ? "blur(8px)" : "blur(16px)",
-                  border: active ? "1px solid rgba(253,186,116,0.45)" : "1px solid var(--border-subtle)",
-                  color: active ? "#fed7aa" : "var(--text-muted)",
+                  border: active ? "1px solid var(--accent-primary)" : "1px solid var(--border-subtle)",
+                  color: active ? "var(--text-primary)" : "var(--text-muted)",
                   boxShadow: active ? "0 4px 20px rgba(234,88,12,0.1)" : "none",
                 }}
               >
@@ -80,7 +80,7 @@ export default function ProblemsPage() {
                 {["#", "Title", "Category", "Difficulty"].map((h) => (
                   <th key={h} style={{
                     textAlign: "left", padding: "12px 20px",
-                    fontSize: 11, color: "#5a5780", fontWeight: 500,
+                    fontSize: 11, color: "var(--text-muted)", fontWeight: 500,
                     fontFamily: "JetBrains Mono, monospace",
                   }}>
                     {h}
@@ -93,7 +93,7 @@ export default function ProblemsPage() {
                 <tr key={i} style={{ borderBottom: "1px solid rgba(var(--border-subtle-rgb),0.08)" }}>
                   {[40, 200, 120, 80].map((w, j) => (
                     <td key={j} style={{ padding: "14px 20px" }}>
-                      <div style={{ height: 12, width: w, borderRadius: 6, background: "rgba(255,180,120,0.1)" }} />
+                      <div style={{ height: 12, width: w, borderRadius: 6, background: "var(--bg-card)" }} />
                     </td>
                   ))}
                 </tr>
@@ -129,7 +129,7 @@ export default function ProblemsPage() {
         {/* Pagination */}
         {data && (
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20 }}>
-            <p style={{ fontSize: 12, color: "#5a5780", fontFamily: "JetBrains Mono, monospace" }}>
+            <p style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" }}>
               {data.pagination.total} problems total
             </p>
             <div style={{ display: "flex", gap: 8 }}>
