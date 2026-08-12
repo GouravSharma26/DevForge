@@ -9,18 +9,18 @@ import { useAuthStore } from "@/store/auth.store"
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), { ssr: false })
 
 const S: Record<string, React.CSSProperties> = {
-  page: { background: "rgb(var(--bg-base))", minHeight: "100%", display: "flex", flexDirection: "column" },
+  page: { background: "var(--bg-base)", minHeight: "100%", display: "flex", flexDirection: "column" },
   center: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, gap: 32, padding: "40px 24px" },
   card: { background: "var(--glass-bg)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid var(--border-subtle)", borderRadius: 20, padding: 28, maxWidth: 420, width: "100%" },
-  h1: { fontSize: 28, fontWeight: 800, color: "rgb(var(--text-primary))", fontFamily: "JetBrains Mono, monospace", textAlign: "center" },
-  sub: { fontSize: 13, color: "rgb(var(--text-muted))", fontFamily: "JetBrains Mono, monospace", textAlign: "center" },
+  h1: { fontSize: 28, fontWeight: 800, color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace", textAlign: "center" },
+  sub: { fontSize: 13, color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace", textAlign: "center" },
   btn: {
     width: "100%", padding: "14px 0", borderRadius: 14, fontSize: 14,
     fontWeight: 700, cursor: "pointer", border: "none", fontFamily: "JetBrains Mono, monospace",
     background: "linear-gradient(135deg, #ea580c, #d97706)",
-    color: "rgb(var(--text-primary))", boxShadow: "0 4px 20px rgba(234,88,12,0.3)", transition: "all 0.2s",
+    color: "var(--text-primary)", boxShadow: "0 4px 20px rgba(234,88,12,0.3)", transition: "all 0.2s",
   },
-  ruleItem: { fontSize: 13, color: "rgb(var(--text-secondary))", fontFamily: "JetBrains Mono, monospace", display: "flex", gap: 8, alignItems: "center" },
+  ruleItem: { fontSize: 13, color: "var(--text-secondary)", fontFamily: "JetBrains Mono, monospace", display: "flex", gap: 8, alignItems: "center" },
 }
 
 export default function ArenaPage() {
@@ -67,7 +67,7 @@ export default function ArenaPage() {
         </div>
         <button
           onClick={() => router.push("/problems")}
-          style={{ fontSize: 12, color: "rgb(var(--text-muted))", background: "none", border: "none", cursor: "pointer", fontFamily: "JetBrains Mono, monospace" }}
+          style={{ fontSize: 12, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", fontFamily: "JetBrains Mono, monospace" }}
         >
           ← Back to Practice
         </button>
@@ -81,10 +81,10 @@ export default function ArenaPage() {
       <div style={S.center}>
         <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
           <div style={{ fontSize: 48, animation: "pulse 2s infinite" }}>⚔️</div>
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: "JetBrains Mono, monospace" }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" }}>
             {state.status === "searching" ? "Finding opponent..." : "Waiting for opponent..."}
           </h2>
-          <p style={{ fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: "JetBrains Mono, monospace" }}>Match ID: {state.matchId}</p>
+          <p style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" }}>Match ID: {state.matchId}</p>
           <div style={{ display: "flex", gap: 6 }}>
             {[0, 1, 2].map(i => (
               <div key={i} style={{
@@ -95,7 +95,7 @@ export default function ArenaPage() {
           </div>
           <button
             onClick={reset}
-            style={{ fontSize: 12, color: "rgb(var(--text-muted))", background: "none", border: "none", cursor: "pointer", fontFamily: "JetBrains Mono, monospace", marginTop: 8 }}
+            style={{ fontSize: 12, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", fontFamily: "JetBrains Mono, monospace", marginTop: 8 }}
           >
             Cancel
           </button>
@@ -136,7 +136,7 @@ export default function ArenaPage() {
             <button onClick={reset} style={{ ...S.btn, width: "auto", padding: "12px 28px" }}>Play Again</button>
             <button
               onClick={() => router.push("/problems")}
-              style={{ padding: "12px 28px", borderRadius: 14, fontSize: 14, cursor: "pointer", fontFamily: "JetBrains Mono, monospace", background: "var(--glass-bg)", border: "1px solid var(--border-subtle)", color: "rgb(var(--text-muted))" }}
+              style={{ padding: "12px 28px", borderRadius: 14, fontSize: 14, cursor: "pointer", fontFamily: "JetBrains Mono, monospace", background: "var(--glass-bg)", border: "1px solid var(--border-subtle)", color: "var(--text-muted)" }}
             >
               Practice
             </button>
@@ -156,21 +156,21 @@ export default function ArenaPage() {
         flexShrink: 0,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: "JetBrains Mono, monospace" }}>⚔️ LIVE BATTLE</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" }}>⚔️ LIVE BATTLE</span>
           <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ef4444", animation: "pulse 1s infinite" }} />
-          <span style={{ fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: "JetBrains Mono, monospace" }}>{state.problem?.title}</span>
+          <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" }}>{state.problem?.title}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ea580c" }} />
-            <span style={{ fontSize: 12, color: state.player1?.id === user?.id ? "rgb(var(--text-primary))" : "rgb(var(--text-muted))", fontFamily: "JetBrains Mono, monospace" }}>
+            <span style={{ fontSize: 12, color: state.player1?.id === user?.id ? "var(--text-primary)" : "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" }}>
               {state.player1?.username}
             </span>
           </div>
-          <span style={{ fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: "JetBrains Mono, monospace", fontWeight: 700 }}>VS</span>
+          <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace", fontWeight: 700 }}>VS</span>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#f59e0b" }} />
-            <span style={{ fontSize: 12, color: state.player2?.id === user?.id ? "rgb(var(--text-primary))" : "rgb(var(--text-muted))", fontFamily: "JetBrains Mono, monospace" }}>
+            <span style={{ fontSize: 12, color: state.player2?.id === user?.id ? "var(--text-primary)" : "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" }}>
               {state.player2?.username}
             </span>
             {state.opponentSubmitted && (
@@ -200,16 +200,16 @@ export default function ArenaPage() {
         {/* Problem panel */}
         <div style={{ width: "35%", borderRight: "1px solid var(--border-subtle)", overflowY: "auto", padding: 24, display: "flex", flexDirection: "column", gap: 20 }}>
           <div>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: "JetBrains Mono, monospace" }}>{state.problem?.title}</h2>
-            <p style={{ fontSize: 11, color: "rgb(var(--text-muted))", marginTop: 4, fontFamily: "JetBrains Mono, monospace" }}>{state.problem?.category}</p>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" }}>{state.problem?.title}</h2>
+            <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, fontFamily: "JetBrains Mono, monospace" }}>{state.problem?.category}</p>
           </div>
-          <p style={{ fontSize: 12, color: "rgb(var(--text-secondary))", lineHeight: 1.8, fontFamily: "JetBrains Mono, monospace", whiteSpace: "pre-wrap" }}>
+          <p style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.8, fontFamily: "JetBrains Mono, monospace", whiteSpace: "pre-wrap" }}>
             {state.problem?.description}
           </p>
           {state.problem?.examples && (state.problem.examples as any[]).map((ex: any, i: number) => (
             <div key={i} style={{ background: "var(--glass-bg)", border: "1px solid var(--border-subtle)", borderRadius: 10, padding: 12, fontSize: 11, fontFamily: "JetBrains Mono, monospace" }}>
-              <p style={{ color: "rgb(var(--text-muted))" }}>Input: <code style={{ color: "rgb(var(--text-primary))", background: "rgb(var(--bg-surface))", padding: "2px 6px", borderRadius: 4 }}>{ex.input}</code></p>
-              <p style={{ color: "rgb(var(--text-muted))", marginTop: 4 }}>Output: <code style={{ color: "rgb(var(--text-secondary))", background: "rgb(var(--bg-surface))", padding: "2px 6px", borderRadius: 4 }}>{ex.output}</code></p>
+              <p style={{ color: "var(--text-muted)" }}>Input: <code style={{ color: "var(--text-primary)", background: "var(--bg-surface)", padding: "2px 6px", borderRadius: 4 }}>{ex.input}</code></p>
+              <p style={{ color: "var(--text-muted)", marginTop: 4 }}>Output: <code style={{ color: "var(--text-secondary)", background: "var(--bg-surface)", padding: "2px 6px", borderRadius: 4 }}>{ex.output}</code></p>
             </div>
           ))}
         </div>
@@ -218,7 +218,7 @@ export default function ArenaPage() {
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           {/* Editor */}
           <div style={{ flex: "0 0 70%", display: "flex", flexDirection: "column", borderBottom: "1px solid var(--border-subtle)" }}>
-            <div style={{ padding: "8px 16px", borderBottom: "1px solid rgba(255,255,255,0.1)", background: "rgb(var(--bg-base))", fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: "JetBrains Mono, monospace", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ padding: "8px 16px", borderBottom: "1px solid rgba(255,255,255,0.1)", background: "var(--bg-base)", fontSize: 11, color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace", display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#5a5780" }} />
               Your Code
             </div>
@@ -236,7 +236,7 @@ export default function ArenaPage() {
           
           {/* Terminal */}
           <div style={{ flex: "1 1 30%", background: "#0a0a0a", overflowY: "auto", display: "flex", flexDirection: "column" }}>
-            <div style={{ padding: "8px 16px", borderBottom: "1px solid rgba(255,255,255,0.05)", background: "#111", fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: "JetBrains Mono, monospace", display: "flex", alignItems: "center", gap: 8, position: "sticky", top: 0, zIndex: 10 }}>
+            <div style={{ padding: "8px 16px", borderBottom: "1px solid rgba(255,255,255,0.05)", background: "#111", fontSize: 11, color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace", display: "flex", alignItems: "center", gap: 8, position: "sticky", top: 0, zIndex: 10 }}>
               <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ea580c" }} />
               Terminal Output
             </div>
@@ -250,10 +250,10 @@ export default function ArenaPage() {
                       Test {i + 1}: {r.passed ? "✅ Passed" : "❌ Failed"}
                     </div>
                     <div style={{ display: "flex", gap: 16 }}>
-                      <div style={{ color: "rgb(var(--text-muted))", fontSize: 11 }}>Input: <code style={{ color: "rgb(var(--text-secondary))" }}>{r.input}</code></div>
-                      <div style={{ color: "rgb(var(--text-muted))", fontSize: 11 }}>Expected: <code style={{ color: "rgb(var(--text-secondary))" }}>{r.expected}</code></div>
+                      <div style={{ color: "var(--text-muted)", fontSize: 11 }}>Input: <code style={{ color: "var(--text-secondary)" }}>{r.input}</code></div>
+                      <div style={{ color: "var(--text-muted)", fontSize: 11 }}>Expected: <code style={{ color: "var(--text-secondary)" }}>{r.expected}</code></div>
                     </div>
-                    <div style={{ color: "rgb(var(--text-muted))", fontSize: 11 }}>
+                    <div style={{ color: "var(--text-muted)", fontSize: 11 }}>
                       Output: <code style={{ color: r.passed ? "#10b981" : "#ef4444" }}>{r.output || "no output"}</code>
                     </div>
                     {r.stderr && (

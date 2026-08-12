@@ -75,27 +75,27 @@ export default function ResumeDetailView() {
     router.push(`/resume/${forked.id}`)
   }
 
-  if (isLoading) return <div style={{ minHeight: "100vh", padding: 40, color: "rgb(var(--text-primary))", fontFamily: mono }}>Loading profile...</div>
-  if (!resume) return <div style={{ minHeight: "100vh", padding: 40, color: "rgb(var(--text-primary))", fontFamily: mono }}>Resume profile not found.</div>
+  if (isLoading) return <div style={{ minHeight: "100vh", padding: 40, color: "var(--text-primary)", fontFamily: mono }}>Loading profile...</div>
+  if (!resume) return <div style={{ minHeight: "100vh", padding: 40, color: "var(--text-primary)", fontFamily: mono }}>Resume profile not found.</div>
 
   return (
     <main style={{ minHeight: "calc(100vh - 56px)" }}>
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "32px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
         
         {/* Navigation */}
-        <button onClick={() => router.push("/resume")} style={{ background: "none", border: "none", color: "rgb(var(--text-muted))", fontFamily: mono, cursor: "pointer", textAlign: "left", fontSize: 13, padding: 0 }}>
+        <button onClick={() => router.push("/resume")} style={{ background: "none", border: "none", color: "var(--text-muted)", fontFamily: mono, cursor: "pointer", textAlign: "left", fontSize: 13, padding: 0 }}>
           ← Back to Hub
         </button>
 
         {/* Profile Header */}
         <div style={{ background: "var(--glass-bg)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid var(--border-subtle)", borderRadius: 16, padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <h1 style={{ fontSize: 20, color: "rgb(var(--text-primary))", fontFamily: mono, margin: "0 0 8px" }}>{resume.profileName}</h1>
+            <h1 style={{ fontSize: 20, color: "var(--text-primary)", fontFamily: mono, margin: "0 0 8px" }}>{resume.profileName}</h1>
             <div style={{ display: "flex", gap: 8 }}>
               <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 99, background: "#ea580c15", color: "#f59e0b", border: "1px solid #ea580c30", fontFamily: mono }}>
                 {resume.experienceLevel}
               </span>
-              <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 99, background: "rgb(var(--bg-surface))", color: "rgb(var(--text-secondary))", fontFamily: mono }}>
+              <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 99, background: "var(--bg-surface)", color: "var(--text-secondary)", fontFamily: mono }}>
                 {resume.targetRole || "General"}
               </span>
             </div>
@@ -103,10 +103,10 @@ export default function ResumeDetailView() {
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             {resume.score > 0 ? (
               <span style={{ fontSize: 26, fontWeight: 800, color: scoreColor(resume.score), fontFamily: mono }}>
-                {resume.score}<span style={{ fontSize: 14, color: "rgb(var(--text-muted))" }}>/100</span>
+                {resume.score}<span style={{ fontSize: 14, color: "var(--text-muted)" }}>/100</span>
               </span>
             ) : (
-              <span style={{ fontSize: 26, fontWeight: 800, color: "rgb(var(--text-muted))", fontFamily: mono }}>
+              <span style={{ fontSize: 26, fontWeight: 800, color: "var(--text-muted)", fontFamily: mono }}>
                 NA
               </span>
             )}
@@ -137,7 +137,7 @@ export default function ResumeDetailView() {
             </div>
           ) : (
             <>
-              <p style={{ fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: mono, textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Score Breakdown</p>
+              <p style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: mono, textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Score Breakdown</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {[
                   { label: "Skills Relevance",  score: resume.skillsScore },
@@ -147,7 +147,7 @@ export default function ResumeDetailView() {
                 ].map(item => (
                   <div key={item.label}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                      <span style={{ fontSize: 12, color: "rgb(var(--text-muted))", fontFamily: mono }}>{item.label}</span>
+                      <span style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: mono }}>{item.label}</span>
                       <span style={{ fontSize: 12, fontWeight: 700, color: scoreColor(item.score), fontFamily: mono }}>{item.score}%</span>
                     </div>
                     <div style={{ height: 6, background: "var(--glass-bg)", borderRadius: 99, overflow: "hidden" }}>
@@ -163,7 +163,7 @@ export default function ResumeDetailView() {
         {/* ─── NEW: JD Matching Section ─── */}
         <div style={{ marginTop: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <h2 style={{ fontSize: 16, color: "rgb(var(--text-primary))", fontFamily: mono, margin: 0 }}>Job Description Matches</h2>
+            <h2 style={{ fontSize: 16, color: "var(--text-primary)", fontFamily: mono, margin: 0 }}>Job Description Matches</h2>
             <button 
               onClick={() => setJdModalOpen(true)}
               style={{ padding: "6px 12px", borderRadius: 8, background: "rgba(217,119,6,0.18)", border: "1px solid rgba(253,186,116,0.45)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", color: "#fed7aa", cursor: "pointer", fontFamily: mono, fontSize: 12, fontWeight: 600 }}
@@ -173,17 +173,17 @@ export default function ResumeDetailView() {
           </div>
 
           {jdMatchesLoading ? (
-            <div style={{ color: "rgb(var(--text-secondary))", fontSize: 13, fontFamily: mono }}>Loading history...</div>
+            <div style={{ color: "var(--text-secondary)", fontSize: 13, fontFamily: mono }}>Loading history...</div>
           ) : jdMatches.length === 0 ? (
-            <div style={{ color: "rgb(var(--text-muted))", fontSize: 13, fontFamily: mono, padding: "20px 0" }}>No matches yet. Run your first match to see how this resume performs!</div>
+            <div style={{ color: "var(--text-muted)", fontSize: 13, fontFamily: mono, padding: "20px 0" }}>No matches yet. Run your first match to see how this resume performs!</div>
           ) : (
             <div style={{ display: "grid", gap: 12 }}>
               {jdMatches.map((m: any) => (
                 <div key={m.id} style={{ background: "var(--glass-bg)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid var(--border-subtle)", borderRadius: 12, padding: 16 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                     <div>
-                      <h3 style={{ margin: "0 0 4px", fontSize: 15, color: "rgb(var(--text-primary))", fontFamily: mono }}>{m.jobTitle}</h3>
-                      <p style={{ margin: 0, fontSize: 13, color: "rgb(var(--text-secondary))", fontFamily: mono }}>{m.companyName}</p>
+                      <h3 style={{ margin: "0 0 4px", fontSize: 15, color: "var(--text-primary)", fontFamily: mono }}>{m.jobTitle}</h3>
+                      <p style={{ margin: 0, fontSize: 13, color: "var(--text-secondary)", fontFamily: mono }}>{m.companyName}</p>
                     </div>
                     <span style={{ fontSize: 16, fontWeight: 700, color: scoreColor(m.matchScore), fontFamily: mono }}>
                       {m.matchScore}%
@@ -214,17 +214,17 @@ export default function ResumeDetailView() {
 
                   {m.cultureFlags && m.cultureFlags.length > 0 && (
                     <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border-subtle)" }}>
-                      <span style={{ fontSize: 11, color: "rgb(var(--text-secondary))", fontFamily: mono, display: "block", marginBottom: 8 }}>CULTURE / VIBE CHECK</span>
+                      <span style={{ fontSize: 11, color: "var(--text-secondary)", fontFamily: mono, display: "block", marginBottom: 8 }}>CULTURE / VIBE CHECK</span>
                       <div style={{ display: "grid", gap: 8 }}>
                         {m.cultureFlags.map((flag: any, i: number) => {
-                          const color = flag.severity === "high" ? "#ef4444" : flag.severity === "medium" ? "#eab308" : "rgb(var(--text-secondary))"
+                          const color = flag.severity === "high" ? "#ef4444" : flag.severity === "medium" ? "#eab308" : "var(--text-secondary)"
                           return (
-                            <div key={i} style={{ background: "rgb(var(--bg-surface))", border: `1px solid ${color}40`, borderLeft: `3px solid ${color}`, borderRadius: 6, padding: "8px 12px" }}>
+                            <div key={i} style={{ background: "var(--bg-surface)", border: `1px solid ${color}40`, borderLeft: `3px solid ${color}`, borderRadius: 6, padding: "8px 12px" }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                                <span style={{ fontSize: 12, fontWeight: 600, color: "rgb(var(--text-primary))", fontFamily: "sans-serif" }}>{flag.flag}</span>
+                                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)", fontFamily: "sans-serif" }}>{flag.flag}</span>
                                 <span style={{ fontSize: 10, padding: "2px 6px", borderRadius: 4, background: `${color}15`, color, fontFamily: mono, textTransform: "uppercase" }}>{flag.severity}</span>
                               </div>
-                              <p style={{ margin: 0, fontSize: 13, color: "rgb(var(--text-muted))", fontStyle: "italic", lineHeight: 1.4 }}>"{flag.quote}"</p>
+                              <p style={{ margin: 0, fontSize: 13, color: "var(--text-muted)", fontStyle: "italic", lineHeight: 1.4 }}>"{flag.quote}"</p>
                             </div>
                           )
                         })}
@@ -244,18 +244,18 @@ export default function ResumeDetailView() {
       {jdModalOpen && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(23,18,16,0.8)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
           <div style={{ background: "var(--glass-bg)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid var(--border-subtle)", borderRadius: 16, padding: 24, width: "100%", maxWidth: 600 }}>
-            <h2 style={{ margin: "0 0 16px", fontSize: 18, color: "rgb(var(--text-primary))", fontFamily: mono }}>Run Job Description Match</h2>
+            <h2 style={{ margin: "0 0 16px", fontSize: 18, color: "var(--text-primary)", fontFamily: mono }}>Run Job Description Match</h2>
             
             <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
               <button 
                 onClick={() => setJdTab("text")}
-                style={{ padding: "6px 12px", borderRadius: 6, background: jdTab === "text" ? "#ea580c" : "transparent", color: jdTab === "text" ? "#fff" : "rgb(var(--text-secondary))", border: jdTab === "text" ? "none" : "1px solid var(--border-subtle)", cursor: "pointer", fontFamily: mono, fontSize: 13 }}
+                style={{ padding: "6px 12px", borderRadius: 6, background: jdTab === "text" ? "#ea580c" : "transparent", color: jdTab === "text" ? "#fff" : "var(--text-secondary)", border: jdTab === "text" ? "none" : "1px solid var(--border-subtle)", cursor: "pointer", fontFamily: mono, fontSize: 13 }}
               >
                 Paste Text
               </button>
               <button 
                 onClick={() => setJdTab("pdf")}
-                style={{ padding: "6px 12px", borderRadius: 6, background: jdTab === "pdf" ? "#ea580c" : "transparent", color: jdTab === "pdf" ? "#fff" : "rgb(var(--text-secondary))", border: jdTab === "pdf" ? "none" : "1px solid var(--border-subtle)", cursor: "pointer", fontFamily: mono, fontSize: 13 }}
+                style={{ padding: "6px 12px", borderRadius: 6, background: jdTab === "pdf" ? "#ea580c" : "transparent", color: jdTab === "pdf" ? "#fff" : "var(--text-secondary)", border: jdTab === "pdf" ? "none" : "1px solid var(--border-subtle)", cursor: "pointer", fontFamily: mono, fontSize: 13 }}
               >
                 Upload PDF
               </button>
@@ -266,23 +266,23 @@ export default function ResumeDetailView() {
                 value={jdText}
                 onChange={(e) => setJdText(e.target.value)}
                 placeholder="Paste the raw text of the job description here..."
-                style={{ width: "100%", height: 300, background: "rgb(var(--bg-base))", border: "1px solid var(--border-subtle)", borderRadius: 8, padding: 12, color: "rgb(var(--text-primary))", fontFamily: "sans-serif", fontSize: 14, resize: "none", marginBottom: 16 }}
+                style={{ width: "100%", height: 300, background: "var(--bg-base)", border: "1px solid var(--border-subtle)", borderRadius: 8, padding: 12, color: "var(--text-primary)", fontFamily: "sans-serif", fontSize: 14, resize: "none", marginBottom: 16 }}
               />
             ) : (
-              <div style={{ width: "100%", height: 300, background: "rgb(var(--bg-base))", border: "1px dashed var(--border-subtle)", borderRadius: 8, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+              <div style={{ width: "100%", height: 300, background: "var(--bg-base)", border: "1px dashed var(--border-subtle)", borderRadius: 8, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
                 <input 
                   type="file" 
                   accept="application/pdf"
                   onChange={(e) => setJdFile(e.target.files?.[0] || null)}
-                  style={{ color: "rgb(var(--text-primary))", fontFamily: mono, fontSize: 13 }}
+                  style={{ color: "var(--text-primary)", fontFamily: mono, fontSize: 13 }}
                 />
                 {jdFile && <p style={{ color: "#10b981", fontFamily: mono, fontSize: 12, marginTop: 12 }}>Selected: {jdFile.name}</p>}
-                <p style={{ color: "rgb(var(--text-muted))", fontFamily: mono, fontSize: 12, marginTop: 8 }}>Max size: 5MB</p>
+                <p style={{ color: "var(--text-muted)", fontFamily: mono, fontSize: 12, marginTop: 8 }}>Max size: 5MB</p>
               </div>
             )}
 
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}>
-              <button onClick={() => setJdModalOpen(false)} disabled={createJDMatch.isPending || uploadJDMatch.isPending} style={{ padding: "8px 16px", borderRadius: 8, background: "none", border: "1px solid var(--border-subtle)", color: "rgb(var(--text-secondary))", cursor: "pointer", fontFamily: mono }}>
+              <button onClick={() => setJdModalOpen(false)} disabled={createJDMatch.isPending || uploadJDMatch.isPending} style={{ padding: "8px 16px", borderRadius: 8, background: "none", border: "1px solid var(--border-subtle)", color: "var(--text-secondary)", cursor: "pointer", fontFamily: mono }}>
                 Cancel
               </button>
               <button onClick={handleRunJDMatch} disabled={createJDMatch.isPending || uploadJDMatch.isPending} style={{ padding: "8px 16px", borderRadius: 8, background: "rgba(217,119,6,0.18)", border: "1px solid rgba(253,186,116,0.45)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", color: "#fed7aa", cursor: "pointer", fontFamily: mono, fontWeight: 600 }}>

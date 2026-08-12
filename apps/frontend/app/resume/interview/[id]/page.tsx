@@ -80,7 +80,7 @@ export default function InterviewPage() {
     <div style={{ minHeight: "calc(100vh - 56px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
         <div style={{ fontSize: 40 }}>🎙️</div>
-        <p style={{ color: "rgb(var(--text-muted))", fontFamily: mono, fontSize: 13 }}>Loading your interview...</p>
+        <p style={{ color: "var(--text-muted)", fontFamily: mono, fontSize: 13 }}>Loading your interview...</p>
         <div style={{ display: "flex", gap: 6 }}>
           {[0, 1, 2].map(i => (
             <div key={i} style={{
@@ -146,10 +146,10 @@ export default function InterviewPage() {
             }} />
             <div style={{ position: "relative" }}>
               <div style={{ fontSize: 52, marginBottom: 16 }}>🎙️</div>
-              <h1 style={{ fontSize: 24, fontWeight: 800, color: "rgb(var(--text-primary))", fontFamily: mono, marginBottom: 8 }}>
+              <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", fontFamily: mono, marginBottom: 8 }}>
                 Interview Complete
               </h1>
-              <p style={{ fontSize: 13, color: "rgb(var(--text-muted))", fontFamily: mono, marginBottom: 32 }}>
+              <p style={{ fontSize: 13, color: "var(--text-muted)", fontFamily: mono, marginBottom: 32 }}>
                 {score >= 70 ? "Great performance! You're interview-ready." : score >= 50 ? "Good start. Review the feedback below." : "Keep practising. Check each answer for tips."}
               </p>
 
@@ -171,13 +171,13 @@ export default function InterviewPage() {
                 {/* Grandmaster Badge (if completed) */}
                 {gmScore != null && (
                   <div style={{
-                    background: "rgb(var(--bg-surface))", border: "1px solid var(--border-subtle)", borderRadius: 16, padding: "16px 20px",
+                    background: "var(--bg-surface)", border: "1px solid var(--border-subtle)", borderRadius: 16, padding: "16px 20px",
                     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                     boxShadow: "0 4px 20px rgba(234,88,12,0.1)"
                   }}>
                     <div style={{ fontSize: 24, marginBottom: 4 }}>🔥</div>
                     <div style={{ fontSize: 11, color: "#ea580c", fontFamily: mono, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Grandmaster</div>
-                    <div style={{ fontSize: 24, fontWeight: 800, color: "rgb(var(--text-primary))", fontFamily: mono, lineHeight: 1 }}>{gmScore}<span style={{ fontSize: 12, color: "rgb(var(--text-muted))" }}>/100</span></div>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", fontFamily: mono, lineHeight: 1 }}>{gmScore}<span style={{ fontSize: 12, color: "var(--text-muted)" }}>/100</span></div>
                   </div>
                 )}
               </div>
@@ -190,10 +190,10 @@ export default function InterviewPage() {
                     border: `1px solid var(--border-subtle)`,
                   }}>
                     <div style={{ fontSize: 18, marginBottom: 6 }}>{meta.icon}</div>
-                    <div style={{ fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: mono, marginBottom: 4 }}>{meta.label}</div>
+                    <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: mono, marginBottom: 4 }}>{meta.label}</div>
                     <div style={{
                       fontSize: 20, fontWeight: 800, fontFamily: mono,
-                      color: avg === null ? "rgb(var(--text-muted))" : avg >= 70 ? "#10b981" : avg >= 50 ? "#eab308" : "#ef4444",
+                      color: avg === null ? "var(--text-muted)" : avg >= 70 ? "#10b981" : avg >= 50 ? "#eab308" : "#ef4444",
                     }}>
                       {avg === null ? "—" : `${avg}`}
                     </div>
@@ -210,8 +210,8 @@ export default function InterviewPage() {
                 }}>
                   <div style={{ fontSize: 28 }}>🔥</div>
                   <div>
-                    <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: mono }}>Grandmaster Challenge (Optional)</h3>
-                    <p style={{ margin: "6px 0 0", fontSize: 12, color: "rgb(var(--text-secondary))", fontFamily: mono }}>Test your limits with a real-time advanced debugging challenge in a secure sandbox.</p>
+                    <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "var(--text-primary)", fontFamily: mono }}>Grandmaster Challenge (Optional)</h3>
+                    <p style={{ margin: "6px 0 0", fontSize: 12, color: "var(--text-secondary)", fontFamily: mono }}>Test your limits with a real-time advanced debugging challenge in a secure sandbox.</p>
                   </div>
                   
                   {startGrandmaster.isError && (
@@ -255,7 +255,7 @@ export default function InterviewPage() {
                   style={{
                     padding: "12px 28px", borderRadius: 12, border: "1px solid var(--border-subtle)",
                     cursor: "pointer", fontFamily: mono, fontSize: 13,
-                    background: "var(--glass-bg)", color: "rgb(var(--text-secondary))", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)"
+                    background: "var(--glass-bg)", color: "var(--text-secondary)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)"
                   }}
                 >
                   Practice DSA
@@ -286,13 +286,13 @@ export default function InterviewPage() {
 
           {/* Question review */}
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <h2 style={{ fontSize: 14, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: mono, margin: 0 }}>
+            <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", fontFamily: mono, margin: 0 }}>
               Answer Review
             </h2>
             {questions.map((q: any, i: number) => {
               const meta = ROUND_META[q.round] || ROUND_META[1]
               const sc   = q.score
-              const scColor = sc == null ? "rgb(var(--text-muted))" : sc >= 70 ? "#10b981" : sc >= 50 ? "#f59e0b" : "#ef4444"
+              const scColor = sc == null ? "var(--text-muted)" : sc >= 70 ? "#10b981" : sc >= 50 ? "#f59e0b" : "#ef4444"
               return (
                 <div key={q.id} style={{
                   background: "rgba(var(--glass-bg-rgb),0.02)", border: "1px solid var(--border-subtle)",
@@ -313,7 +313,7 @@ export default function InterviewPage() {
                       }}>
                         {meta.icon} {meta.label}
                       </span>
-                      <p style={{ fontSize: 13, color: "rgb(var(--text-primary))", fontFamily: mono, margin: 0, lineHeight: 1.6 }}>
+                      <p style={{ fontSize: 13, color: "var(--text-primary)", fontFamily: mono, margin: 0, lineHeight: 1.6 }}>
                         {q.question}
                       </p>
                     </div>
@@ -334,8 +334,8 @@ export default function InterviewPage() {
                   {q.userAnswer && (
                     <div style={{ padding: "14px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
                       <div>
-                        <p style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Your answer</p>
-                        <p style={{ fontSize: 12, color: "rgb(var(--text-secondary))", fontFamily: mono, lineHeight: 1.7, margin: 0, background: "rgb(var(--bg-base))", padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(var(--border-subtle-rgb),0.08)" }}>
+                        <p style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: mono, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Your answer</p>
+                        <p style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: mono, lineHeight: 1.7, margin: 0, background: "var(--bg-base)", padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(var(--border-subtle-rgb),0.08)" }}>
                           {q.userAnswer}
                         </p>
                       </div>
@@ -345,7 +345,7 @@ export default function InterviewPage() {
                           borderRadius: 10, padding: "10px 14px",
                         }}>
                           <p style={{ fontSize: 10, color: scColor, fontFamily: mono, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>AI Feedback</p>
-                          <p style={{ fontSize: 12, color: "rgb(var(--text-secondary))", fontFamily: mono, lineHeight: 1.7, margin: 0, whiteSpace: "pre-wrap" }}>
+                          <p style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: mono, lineHeight: 1.7, margin: 0, whiteSpace: "pre-wrap" }}>
                             {q.feedback}
                           </p>
                         </div>
@@ -449,22 +449,22 @@ export default function InterviewPage() {
             onClick={() => router.push(interview.resumeId ? `/resume/${interview.resumeId}` : "/resume")}
             style={{
               background: "var(--glass-bg)", border: "1px solid var(--border-subtle)", borderRadius: 8,
-              padding: "5px 12px", cursor: "pointer", color: "rgb(var(--text-secondary))",
+              padding: "5px 12px", cursor: "pointer", color: "var(--text-secondary)",
               fontSize: 11, fontFamily: mono, transition: "all 0.2s",
             }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(234,88,12,0.4)"
-              ;(e.currentTarget as HTMLButtonElement).style.color = "rgb(var(--text-primary))"
+              ;(e.currentTarget as HTMLButtonElement).style.color = "var(--text-primary)"
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border-subtle)"
-              ;(e.currentTarget as HTMLButtonElement).style.color = "rgb(var(--text-secondary))"
+              ;(e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)"
             }}
           >
             ← Resume
           </button>
           <div style={{ width: 1, height: 20, background: "var(--border-subtle)" }} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: mono }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", fontFamily: mono }}>
             Mock Interview
           </span>
           <span style={{
@@ -478,7 +478,7 @@ export default function InterviewPage() {
 
         {/* Progress dots */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: mono, marginRight: 4 }}>
+          <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: mono, marginRight: 4 }}>
             {answeredCount}/{questions.length}
           </span>
           <div style={{ display: "flex", gap: 4 }}>
@@ -514,7 +514,7 @@ export default function InterviewPage() {
           padding: "20px 0", overflowY: "auto",
           display: "flex", flexDirection: "column", gap: 4,
         }}>
-          <p style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, textTransform: "uppercase", letterSpacing: 1.5, padding: "0 16px", marginBottom: 8 }}>
+          <p style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: mono, textTransform: "uppercase", letterSpacing: 1.5, padding: "0 16px", marginBottom: 8 }}>
             Rounds
           </p>
           {[1, 2, 3].map(r => {
@@ -534,11 +534,11 @@ export default function InterviewPage() {
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                   <span style={{ fontSize: 14 }}>{meta.icon}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: isActive ? meta.color : "rgb(var(--text-muted))", fontFamily: mono }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: isActive ? meta.color : "var(--text-muted)", fontFamily: mono }}>
                     {meta.label}
                   </span>
                 </div>
-                <p style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, margin: "0 0 8px", lineHeight: 1.5 }}>
+                <p style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: mono, margin: "0 0 8px", lineHeight: 1.5 }}>
                   {meta.desc}
                 </p>
                 {/* Mini progress */}
@@ -550,7 +550,7 @@ export default function InterviewPage() {
                     }} />
                   ))}
                 </div>
-                <p style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, margin: "4px 0 0" }}>
+                <p style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: mono, margin: "4px 0 0" }}>
                   {doneCount}/{roundQs.length} answered
                 </p>
               </div>
@@ -587,11 +587,11 @@ export default function InterviewPage() {
               borderRadius: 16, padding: "24px", marginBottom: 24,
               borderLeft: `3px solid ${currentRound.color}`,
             }}>
-              <p style={{ fontSize: 15, fontWeight: 600, color: "rgb(var(--text-primary))", fontFamily: mono, lineHeight: 1.7, margin: 0 }}>
+              <p style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)", fontFamily: mono, lineHeight: 1.7, margin: 0 }}>
                 {currentQ?.question}
               </p>
               {currentQ?.context && (
-                <p style={{ fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: mono, margin: "10px 0 0", lineHeight: 1.6, fontStyle: "italic" }}>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: mono, margin: "10px 0 0", lineHeight: 1.6, fontStyle: "italic" }}>
                   💡 {currentQ.context}
                 </p>
               )}
@@ -602,10 +602,10 @@ export default function InterviewPage() {
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {/* User's answer */}
                 <div style={{ background: "var(--glass-bg)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid var(--border-subtle)", borderRadius: 14, padding: 18 }}>
-                  <p style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>
+                  <p style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: mono, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>
                     Your answer
                   </p>
-                  <p style={{ fontSize: 13, color: "rgb(var(--text-secondary))", fontFamily: mono, lineHeight: 1.7, margin: 0 }}>
+                  <p style={{ fontSize: 13, color: "var(--text-secondary)", fontFamily: mono, lineHeight: 1.7, margin: 0 }}>
                     {latestQ.userAnswer}
                   </p>
                 </div>
@@ -613,7 +613,7 @@ export default function InterviewPage() {
                 {/* AI Feedback */}
                 {(() => {
                   const sc = latestQ.score
-                  const scColor = sc == null ? "rgb(var(--text-muted))" : sc >= 70 ? "#10b981" : sc >= 50 ? "#f59e0b" : "#ef4444"
+                  const scColor = sc == null ? "var(--text-muted)" : sc >= 70 ? "#10b981" : sc >= 50 ? "#f59e0b" : "#ef4444"
                   return (
                     <div style={{
                       background: scColor + "08",
@@ -644,7 +644,7 @@ export default function InterviewPage() {
                       </div>
                       <div style={{ padding: "16px 18px" }}>
                         <p style={{
-                          fontSize: 13, color: "rgb(var(--text-secondary))", fontFamily: mono,
+                          fontSize: 13, color: "var(--text-secondary)", fontFamily: mono,
                           lineHeight: 1.8, margin: 0, whiteSpace: "pre-wrap",
                         }}>
                           {latestQ.feedback}
@@ -665,7 +665,7 @@ export default function InterviewPage() {
                       ? "var(--glass-bg)"
                       : "rgba(217,119,6,0.18)",
                     backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
-                    color: completeInterview.isPending ? "rgb(var(--text-muted))" : "#fed7aa",
+                    color: completeInterview.isPending ? "var(--text-muted)" : "#fed7aa",
                     fontSize: 14, fontWeight: 700, fontFamily: mono,
                     boxShadow: completeInterview.isPending ? "none" : "0 4px 20px rgba(234,88,12,0.1)",
                     transition: "all 0.2s",
@@ -682,7 +682,7 @@ export default function InterviewPage() {
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {currentQ?.isGrandmaster ? (
                   <div>
-                    <label style={{ fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 8 }}>
+                    <label style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: mono, display: "block", marginBottom: 8 }}>
                       Debug this code — fix the logical error
                     </label>
                     <div style={{ height: 400, borderRadius: 14, overflow: "hidden", border: "1px solid var(--border-subtle)" }}>
@@ -698,7 +698,7 @@ export default function InterviewPage() {
                   </div>
                 ) : (
                   <div>
-                    <label style={{ fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 8 }}>
+                    <label style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: mono, display: "block", marginBottom: 8 }}>
                       Your answer — be specific and technical
                     </label>
                     <textarea
@@ -709,7 +709,7 @@ export default function InterviewPage() {
                       style={{
                         width: "100%", padding: "14px 16px",
                         background: "var(--glass-bg)", border: "1px solid var(--border-subtle)",
-                        borderRadius: 14, color: "rgb(var(--text-primary))",
+                        borderRadius: 14, color: "var(--text-primary)",
                         fontSize: 13, fontFamily: mono, lineHeight: 1.7,
                         resize: "vertical", outline: "none",
                         transition: "border-color 0.2s, box-shadow 0.2s",
@@ -734,7 +734,7 @@ export default function InterviewPage() {
                   display: "flex", gap: 16, flexWrap: "wrap",
                 }}>
                   {["Be specific", "Give examples", "Mention trade-offs", "Show depth"].map(tip => (
-                    <span key={tip} style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono }}>
+                    <span key={tip} style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: mono }}>
                       <span style={{ color: "#ea580c" }}>✓</span> {tip}
                     </span>
                   ))}
@@ -749,12 +749,12 @@ export default function InterviewPage() {
                     zIndex: 9999
                   }}>
                     <div style={{
-                      background: "rgb(var(--bg-surface))", border: "1px solid var(--border-subtle)",
+                      background: "var(--bg-surface)", border: "1px solid var(--border-subtle)",
                       borderRadius: 16, padding: 24, width: "100%", maxWidth: 400,
                       boxShadow: "0 20px 40px rgba(0,0,0,0.5)"
                     }}>
                       <h3 style={{ margin: "0 0 12px 0", color: "#fed7aa", fontFamily: mono }}>Confirm Final Submission</h3>
-                      <p style={{ margin: "0 0 24px 0", color: "rgb(var(--text-muted))", fontSize: 13, lineHeight: 1.5 }}>
+                      <p style={{ margin: "0 0 24px 0", color: "var(--text-muted)", fontSize: 13, lineHeight: 1.5 }}>
                         Are you sure you want to submit your final answer? You won't be able to make further changes after this.
                       </p>
                       <div style={{ display: "flex", gap: 12 }}>
@@ -762,7 +762,7 @@ export default function InterviewPage() {
                           onClick={() => { setShowModal(false); setSubmitCountdown(null); }}
                           style={{
                             flex: 1, padding: "10px 0", borderRadius: 8,
-                            background: "transparent", border: "1px solid rgba(255,180,120,0.3)", color: "rgb(var(--text-secondary))",
+                            background: "transparent", border: "1px solid rgba(255,180,120,0.3)", color: "var(--text-secondary)",
                             cursor: "pointer", fontFamily: mono, fontWeight: 600
                           }}
                         >
@@ -775,7 +775,7 @@ export default function InterviewPage() {
                             flex: 1, padding: "10px 0", borderRadius: 8,
                             background: submitCountdown !== 0 ? "var(--glass-bg)" : "rgba(217,119,6,0.18)", 
                             border: submitCountdown !== 0 ? "1px solid transparent" : "1px solid rgba(253,186,116,0.45)",
-                            color: submitCountdown !== 0 ? "rgb(var(--text-muted))" : "#fed7aa",
+                            color: submitCountdown !== 0 ? "var(--text-muted)" : "#fed7aa",
                             cursor: submitCountdown !== 0 ? "not-allowed" : "pointer", 
                             fontFamily: mono, fontWeight: 600, transition: "all 0.2s"
                           }}
@@ -798,7 +798,7 @@ export default function InterviewPage() {
                         border: !answer.trim() || isSubmitting ? "1px solid transparent" : "1px solid rgba(253,186,116,0.45)",
                         cursor: !answer.trim() || isSubmitting ? "not-allowed" : "pointer",
                         background: !answer.trim() || isSubmitting ? "var(--glass-bg)" : "rgba(217,119,6,0.18)",
-                        color: !answer.trim() || isSubmitting ? "rgb(var(--text-muted))" : "#fed7aa",
+                        color: !answer.trim() || isSubmitting ? "var(--text-muted)" : "#fed7aa",
                         fontSize: 14, fontWeight: 700, fontFamily: mono, transition: "all 0.2s",
                       }}
                     >
@@ -812,7 +812,7 @@ export default function InterviewPage() {
                         border: !answer.trim() || isSubmitting ? "1px solid transparent" : "1px solid rgba(16,185,129,0.45)",
                         cursor: !answer.trim() || isSubmitting ? "not-allowed" : "pointer",
                         background: !answer.trim() || isSubmitting ? "var(--glass-bg)" : "rgba(16,185,129,0.1)",
-                        color: !answer.trim() || isSubmitting ? "rgb(var(--text-muted))" : "#34d399",
+                        color: !answer.trim() || isSubmitting ? "var(--text-muted)" : "#34d399",
                         fontSize: 14, fontWeight: 700, fontFamily: mono, transition: "all 0.2s",
                       }}
                     >
@@ -830,7 +830,7 @@ export default function InterviewPage() {
                         ? "var(--glass-bg)"
                         : "rgba(217,119,6,0.18)",
                       backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
-                      color: !answer.trim() || isSubmitting ? "rgb(var(--text-muted))" : "#fed7aa",
+                      color: !answer.trim() || isSubmitting ? "var(--text-muted)" : "#fed7aa",
                       fontSize: 14, fontWeight: 700, fontFamily: mono,
                       boxShadow: !answer.trim() || isSubmitting ? "none" : "0 4px 20px rgba(234,88,12,0.1)",
                       transition: "all 0.2s",
@@ -857,12 +857,12 @@ export default function InterviewPage() {
                   borderRadius: 14, overflow: "hidden", fontFamily: mono, fontSize: 13,
                   display: "flex", flexDirection: "column"
                 }}>
-                  <div style={{ background: "rgba(255,237,213,0.03)", padding: "12px 16px", borderBottom: "1px solid rgba(255,180,120,0.1)", color: "rgb(var(--text-muted))", fontSize: 11, fontWeight: 600 }}>
+                  <div style={{ background: "rgba(255,237,213,0.03)", padding: "12px 16px", borderBottom: "1px solid rgba(255,180,120,0.1)", color: "var(--text-muted)", fontSize: 11, fontWeight: 600 }}>
                     EXECUTION OUTPUT
                   </div>
                   <div style={{ padding: 16, flex: 1, overflowY: "auto", minHeight: 400 }}>
                     {isRunningCode ? (
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, color: "rgb(var(--text-muted))" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--text-muted)" }}>
                         <div
                           className="animate-spin"
                           style={{
@@ -876,10 +876,10 @@ export default function InterviewPage() {
                       <>
                         {runOutput.stdout && <pre style={{ margin: 0, color: "#d4d4d4", whiteSpace: "pre-wrap" }}>{runOutput.stdout}</pre>}
                         {runOutput.stderr && <pre style={{ margin: runOutput.stdout ? "12px 0 0 0" : 0, color: "#ef4444", whiteSpace: "pre-wrap" }}>{runOutput.stderr}</pre>}
-                        {!runOutput.stdout && !runOutput.stderr && <span style={{ color: "rgb(var(--text-muted))" }}>Program finished with no output.</span>}
+                        {!runOutput.stdout && !runOutput.stderr && <span style={{ color: "var(--text-muted)" }}>Program finished with no output.</span>}
                       </>
                     ) : (
-                      <span style={{ color: "rgb(var(--text-muted))", fontStyle: "italic" }}>Run your code to see output here.</span>
+                      <span style={{ color: "var(--text-muted)", fontStyle: "italic" }}>Run your code to see output here.</span>
                     )}
                   </div>
                 </div>
