@@ -31,7 +31,7 @@ const redisConnection = {
       return url.password || undefined
     } catch { return undefined }
   })(),
-  tls: undefined, // Force undefined to prevent Upstash ETIMEDOUT on plain 6379
+  tls: process.env.REDIS_URL?.startsWith("rediss://") ? { rejectUnauthorized: false } : undefined,
   family: 4, // Force IPv4 to prevent ETIMEDOUT on Upstash
   maxRetriesPerRequest: null, // Required by BullMQ
 }
