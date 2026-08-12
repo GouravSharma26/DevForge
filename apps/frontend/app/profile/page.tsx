@@ -1,10 +1,27 @@
 "use client"
 
 import { useMe } from "@/hooks/useUser"
-import { Flame, Trophy, Star, Edit3, Mail, Target, Clock, Shield } from "lucide-react"
+import { useResumes, useDeleteResume, useUploadResume } from "@/hooks/useResume"
+import { useRouter } from "next/navigation"
+import { Flame, Trophy, Star, Edit3, Mail, Target, Clock, Shield, FileText, Plus, Trash2, ArrowRight } from "lucide-react"
 
 export default function ProfilePage() {
+  const router = useRouter()
   const { data: user, isLoading } = useMe()
+  const { data: resumes = [], isLoading: resumesLoading } = useResumes()
+  const deleteResume = useDeleteResume()
+  const uploadResume = useUploadResume()
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      await uploadResume.mutateAsync(file)
+      alert("Resume uploaded successfully!")
+    } catch (err: any) {
+      alert("Upload failed: " + err.message)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -125,6 +142,82 @@ export default function ProfilePage() {
             </div>
             <p className="text-[#a39486] font-medium">No recent activity</p>
             <p className="text-[#8a7a6a] text-sm mt-1">Start practicing or building your resume to see activity here.</p>
+          </div>
+        </div>
+
+        {/* ── My Resumes Section ── */}
+        <div className="mt-12 space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold font-mono text-[#fdf6f0] flex items-center gap-2">
+              <FileText className="text-[#ea580c]" /> My Resumes
+            </h2>
+            <label className="cursor-pointer bg-[#ea580c] hover:bg-[#ea580c]/80 text-white text-sm font-bold py-2 px-4 rounded-xl flex items-center gap-2 transition-colors">
+              <Plus size={16} /> Upload Resume
+              <input type="file" accept="application/pdf" className="hidden" onChange={handleUpload} />
+            </label>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {resumesLoading ? (
+              <p className="text-[#8a7a6a] font-mono text-sm">Loading resumes...</p>
+            ) : resumes.length === 0 ? (
+              <div className="col-span-full p-8 border border-white/5 rounded-2xl bg-[#1c1614]/30 text-center">
+                <FileText className="mx-auto text-[#8a7a6a] mb-3 opacity-50" size={32} />
+                <p className="text-[#8a7a6a] font-mono text-sm mb-4">No resumes uploaded yet.</p>
+                <label className="cursor-pointer bg-white/5 hover:bg-white/10 text-[#fdf6f0] border border-white/10 px-4 py-2 rounded-lg text-sm transition-colors inline-block">
+                  Upload your first PDF
+                  <input type="file" accept="application/pdf" className="hidden" onChange={handleUpload} />
+                </label>
+              </div>
+            ) : (
+              resumes.map(r => (
+                <div key={r.id} className="p-5 rounded-2xl border border-white/5 bg-[#1c1614]/50 backdrop-blur-md flex flex-col gap-4 group hover:border-white/10 transition-colors">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-bold text-lg text-[#fdf6f0] group-hover:text-[#ea580c] transition-colors">{r.profileName}</h3>
+                      <p className="text-[#8a7a6a] text-xs font-mono mt-1">Uploaded {new Date(r.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    {/* Score Badge */}
+                    <div className="flex flex-col items-end">
+                      <span className="text-xs text-[#8a7a6a] font-mono mb-1">Score</span>
+                      <div className={`px-3 py-1 rounded-full text-xs font-bold font-mono ${
+                        r.score >= 80 ? 'bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20' :
+                        r.score >= 60 ? 'bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20' :
+                        'bg-[#ef4444]/10 text-[#ef4444] border border-[#ef4444]/20'
+                      }`}>
+                        {r.score}/100
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 mt-auto pt-2 border-t border-white/5">
+                    <button 
+                      onClick={() => router.push(`/resume/builder?resumeId=${r.id}`)}
+                      className="flex-1 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm text-[#fdf6f0] flex items-center justify-center gap-2 transition-colors"
+                    >
+                      <Edit3 size={14} /> Edit in Builder
+                    </button>
+                    <button 
+                      onClick={() => router.push(`/resume/${r.id}`)}
+                      className="flex-1 py-2 bg-[#ea580c]/10 hover:bg-[#ea580c]/20 border border-[#ea580c]/20 rounded-lg text-sm text-[#ea580c] flex items-center justify-center gap-2 transition-colors font-medium"
+                    >
+                      Check Score <ArrowRight size={14} />
+                    </button>
+                    <button 
+                      onClick={() => {
+                        if (confirm("Are you sure you want to delete this resume?")) {
+                          deleteResume.mutate(r.id)
+                        }
+                      }}
+                      className="w-10 h-[38px] bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg text-red-500 flex items-center justify-center transition-colors shrink-0"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
