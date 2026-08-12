@@ -8,7 +8,6 @@ import { Navbar } from "./Navbar"
 import { useAuthStore } from "@/store/auth.store"
 import { useMe } from "@/hooks/useUser"
 import { useTheme } from "next-themes"
-import { ThemeProvider } from "@/components/ThemeProvider"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(true)
@@ -47,11 +46,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  const isAuthPage = pathname === "/login" || pathname === "/register"
-  const forceEmber = isLandingPage || isAuthPage
-
   return (
-    <ThemeProvider attribute="class" defaultTheme="ember" enableSystem={false} forcedTheme={forceEmber ? "ember" : undefined}>
+    <>
       {/* Spacer for fixed header */}
       <div className="h-14 w-full" />
       
@@ -190,6 +186,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       >
         {hydrated ? children : null}
       </main>
-    </ThemeProvider>
+    </>
   )
 }
