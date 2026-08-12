@@ -65,16 +65,16 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#171210]">
-        <div className="w-8 h-8 border-2 border-[#ea580c] border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex h-screen items-center justify-center bg-base">
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
 
   if (!user) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#171210]">
-        <p className="text-[#8a7a6a] font-mono">Failed to load profile. Please log in.</p>
+      <div className="flex h-screen items-center justify-center bg-base">
+        <p className="text-muted font-mono">Failed to load profile. Please log in.</p>
       </div>
     )
   }
@@ -86,7 +86,7 @@ export default function SettingsPage() {
   const TABS = ["Account", "Privacy", "Subscription", "Points", "Notifications"]
 
   return (
-    <main className="min-h-screen bg-[#171210] text-[#fdf6f0] flex justify-center py-10 px-4 md:px-8 font-sans">
+    <main className="min-h-screen bg-base text-primary flex justify-center py-10 px-4 md:px-8 font-sans">
       <div className="w-full max-w-6xl flex flex-col md:flex-row gap-12 mt-8">
         
         {/* Left Sidebar */}
@@ -99,8 +99,8 @@ export default function SettingsPage() {
                 onClick={() => setActiveTab(tab)}
                 className={`text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   activeTab === tab 
-                    ? "bg-[#28211d] text-[#fdf6f0]" 
-                    : "text-[#8a7a6a] hover:bg-[#1f1a18] hover:text-[#a39486]"
+                    ? "bg-surface-theme text-primary" 
+                    : "text-muted hover:bg-surface-theme hover:text-muted"
                 }`}
               >
                 {tab}
@@ -116,19 +116,19 @@ export default function SettingsPage() {
               
               <div>
                 <h2 className="text-lg font-bold mb-2">General</h2>
-                <p className="text-sm text-[#8a7a6a]">You can log in using your email or DevForge ID.</p>
+                <p className="text-sm text-muted">You can log in using your email or DevForge ID.</p>
               </div>
 
               {/* Data List */}
-              <div className="rounded-xl border border-white/5 bg-[#1c1614]/50 divide-y divide-white/5">
+              <div className="rounded-xl border border-border bg-surface-theme/50 divide-y divide-white/5">
                 
                 {/* ID / Username */}
                 <div className="p-4 md:px-6 flex flex-col md:flex-row md:items-center justify-between gap-4 group transition-colors">
                   <div className="flex items-center gap-4">
-                    <User size={18} className="text-[#8a7a6a]" />
+                    <User size={18} className="text-muted" />
                     <div>
                       <span className="font-semibold text-sm">DevForge ID</span>
-                      <span className="ml-3 text-sm text-[#8a7a6a]">{user.username}</span>
+                      <span className="ml-3 text-sm text-muted">{user.username}</span>
                     </div>
                   </div>
                   {editingField === "username" ? (
@@ -136,13 +136,13 @@ export default function SettingsPage() {
                       <input 
                         value={editValue} 
                         onChange={e => setEditValue(e.target.value)}
-                        className="bg-[#0a0807] border border-[#ea580c]/30 rounded-md px-3 py-1.5 text-sm outline-none w-32 focus:border-[#ea580c] transition-colors" 
+                        className="bg-card border border-accent/30 rounded-md px-3 py-1.5 text-sm outline-none w-32 focus:border-accent transition-colors" 
                       />
-                      <button onClick={() => handleSaveField("username")} className="px-3 py-1.5 bg-[#ea580c] hover:bg-[#d97706] rounded-md text-xs font-bold transition-colors">Save</button>
-                      <button onClick={() => setEditingField(null)} className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-md text-xs transition-colors">Cancel</button>
+                      <button onClick={() => handleSaveField("username")} className="px-3 py-1.5 bg-accent hover:bg-accent/80 rounded-md text-xs font-bold transition-colors">Save</button>
+                      <button onClick={() => setEditingField(null)} className="px-3 py-1.5 bg-card hover:bg-card rounded-md text-xs transition-colors">Cancel</button>
                     </div>
                   ) : (
-                    <button onClick={() => { setEditingField("username"); setEditValue(user.username) }} className="text-[#8a7a6a] hover:text-[#fdf6f0] transition-colors p-1">
+                    <button onClick={() => { setEditingField("username"); setEditValue(user.username) }} className="text-muted hover:text-primary transition-colors p-1">
                       <ArrowRight size={16} />
                     </button>
                   )}
@@ -151,10 +151,10 @@ export default function SettingsPage() {
                 {/* Email */}
                 <div className="p-4 md:px-6 flex flex-col md:flex-row md:items-center justify-between gap-4 group transition-colors">
                   <div className="flex items-center gap-4">
-                    <Mail size={18} className="text-[#8a7a6a]" />
+                    <Mail size={18} className="text-muted" />
                     <div>
                       <span className="font-semibold text-sm">Email</span>
-                      <span className="ml-3 text-sm text-[#8a7a6a]">{user.email}</span>
+                      <span className="ml-3 text-sm text-muted">{user.email}</span>
                     </div>
                   </div>
                   {editingField === "email" ? (
@@ -162,13 +162,13 @@ export default function SettingsPage() {
                       <input 
                         value={editValue} 
                         onChange={e => setEditValue(e.target.value)}
-                        className="bg-[#0a0807] border border-[#ea580c]/30 rounded-md px-3 py-1.5 text-sm outline-none w-48 focus:border-[#ea580c] transition-colors" 
+                        className="bg-card border border-accent/30 rounded-md px-3 py-1.5 text-sm outline-none w-48 focus:border-accent transition-colors" 
                       />
-                      <button onClick={() => handleSaveField("email")} className="px-3 py-1.5 bg-[#ea580c] hover:bg-[#d97706] rounded-md text-xs font-bold transition-colors">Save</button>
-                      <button onClick={() => setEditingField(null)} className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-md text-xs transition-colors">Cancel</button>
+                      <button onClick={() => handleSaveField("email")} className="px-3 py-1.5 bg-accent hover:bg-accent/80 rounded-md text-xs font-bold transition-colors">Save</button>
+                      <button onClick={() => setEditingField(null)} className="px-3 py-1.5 bg-card hover:bg-card rounded-md text-xs transition-colors">Cancel</button>
                     </div>
                   ) : (
-                    <button onClick={() => { setEditingField("email"); setEditValue(user.email) }} className="text-[#8a7a6a] hover:text-[#fdf6f0] transition-colors p-1">
+                    <button onClick={() => { setEditingField("email"); setEditValue(user.email) }} className="text-muted hover:text-primary transition-colors p-1">
                       <ArrowRight size={16} />
                     </button>
                   )}
@@ -178,38 +178,38 @@ export default function SettingsPage() {
                 <div className="p-4 md:px-6 flex flex-col gap-4 group transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <Lock size={18} className="text-[#8a7a6a]" />
+                      <Lock size={18} className="text-muted" />
                       <span className="font-semibold text-sm">Password</span>
-                      <span className="ml-3 text-sm text-[#8a7a6a] tracking-widest">••••••••</span>
+                      <span className="ml-3 text-sm text-muted tracking-widest">••••••••</span>
                     </div>
                     {editingField !== "password" && (
-                      <button onClick={() => setEditingField("password")} className="text-[#8a7a6a] hover:text-[#fdf6f0] transition-colors p-1">
+                      <button onClick={() => setEditingField("password")} className="text-muted hover:text-primary transition-colors p-1">
                         <ArrowRight size={16} />
                       </button>
                     )}
                   </div>
                   
                   {editingField === "password" && (
-                    <div className="flex flex-col gap-3 pt-3 border-t border-white/5 mt-1 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="flex flex-col gap-3 pt-3 border-t border-border mt-1 animate-in fade-in zoom-in-95 duration-200">
                       <input 
                         type="password"
                         placeholder="Current Password"
                         value={passwordData.current} 
                         onChange={e => setPasswordData(p => ({ ...p, current: e.target.value }))}
-                        className="bg-[#0a0807] border border-white/10 rounded-md px-3 py-2 text-sm outline-none w-full max-w-sm focus:border-[#ea580c]/50 transition-colors" 
+                        className="bg-card border border-border rounded-md px-3 py-2 text-sm outline-none w-full max-w-sm focus:border-accent/50 transition-colors" 
                       />
                       <input 
                         type="password"
                         placeholder="New Password"
                         value={passwordData.new} 
                         onChange={e => setPasswordData(p => ({ ...p, new: e.target.value }))}
-                        className="bg-[#0a0807] border border-white/10 rounded-md px-3 py-2 text-sm outline-none w-full max-w-sm focus:border-[#ea580c]/50 transition-colors" 
+                        className="bg-card border border-border rounded-md px-3 py-2 text-sm outline-none w-full max-w-sm focus:border-accent/50 transition-colors" 
                       />
                       <div className="flex gap-2">
-                        <button onClick={() => passwordMutation.mutate()} disabled={passwordMutation.isPending || !passwordData.current || !passwordData.new} className="px-4 py-2 bg-[#ea580c] hover:bg-[#d97706] disabled:bg-[#ea580c]/50 disabled:cursor-not-allowed rounded-md text-xs font-bold transition-colors">
+                        <button onClick={() => passwordMutation.mutate()} disabled={passwordMutation.isPending || !passwordData.current || !passwordData.new} className="px-4 py-2 bg-accent hover:bg-accent/80 disabled:bg-[#ea580c]/50 disabled:cursor-not-allowed rounded-md text-xs font-bold transition-colors">
                           {passwordMutation.isPending ? "Updating..." : "Update Password"}
                         </button>
-                        <button onClick={() => setEditingField(null)} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-md text-xs transition-colors">Cancel</button>
+                        <button onClick={() => setEditingField(null)} className="px-4 py-2 bg-card hover:bg-card rounded-md text-xs transition-colors">Cancel</button>
                       </div>
                     </div>
                   )}
@@ -219,22 +219,22 @@ export default function SettingsPage() {
               {/* Social Accounts (Mock) */}
               <div className="pt-8">
                 <h3 className="text-sm font-semibold mb-1">Social Accounts</h3>
-                <p className="text-xs text-[#8a7a6a] mb-4">Connect a social account to sign in to DevForge.</p>
+                <p className="text-xs text-muted mb-4">Connect a social account to sign in to DevForge.</p>
                 
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-[#1c1614]/50">
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-surface-theme/50">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded bg-white/10 flex items-center justify-center font-bold font-mono">G</div>
+                      <div className="w-8 h-8 rounded bg-card flex items-center justify-center font-bold font-mono">G</div>
                       <span className="text-sm font-medium">Google</span>
                     </div>
-                    <button className="px-4 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium text-[#a39486] transition-colors">Connect</button>
+                    <button className="px-4 py-1.5 rounded-lg bg-card hover:bg-card text-xs font-medium text-muted transition-colors">Connect</button>
                   </div>
-                  <div className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-[#1c1614]/50">
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-surface-theme/50">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded bg-white/10 flex items-center justify-center font-bold font-mono">Gh</div>
+                      <div className="w-8 h-8 rounded bg-card flex items-center justify-center font-bold font-mono">Gh</div>
                       <span className="text-sm font-medium">GitHub</span>
                     </div>
-                    <button className="px-4 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium text-[#a39486] transition-colors">Connect</button>
+                    <button className="px-4 py-1.5 rounded-lg bg-card hover:bg-card text-xs font-medium text-muted transition-colors">Connect</button>
                   </div>
                 </div>
               </div>
@@ -250,7 +250,7 @@ export default function SettingsPage() {
                         value={deleteConfirm} 
                         onChange={e => setDeleteConfirm(e.target.value)}
                         placeholder="delete my account"
-                        className="bg-[#0a0807] border border-red-500/30 rounded-md px-3 py-2 text-sm outline-none w-full max-w-sm focus:border-red-500 transition-colors block" 
+                        className="bg-card border border-red-500/30 rounded-md px-3 py-2 text-sm outline-none w-full max-w-sm focus:border-red-500 transition-colors block" 
                       />
                       <div className="flex gap-2">
                         <button 
@@ -260,14 +260,14 @@ export default function SettingsPage() {
                         >
                           {deleteMutation.isPending ? "Deleting..." : "Permanently Delete"}
                         </button>
-                        <button onClick={() => { setEditingField(null); setDeleteConfirm("") }} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-md text-xs transition-colors">Cancel</button>
+                        <button onClick={() => { setEditingField(null); setDeleteConfirm("") }} className="px-4 py-2 bg-card hover:bg-card rounded-md text-xs transition-colors">Cancel</button>
                       </div>
                     </div>
                   ) : (
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <h4 className="text-sm font-semibold mb-1 text-white">Delete Account</h4>
-                        <p className="text-xs text-[#8a7a6a]">Permanently delete your account and all associated data.</p>
+                        <p className="text-xs text-muted">Permanently delete your account and all associated data.</p>
                       </div>
                       <button onClick={() => setEditingField("delete")} className="shrink-0 px-4 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/20 hover:border-red-500 transition-colors text-sm font-bold">
                         Delete Account
@@ -279,8 +279,8 @@ export default function SettingsPage() {
 
             </div>
           ) : (
-            <div className="flex items-center justify-center h-64 border border-dashed border-white/10 rounded-2xl">
-              <p className="text-[#8a7a6a] font-mono text-sm">{activeTab} settings coming soon!</p>
+            <div className="flex items-center justify-center h-64 border border-dashed border-border rounded-2xl">
+              <p className="text-muted font-mono text-sm">{activeTab} settings coming soon!</p>
             </div>
           )}
         </div>

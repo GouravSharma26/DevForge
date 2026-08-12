@@ -62,7 +62,7 @@ const TEMPLATES = [
 const inp = (focused = false): React.CSSProperties => ({
   width: "100%", padding: "8px 12px", borderRadius: 8, boxSizing: "border-box",
   border: `1px solid ${focused ? "rgba(234,88,12,0.6)" : "rgba(255,180,120,0.14)"}`,
-  background: "#171210", color: "#fdf6f0", fontSize: 12, fontFamily: mono,
+  background: "var(--bg-base)", color: "#fdf6f0", fontSize: 12, fontFamily: mono,
   outline: "none", transition: "all 0.2s",
   boxShadow: focused ? "0 0 0 3px rgba(234,88,12,0.15)" : "none",
 })
@@ -890,7 +890,7 @@ export default function ResumeBuilderPage() {
 
   if (!hydrated || !token) return null
   if (isLoading) return (
-    <div style={{ background: "#171210", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div className="bg-base">
       <p style={{ color: "#8a7a6a", fontFamily: mono }}>Loading builder...</p>
     </div>
   )
@@ -900,7 +900,7 @@ export default function ResumeBuilderPage() {
   const activeSectionObj = sections.find(s => s.id === activeSection)
 
   return (
-    <div style={{ background: "#171210", height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden", color: "#fdf6f0" }}>
+    <div className="bg-base">
       
       {/* ── Top Bar ── */}
       <div style={{
@@ -910,7 +910,7 @@ export default function ResumeBuilderPage() {
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <button onClick={() => router.push("/dashboard")} style={{ background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#ea580c] to-[#f59e0b] flex items-center justify-center">
+             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-highlight flex items-center justify-center">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
             </div>
           </button>
@@ -1042,7 +1042,7 @@ export default function ResumeBuilderPage() {
         </div>
 
         {/* ── Middle Pane (Form Editor) ── */}
-        <div style={{ width: 450, flexShrink: 0, borderRight: "1px solid rgba(255,180,120,0.14)", background: "#171210", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+        <div style={{ width: 450, flexShrink: 0, borderRight: "1px solid rgba(255,180,120,0.14)", background: "var(--bg-base)", overflowY: "auto", display: "flex", flexDirection: "column" }}>
           
           {/* Editor Content */}
           {activeTab === "Core Sections" || activeTab === "More Sections" ? (
@@ -1186,11 +1186,7 @@ export default function ResumeBuilderPage() {
             display: "flex", alignItems: "center", justifyContent: "center",
             zIndex: 9999
          }}>
-            <div style={{
-               background: "#171210", borderRadius: 16, width: "100%", maxWidth: 600,
-               padding: 40, position: "relative", boxShadow: "0 20px 40px rgba(0,0,0,0.6)",
-               textAlign: "center", border: "1px solid rgba(255,180,120,0.14)"
-            }}>
+            <div className="bg-base">
                <button 
                   onClick={() => setShowUploadModal(false)}
                   style={{ position: "absolute", top: 16, right: 16, background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "#8a7a6a", fontFamily: mono }}

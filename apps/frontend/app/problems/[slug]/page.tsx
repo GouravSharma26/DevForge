@@ -79,7 +79,7 @@ export default function ProblemPage() {
   const diff = DIFF[problem.difficulty] || DIFF.EASY
 
   return (
-    <div style={{ background: "#171210", height: "calc(100vh - 56px)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div className="bg-base">
 
       {/* ── Top bar ── */}
       <div style={{
@@ -444,7 +444,7 @@ export default function ProblemPage() {
           <div style={{
             height: 36, flexShrink: 0,
             borderBottom: "1px solid rgba(255,255,255,0.1)",
-            background: "#171210",
+            background: "var(--bg-base)",
             display: "flex", alignItems: "center",
             padding: "0 16px", gap: 8,
           }}>
@@ -492,7 +492,7 @@ export default function ProblemPage() {
           <div style={{
             height: 24, flexShrink: 0,
             borderTop: "1px solid rgba(255,255,255,0.1)",
-            background: "#171210",
+            background: "var(--bg-base)",
             display: "flex", alignItems: "center",
             padding: "0 16px", gap: 16,
           }}>

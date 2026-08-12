@@ -63,7 +63,7 @@ export default function Home() {
                 className={`px-5 py-2 rounded-full font-mono-label text-mono-label transition-all ${
                   active
                     ? "text-primary bg-primary/10 border border-primary glow-active"
-                    : "text-on-surface-variant bg-surface-container border border-transparent hover:border-white/10 hover:bg-surface-container-high"
+                    : "text-on-surface-variant bg-surface-container border border-transparent hover:border-border hover:bg-surface-container-high"
                 }`}
               >
                 {cat.label}
@@ -156,7 +156,7 @@ export default function Home() {
           </section>
 
           {/* Pagination */}
-          <div className="flex justify-between items-center mt-12 pt-6 border-t border-white/10 font-mono-code fade-up">
+          <div className="flex justify-between items-center mt-12 pt-6 border-t border-border font-mono-code fade-up">
             <p className="text-on-surface-variant text-[12px]">
               Page {data.pagination.page} of {data.pagination.totalPages} — {data.pagination.total} signals found
             </p>
@@ -164,14 +164,14 @@ export default function Home() {
               <button
                 disabled={page === 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="px-4 py-2 rounded-lg bg-surface-container border border-white/10 text-on-surface-variant hover:text-primary hover:border-primary/50 disabled:opacity-30 disabled:hover:text-on-surface-variant disabled:hover:border-white/10 transition-colors"
+                className="px-4 py-2 rounded-lg bg-surface-container border border-border text-on-surface-variant hover:text-primary hover:border-primary/50 disabled:opacity-30 disabled:hover:text-on-surface-variant disabled:hover:border-border transition-colors"
               >
                 ← Prev
               </button>
               <button
                 disabled={page === data.pagination.totalPages}
                 onClick={() => setPage((p) => p + 1)}
-                className="px-4 py-2 rounded-lg bg-surface-container border border-white/10 text-on-surface-variant hover:text-primary hover:border-primary/50 disabled:opacity-30 disabled:hover:text-on-surface-variant disabled:hover:border-white/10 transition-colors"
+                className="px-4 py-2 rounded-lg bg-surface-container border border-border text-on-surface-variant hover:text-primary hover:border-primary/50 disabled:opacity-30 disabled:hover:text-on-surface-variant disabled:hover:border-border transition-colors"
               >
                 Next →
               </button>

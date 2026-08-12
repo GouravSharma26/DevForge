@@ -26,8 +26,8 @@ export function Navbar({ open }: { open: boolean }) {
         href={href}
         className={`flex items-center gap-2.5 px-2.5 py-2 rounded-[9px] text-[12px] transition-colors ${
           active 
-            ? "bg-[rgba(234,88,12,0.14)] text-[#f59e0b]" 
-            : "text-[#d4a373] hover:bg-[rgba(255,255,255,0.03)] hover:text-[#fdf6f0]"
+            ? "bg-[rgba(234,88,12,0.14)] text-highlight" 
+            : "text-secondary hover:bg-card hover:text-primary"
         }`}
       >
         <span className="w-4 flex items-center justify-center"><Icon size={14} /></span>
@@ -37,19 +37,19 @@ export function Navbar({ open }: { open: boolean }) {
   }
 
   const GroupTitle = ({ children }: { children: React.ReactNode }) => (
-    <div className="text-[9.5px] text-[#8a7a6a] uppercase tracking-[0.07em] px-2.5 mt-3.5 mb-1.5 font-mono">
+    <div className="text-[9.5px] text-muted uppercase tracking-[0.07em] px-2.5 mt-3.5 mb-1.5 font-mono">
       {children}
     </div>
   )
 
   return (
     <aside
-      className={`fixed left-4 top-20 bottom-4 w-[220px] bg-[rgba(255,237,213,0.05)] backdrop-blur-[16px] border border-[rgba(255,180,120,0.14)] rounded-[18px] p-[18px_14px] shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex flex-col z-50 transition-transform duration-300 font-mono ${
+      className={`fixed left-4 top-20 bottom-4 w-[220px] bg-glass backdrop-blur-[16px] border border-border rounded-[18px] p-[18px_14px] shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex flex-col z-50 transition-transform duration-300 font-mono ${
         open ? "translate-x-0" : "-translate-x-[250px]"
       }`}
     >
-      <Link href="/dashboard" className="flex items-center gap-2 font-extrabold text-[13px] px-1.5 mb-5.5 text-[#fdf6f0] hover:opacity-80 transition-opacity">
-        <div className="w-[22px] h-[22px] rounded-[6px] bg-gradient-to-br from-[#ea580c] to-[#f59e0b] flex items-center justify-center">
+      <Link href="/dashboard" className="flex items-center gap-2 font-extrabold text-[13px] px-1.5 mb-5.5 text-primary hover:opacity-80 transition-opacity">
+        <div className="w-[22px] h-[22px] rounded-[6px] bg-gradient-to-br from-accent to-highlight flex items-center justify-center">
           <Anvil size={12} className="text-white" strokeWidth={3} />
         </div>
         DevForge
@@ -78,12 +78,12 @@ export function Navbar({ open }: { open: boolean }) {
       </div>
 
       <div className="mt-auto pt-4 flex flex-col gap-3">
-        <div className="p-3 rounded-[12px] bg-[rgba(234,88,12,0.08)] border border-[rgba(234,88,12,0.2)]">
-          <div className="text-[9.5px] text-[#8a7a6a] mb-1.5 uppercase tracking-[0.05em]">Readiness</div>
-          <div className="h-1 bg-[rgba(255,255,255,0.08)] rounded-full overflow-hidden mb-1.5">
-            <div className="h-full bg-gradient-to-r from-[#ea580c] to-[#f59e0b]" style={{ width: `${readinessScore}%` }}></div>
+        <div className="p-3 rounded-[12px] bg-accent/10 border border-accent/20">
+          <div className="text-[9.5px] text-muted mb-1.5 uppercase tracking-[0.05em]">Readiness</div>
+          <div className="h-1 bg-card rounded-full overflow-hidden mb-1.5">
+            <div className="h-full bg-gradient-to-r from-accent to-highlight" style={{ width: `${readinessScore}%` }}></div>
           </div>
-          <div className="text-[11px] font-bold text-[#f59e0b]">{readinessScore}%</div>
+          <div className="text-[11px] font-bold text-highlight">{readinessScore}%</div>
         </div>
 
         <button
@@ -91,7 +91,7 @@ export function Navbar({ open }: { open: boolean }) {
             useAuthStore.getState().logout()
             router.push("/") // Ensure logout goes to landing page
           }}
-          className="w-full text-left px-2.5 py-2 rounded-[9px] text-[11px] text-[#8a7a6a] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-colors"
+          className="w-full text-left px-2.5 py-2 rounded-[9px] text-[11px] text-muted hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-colors"
         >
           Logout
         </button>

@@ -317,12 +317,7 @@ export default function InterviewHubPage() {
           background: "rgba(23, 18, 16, 0.8)", backdropFilter: "blur(4px)",
           display: "flex", alignItems: "center", justifyContent: "center", padding: 24
         }}>
-          <div style={{
-            background: "#171210", border: "1px solid rgba(255,180,120,0.14)",
-            borderRadius: 24, padding: 32, width: "100%", maxWidth: 400,
-            boxShadow: "0 24px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset",
-            textAlign: "center"
-          }}>
+          <div className="bg-base">
             <div style={{
               width: 48, height: 48, borderRadius: "50%", background: "rgba(234,88,12,0.1)",
               color: "#ea580c", display: "flex", alignItems: "center", justifyContent: "center",
