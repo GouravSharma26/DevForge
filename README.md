@@ -6,7 +6,7 @@ DevForge is a full-stack, AI-powered platform designed to accelerate developer g
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 ### 1. Neural Profiling & AI Mock Interviews
 - **Simulated Interviews:** Engage in technical and behavioral interview rounds powered by the Google Gemini AI.
@@ -28,7 +28,7 @@ DevForge is a full-stack, AI-powered platform designed to accelerate developer g
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+## Tech Stack & Architecture
 
 DevForge is structured as a modern turborepo monorepo, separating concerns into discrete apps and packages.
 
@@ -52,7 +52,7 @@ DevForge is structured as a modern turborepo monorepo, separating concerns into 
 
 ---
 
-## 🎨 Design System: "Ember Glass"
+## Design System: "Ember Glass"
 
 DevForge completely rejects standard SaaS aesthetics. It embraces a highly technical, deep-dark UI.
 - **Backgrounds:** Flat, warm-brown dark tones (`#110b09`, `#1a110e`).
@@ -62,7 +62,7 @@ DevForge completely rejects standard SaaS aesthetics. It embraces a highly techn
 
 ---
 
-## ⚙️ Local Development Setup
+## Local Development Setup
 
 ### Prerequisites
 - Node.js (v20+)
@@ -107,5 +107,5 @@ DevForge completely rejects standard SaaS aesthetics. It embraces a highly techn
 
 ---
 
-## 📝 License
+## License
 Proprietary / Open Source (Modify as needed for your specific use case).
