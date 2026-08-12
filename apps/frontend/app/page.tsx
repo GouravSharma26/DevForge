@@ -292,12 +292,108 @@ void main() {
   )
 }
 
+// ─── Interactive Components ───────────────────────────────────────────────────
+function TiltCard({ children, style, offset, color }: any) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [isHovered, setIsHovered] = useState(false)
+  const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0 })
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+    const rotateX = ((y - centerY) / centerY) * -12
+    const rotateY = ((x - centerX) / centerX) * 12
+    setTilt({ rotateX, rotateY })
+  }
+
+  return (
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => { setIsHovered(false); setTilt({ rotateX: 0, rotateY: 0 }) }}
+      style={{
+        ...style,
+        transform: `translateY(${isHovered ? offset - 8 : offset}px) perspective(1000px) rotateX(${tilt.rotateX}deg) rotateY(${tilt.rotateY}deg) scale3d(${isHovered ? 1.02 : 1}, ${isHovered ? 1.02 : 1}, 1)`,
+        transition: isHovered ? "transform 0.1s ease-out, background 0.3s, border-color 0.3s" : "all 0.5s cubic-bezier(0.25, 1, 0.5, 1)",
+        borderColor: isHovered ? `${color}60` : "var(--border-subtle)",
+        background: isHovered ? "rgba(255,237,213,0.06)" : "rgba(255,237,213,0.03)",
+        boxShadow: isHovered ? `0 30px 60px rgba(0,0,0,0.5), 0 0 40px ${color}20, inset 0 1px 0 rgba(255,255,255,0.05)` : `0 24px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)`,
+        willChange: "transform"
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+function FeatureCard({ feature }: { feature: any }) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const [isHovered, setIsHovered] = useState(false)
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top })
+  }
+
+  return (
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        position: "relative",
+        background: isHovered ? "rgba(255,237,213,0.08)" : "var(--glass-bg)",
+        border: `1px solid ${isHovered ? feature.color + "40" : "var(--border-subtle)"}`,
+        borderRadius: 20, padding: 28,
+        transition: "all 0.3s ease",
+        cursor: "default",
+        boxShadow: isHovered ? `0 8px 32px ${feature.color}15` : "none",
+        overflow: "hidden"
+      }}
+    >
+      {/* Spotlight overlay */}
+      <div style={{
+        position: "absolute", inset: 0, pointerEvents: "none",
+        background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, ${feature.color}15, transparent 40%)`,
+        opacity: isHovered ? 1 : 0,
+        transition: "opacity 0.3s",
+      }} />
+
+      <div style={{ position: "relative", zIndex: 1 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+          <span style={{ color: feature.color }}>{feature.icon}</span>
+          <span style={{
+            fontSize: 10, padding: "3px 10px", borderRadius: 99, fontFamily: mono,
+            background: feature.color + "15", color: feature.color, border: `1px solid ${feature.color}30`,
+          }}>
+            {feature.tag}
+          </span>
+        </div>
+        <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 10, fontFamily: mono }}>
+          {feature.title}
+        </h3>
+        <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.8, fontFamily: mono }}>
+          {feature.desc}
+        </p>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const router = useRouter()
   const token = useAuthStore((s) => s.token)
   const hydrated = useAuthStore((s) => s.hydrated)
-  const [hoveredFeature, setHoveredFeature] = useState<number | null>(null)
+  const hydrated = useAuthStore((s) => s.hydrated)
 
   useEffect(() => {
     if (hydrated && token) {
@@ -319,6 +415,37 @@ export default function LandingPage() {
 
   return (
     <div className="bg-base">
+      <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes shine {
+          0% { transform: translateX(-100%) skewX(-15deg); }
+          50% { transform: translateX(200%) skewX(-15deg); }
+          100% { transform: translateX(200%) skewX(-15deg); }
+        }
+        .animate-fade-in-up {
+          opacity: 0;
+          animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        
+        .btn-shine {
+          position: relative;
+          overflow: hidden;
+        }
+        .btn-shine::after {
+          content: '';
+          position: absolute;
+          top: 0; left: 0; bottom: 0; width: 40%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+          animation: shine 4s infinite;
+        }
+      `}</style>
 
       {/* ── Background ambient glows & WebGL Shader ── */}
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}>
@@ -354,7 +481,7 @@ export default function LandingPage() {
           padding: "80px 24px 60px", textAlign: "center",
         }}>
           {/* Badge */}
-          <div style={{
+          <div className="animate-fade-in-up" style={{
             display: "inline-flex", alignItems: "center", gap: 8,
             padding: "6px 16px", borderRadius: 99,
             border: "1px solid rgba(234,88,12,0.4)", background: "rgba(234,88,12,0.1)",
@@ -365,7 +492,7 @@ export default function LandingPage() {
           </div>
 
           {/* Headline */}
-          <h1 style={{
+          <h1 className="animate-fade-in-up delay-100" style={{
             fontSize: "clamp(36px, 6vw, 72px)",
             fontWeight: 900, lineHeight: 1.1,
             color: "var(--text-primary)", marginBottom: 24, maxWidth: 820,
@@ -380,7 +507,7 @@ export default function LandingPage() {
           </h1>
 
           {/* Subheadline */}
-          <p style={{
+          <p className="animate-fade-in-up delay-200" style={{
             fontSize: "clamp(14px, 2vw, 18px)",
             color: "var(--text-muted)", maxWidth: 560, lineHeight: 1.8,
             marginBottom: 48,
@@ -389,9 +516,10 @@ export default function LandingPage() {
           </p>
 
           {/* CTA Buttons */}
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
+          <div className="animate-fade-in-up delay-300" style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
             <button
               onClick={handleCTA}
+              className="btn-shine"
               style={{
                 padding: "14px 36px", borderRadius: 14, fontSize: 14,
                 fontWeight: 700, cursor: "pointer", border: "none",
@@ -462,27 +590,12 @@ export default function LandingPage() {
                 )
               },
             ].map((card, i) => (
-              <div key={i} style={{
-                background: "rgba(255,237,213,0.03)", border: "1px solid var(--border-subtle)",
+              <TiltCard key={i} color={card.color} offset={card.offset} style={{
+                border: "1px solid var(--border-subtle)",
                 padding: "24px 32px", borderRadius: 24, display: "flex", flexDirection: "column",
                 alignItems: "center", gap: 12, minWidth: 220,
                 backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
-                boxShadow: `0 24px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)`,
-                transform: `translateY(${card.offset}px)`,
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                cursor: "default"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = `translateY(${card.offset - 8}px)`
-                e.currentTarget.style.borderColor = `rgba(234,88,12,0.4)`
-                e.currentTarget.style.background = `rgba(255,237,213,0.06)`
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = `translateY(${card.offset}px)`
-                e.currentTarget.style.borderColor = `var(--border-subtle)`
-                e.currentTarget.style.background = `rgba(255,237,213,0.03)`
-              }}
-              >
+              }}>
                 <div style={{ color: card.color, filter: `drop-shadow(0 0 12px ${card.color}60)`, marginBottom: 4 }}>
                   {card.icon}
                 </div>
@@ -490,7 +603,7 @@ export default function LandingPage() {
                   <div style={{ color: "var(--text-primary)", fontWeight: 700, fontFamily: mono, fontSize: 16 }}>{card.title}</div>
                   <div style={{ color: "var(--text-muted)", fontFamily: mono, fontSize: 13, marginTop: 6 }}>{card.desc}</div>
                 </div>
-              </div>
+              </TiltCard>
             ))}
           </div>
 
@@ -554,35 +667,7 @@ export default function LandingPage() {
               gap: 16,
             }}>
               {FEATURES.map((f, i) => (
-                <div
-                  key={i}
-                  onMouseEnter={() => setHoveredFeature(i)}
-                  onMouseLeave={() => setHoveredFeature(null)}
-                  style={{
-                    background: hoveredFeature === i ? "rgba(255,237,213,0.08)" : "var(--glass-bg)",
-                    border: `1px solid ${hoveredFeature === i ? f.color + "40" : "var(--border-subtle)"}`,
-                    borderRadius: 20, padding: 28,
-                    transition: "all 0.25s",
-                    cursor: "default",
-                    boxShadow: hoveredFeature === i ? `0 8px 32px ${f.color}15` : "none",
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-                    <span style={{ color: f.color }}>{f.icon}</span>
-                    <span style={{
-                      fontSize: 10, padding: "3px 10px", borderRadius: 99, fontFamily: mono,
-                      background: f.color + "15", color: f.color, border: `1px solid ${f.color}30`,
-                    }}>
-                      {f.tag}
-                    </span>
-                  </div>
-                  <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 10, fontFamily: mono }}>
-                    {f.title}
-                  </h3>
-                  <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.8, fontFamily: mono }}>
-                    {f.desc}
-                  </p>
-                </div>
+                <FeatureCard key={i} feature={f} />
               ))}
             </div>
           </div>
