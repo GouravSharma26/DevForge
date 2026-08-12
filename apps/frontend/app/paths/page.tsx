@@ -29,10 +29,10 @@ export default function PathsPage() {
     <main className="bg-base">
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
         <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: "#fdf6f0", fontFamily: "JetBrains Mono, monospace" }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: "JetBrains Mono, monospace" }}>
             Learning Paths
           </h1>
-          <p style={{ fontSize: 12, color: "#8a7a6a", marginTop: 4, fontFamily: "JetBrains Mono, monospace" }}>
+          <p style={{ fontSize: 12, color: "rgb(var(--text-muted))", marginTop: 4, fontFamily: "JetBrains Mono, monospace" }}>
             Structured tracks to take you from beginner to job-ready
           </p>
         </div>
@@ -40,7 +40,7 @@ export default function PathsPage() {
         {isLoading && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} style={{ height: 220, borderRadius: 20, background: "rgba(255,237,213,0.05)", border: "1px solid rgba(255,180,120,0.14)" }} />
+              <div key={i} style={{ height: 220, borderRadius: 20, background: "var(--glass-bg)", border: "1px solid var(--border-subtle)" }} />
             ))}
           </div>
         )}
@@ -53,7 +53,7 @@ export default function PathsPage() {
                 <div
                   key={path.id}
                   style={{
-                    background: "rgba(255,237,213,0.05)", border: "1px solid rgba(255,180,120,0.14)",
+                    background: "var(--glass-bg)", border: "1px solid var(--border-subtle)",
                     borderRadius: 20, padding: 24,
                     transition: "all 0.2s", display: "flex", flexDirection: "column", gap: 16,
                   }}
@@ -62,7 +62,7 @@ export default function PathsPage() {
                     ;(e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 32px rgba(234,88,12,0.12)"
                   }}
                   onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.border = "1px solid rgba(255,180,120,0.14)"
+                    (e.currentTarget as HTMLDivElement).style.border = "1px solid var(--border-subtle)"
                     ;(e.currentTarget as HTMLDivElement).style.boxShadow = "none"
                   }}
                 >
@@ -80,10 +80,10 @@ export default function PathsPage() {
 
                   {/* Info */}
                   <div>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "#fdf6f0", fontFamily: "JetBrains Mono, monospace" }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: "JetBrains Mono, monospace" }}>
                       {path.title}
                     </h3>
-                    <p style={{ fontSize: 12, color: "#d4a373", marginTop: 6, lineHeight: 1.6, fontFamily: "JetBrains Mono, monospace" }}>
+                    <p style={{ fontSize: 12, color: "rgb(var(--text-secondary))", marginTop: 6, lineHeight: 1.6, fontFamily: "JetBrains Mono, monospace" }}>
                       {path.description}
                     </p>
                   </div>
@@ -92,7 +92,7 @@ export default function PathsPage() {
                   {path.isEnrolled ? (
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, fontFamily: "JetBrains Mono, monospace" }}>
-                        <span style={{ color: "#8a7a6a" }}>{path.completedTopics} / {path.totalTopics} topics</span>
+                        <span style={{ color: "rgb(var(--text-muted))" }}>{path.completedTopics} / {path.totalTopics} topics</span>
                         <span style={{ color: "#ea580c" }}>{path.progressPercent}%</span>
                       </div>
                       <div style={{ height: 4, background: "rgba(255,255,255,0.1)", borderRadius: 99, overflow: "hidden" }}>
@@ -104,7 +104,7 @@ export default function PathsPage() {
                       </div>
                     </div>
                   ) : (
-                    <p style={{ fontSize: 11, color: "#8a7a6a", fontFamily: "JetBrains Mono, monospace" }}>
+                    <p style={{ fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: "JetBrains Mono, monospace" }}>
                       {path.totalTopics} topics
                     </p>
                   )}
@@ -115,9 +115,9 @@ export default function PathsPage() {
                       padding: "10px 0", borderRadius: 12, fontSize: 13,
                       fontFamily: "JetBrains Mono, monospace", cursor: "pointer",
                       fontWeight: 600, transition: "all 0.2s",
-                      background: path.isEnrolled ? "linear-gradient(135deg, #ea580c, #d97706)" : "rgba(255,237,213,0.05)",
-                      border: path.isEnrolled ? "none" : "1px solid rgba(255,180,120,0.14)",
-                      color: path.isEnrolled ? "#fdf6f0" : "#8a7a6a",
+                      background: path.isEnrolled ? "linear-gradient(135deg, #ea580c, #d97706)" : "var(--glass-bg)",
+                      border: path.isEnrolled ? "none" : "1px solid var(--border-subtle)",
+                      color: path.isEnrolled ? "rgb(var(--text-primary))" : "rgb(var(--text-muted))",
                       boxShadow: path.isEnrolled ? "0 4px 16px rgba(234,88,12,0.3)" : "none",
                     }}
                     onMouseEnter={(e) => {
@@ -151,10 +151,10 @@ export default function PathsPage() {
             }}>
               🚧
             </div>
-            <h3 style={{ fontSize: 18, fontWeight: 700, color: "#fdf6f0", fontFamily: "JetBrains Mono, monospace", marginBottom: 8 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: "JetBrains Mono, monospace", marginBottom: 8 }}>
               Coming Soon
             </h3>
-            <p style={{ fontSize: 13, color: "#8a7a6a", fontFamily: "JetBrains Mono, monospace", lineHeight: 1.5, marginBottom: 24 }}>
+            <p style={{ fontSize: 13, color: "rgb(var(--text-muted))", fontFamily: "JetBrains Mono, monospace", lineHeight: 1.5, marginBottom: 24 }}>
               The interactive curriculum for this path is currently being forged. Check back in a few days!
             </p>
             <button
@@ -162,14 +162,14 @@ export default function PathsPage() {
               style={{
                 width: "100%", padding: "10px 0", borderRadius: 12, fontSize: 13,
                 fontFamily: "JetBrains Mono, monospace", cursor: "pointer", fontWeight: 600,
-                background: "rgba(255,237,213,0.05)", border: "1px solid rgba(255,180,120,0.14)",
-                color: "#fdf6f0", transition: "all 0.2s"
+                background: "var(--glass-bg)", border: "1px solid var(--border-subtle)",
+                color: "rgb(var(--text-primary))", transition: "all 0.2s"
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(255,237,213,0.1)"
+                e.currentTarget.style.background = "rgba(var(--glass-bg-rgb),0.1)"
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = "rgba(255,237,213,0.05)"
+                e.currentTarget.style.background = "var(--glass-bg)"
               }}
             >
               Got it

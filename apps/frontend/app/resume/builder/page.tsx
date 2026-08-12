@@ -61,8 +61,8 @@ const TEMPLATES = [
 // ─── Shared input style ───────────────────────────────────────────────────────
 const inp = (focused = false): React.CSSProperties => ({
   width: "100%", padding: "8px 12px", borderRadius: 8, boxSizing: "border-box",
-  border: `1px solid ${focused ? "rgba(234,88,12,0.6)" : "rgba(255,180,120,0.14)"}`,
-  background: "var(--bg-base)", color: "#fdf6f0", fontSize: 12, fontFamily: mono,
+  border: `1px solid ${focused ? "rgba(234,88,12,0.6)" : "var(--border-subtle)"}`,
+  background: "var(--bg-base)", color: "rgb(var(--text-primary))", fontSize: 12, fontFamily: mono,
   outline: "none", transition: "all 0.2s",
   boxShadow: focused ? "0 0 0 3px rgba(234,88,12,0.15)" : "none",
 })
@@ -113,7 +113,7 @@ function PersonalEditor({ data, onChange }: any) {
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
       {fields.map(f => (
         <div key={f.key}>
-          <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>{f.label}</label>
+          <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>{f.label}</label>
           <Input value={data[f.key]} onChange={(e: any) => onChange({ ...data, [f.key]: e.target.value })} placeholder={f.placeholder} />
         </div>
       ))}
@@ -124,7 +124,7 @@ function PersonalEditor({ data, onChange }: any) {
 function SummaryEditor({ data, onChange }: any) {
   return (
     <div>
-      <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Summary</label>
+      <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>Summary</label>
       <Textarea value={data.text} onChange={(e: any) => onChange({ text: e.target.value })} placeholder="A results-driven Full Stack Developer with 2+ years of experience..." rows={5} />
     </div>
   )
@@ -158,7 +158,7 @@ function ExperienceEditor({ data, onChange }: any) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {data.items.map((item: any, idx: number) => (
-        <div key={item.id} style={{ background: "rgba(255,237,213,0.05)", borderRadius: 10, padding: 14, border: "1px solid rgba(255,180,120,0.14)", display: "flex", flexDirection: "column", gap: 10 }}>
+        <div key={item.id} style={{ background: "var(--glass-bg)", borderRadius: 10, padding: 14, border: "1px solid var(--border-subtle)", display: "flex", flexDirection: "column", gap: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: 11, color: "#ea580c", fontFamily: mono }}>Experience #{idx + 1}</span>
             {data.items.length > 1 && (
@@ -167,43 +167,43 @@ function ExperienceEditor({ data, onChange }: any) {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             <div>
-              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Company</label>
+              <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>Company</label>
               <Input value={item.company} onChange={(e: any) => updateItem(item.id, "company", e.target.value)} placeholder="Google" />
             </div>
             <div>
-              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Position</label>
+              <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>Position</label>
               <Input value={item.position} onChange={(e: any) => updateItem(item.id, "position", e.target.value)} placeholder="Software Engineer" />
             </div>
             <div>
-              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Start Date</label>
+              <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>Start Date</label>
               <Input value={item.startDate} onChange={(e: any) => updateItem(item.id, "startDate", e.target.value)} placeholder="Jun 2023" />
             </div>
             <div>
-              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>End Date</label>
+              <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>End Date</label>
               <Input value={item.current ? "Present" : item.endDate} onChange={(e: any) => updateItem(item.id, "endDate", e.target.value)} placeholder="Present" style={{ opacity: item.current ? 0.5 : 1 }} />
             </div>
             <div style={{ gridColumn: "span 2" }}>
-              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Location</label>
+              <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>Location</label>
               <Input value={item.location} onChange={(e: any) => updateItem(item.id, "location", e.target.value)} placeholder="Mountain View, CA" />
             </div>
             <div style={{ gridColumn: "span 2", display: "flex", alignItems: "center", gap: 8 }}>
               <input type="checkbox" checked={item.current} onChange={(e) => updateItem(item.id, "current", e.target.checked)} id={`current-${item.id}`} />
-              <label htmlFor={`current-${item.id}`} style={{ fontSize: 11, color: "#8a7a6a", fontFamily: mono, cursor: "pointer" }}>Currently working here</label>
+              <label htmlFor={`current-${item.id}`} style={{ fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: mono, cursor: "pointer" }}>Currently working here</label>
             </div>
           </div>
           {/* Bullets */}
           <div>
-            <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 6 }}>Bullet Points</label>
+            <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 6 }}>Bullet Points</label>
             {item.bullets.map((b: string, i: number) => (
               <div key={i} style={{ display: "flex", gap: 6, marginBottom: 6 }}>
                 <span style={{ color: "#ea580c", fontFamily: mono, fontSize: 12, marginTop: 8, flexShrink: 0 }}>•</span>
                 <Input value={b} onChange={(e: any) => updateBullet(item.id, i, e.target.value)} placeholder="Engineered a feature that reduced load time by 40%" />
                 {item.bullets.length > 1 && (
-                  <button onClick={() => removeBullet(item.id, i)} style={{ background: "none", border: "none", color: "#8a7a6a", cursor: "pointer", fontSize: 14, flexShrink: 0 }}>✕</button>
+                  <button onClick={() => removeBullet(item.id, i)} style={{ background: "none", border: "none", color: "rgb(var(--text-muted))", cursor: "pointer", fontSize: 14, flexShrink: 0 }}>✕</button>
                 )}
               </div>
             ))}
-            <button onClick={() => addBullet(item.id)} style={{ background: "none", border: "1px dashed rgba(255,180,120,0.14)", borderRadius: 6, padding: "5px 12px", color: "#8a7a6a", fontSize: 11, fontFamily: mono, cursor: "pointer", marginTop: 4 }}>
+            <button onClick={() => addBullet(item.id)} style={{ background: "none", border: "1px dashed var(--border-subtle)", borderRadius: 6, padding: "5px 12px", color: "rgb(var(--text-muted))", fontSize: 11, fontFamily: mono, cursor: "pointer", marginTop: 4 }}>
               + Add bullet
             </button>
           </div>
@@ -229,7 +229,7 @@ function EducationEditor({ data, onChange }: any) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {data.items.map((item: any, idx: number) => (
-        <div key={item.id} style={{ background: "rgba(255,237,213,0.05)", borderRadius: 10, padding: 14, border: "1px solid rgba(255,180,120,0.14)", display: "flex", flexDirection: "column", gap: 10 }}>
+        <div key={item.id} style={{ background: "var(--glass-bg)", borderRadius: 10, padding: 14, border: "1px solid var(--border-subtle)", display: "flex", flexDirection: "column", gap: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <span style={{ fontSize: 11, color: "#ea580c", fontFamily: mono }}>Education #{idx + 1}</span>
             {data.items.length > 1 && (
@@ -247,7 +247,7 @@ function EducationEditor({ data, onChange }: any) {
               { key: "location",    label: "Location",    placeholder: "Chennai, India" },
             ].map((f: any) => (
               <div key={f.key} style={{ gridColumn: f.col || "auto" }}>
-                <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>{f.label}</label>
+                <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>{f.label}</label>
                 <Input value={item[f.key]} onChange={(e: any) => updateItem(item.id, f.key, e.target.value)} placeholder={f.placeholder} />
               </div>
             ))}
@@ -276,11 +276,11 @@ function SkillsEditor({ data, onChange }: any) {
       {data.items.map((item: any) => (
         <div key={item.id} style={{ display: "grid", gridTemplateColumns: "1fr 2fr auto", gap: 8, alignItems: "end" }}>
           <div>
-            <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Category</label>
+            <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>Category</label>
             <Input value={item.category} onChange={(e: any) => updateItem(item.id, "category", e.target.value)} placeholder="Languages" />
           </div>
           <div>
-            <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Skills (comma-separated)</label>
+            <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>Skills (comma-separated)</label>
             <Input value={item.skills} onChange={(e: any) => updateItem(item.id, "skills", e.target.value)} placeholder="Python, JavaScript, TypeScript" />
           </div>
           {data.items.length > 1 && (
@@ -321,7 +321,7 @@ function ProjectsEditor({ data, onChange }: any) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {data.items.map((item: any, idx: number) => (
-        <div key={item.id} style={{ background: "rgba(255,237,213,0.05)", borderRadius: 10, padding: 14, border: "1px solid rgba(255,180,120,0.14)", display: "flex", flexDirection: "column", gap: 10 }}>
+        <div key={item.id} style={{ background: "var(--glass-bg)", borderRadius: 10, padding: 14, border: "1px solid var(--border-subtle)", display: "flex", flexDirection: "column", gap: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <span style={{ fontSize: 11, color: "#ea580c", fontFamily: mono }}>Project #{idx + 1}</span>
             {data.items.length > 1 && (
@@ -330,34 +330,34 @@ function ProjectsEditor({ data, onChange }: any) {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             <div style={{ gridColumn: "span 2" }}>
-              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Project Name</label>
+              <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>Project Name</label>
               <Input value={item.name} onChange={(e: any) => updateItem(item.id, "name", e.target.value)} placeholder="DevForge" />
             </div>
             <div>
-              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Tech Stack</label>
+              <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>Tech Stack</label>
               <Input value={item.tech} onChange={(e: any) => updateItem(item.id, "tech", e.target.value)} placeholder="Next.js, Fastify, PostgreSQL" />
             </div>
             <div>
-              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Live Link</label>
+              <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>Live Link</label>
               <Input value={item.link} onChange={(e: any) => updateItem(item.id, "link", e.target.value)} placeholder="devforge.vercel.app" />
             </div>
             <div style={{ gridColumn: "span 2" }}>
-              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>GitHub</label>
+              <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>GitHub</label>
               <Input value={item.github} onChange={(e: any) => updateItem(item.id, "github", e.target.value)} placeholder="github.com/gourav/devforge" />
             </div>
           </div>
           <div>
-            <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 6 }}>Bullet Points</label>
+            <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 6 }}>Bullet Points</label>
             {item.bullets.map((b: string, i: number) => (
               <div key={i} style={{ display: "flex", gap: 6, marginBottom: 6 }}>
                 <span style={{ color: "#ea580c", fontFamily: mono, fontSize: 12, marginTop: 8, flexShrink: 0 }}>•</span>
                 <Input value={b} onChange={(e: any) => updateBullet(item.id, i, e.target.value)} placeholder="Built real-time PvP feature with Socket.io serving 100+ concurrent users" />
                 {item.bullets.length > 1 && (
-                  <button onClick={() => removeBullet(item.id, i)} style={{ background: "none", border: "none", color: "#8a7a6a", cursor: "pointer", fontSize: 14, flexShrink: 0 }}>✕</button>
+                  <button onClick={() => removeBullet(item.id, i)} style={{ background: "none", border: "none", color: "rgb(var(--text-muted))", cursor: "pointer", fontSize: 14, flexShrink: 0 }}>✕</button>
                 )}
               </div>
             ))}
-            <button onClick={() => addBullet(item.id)} style={{ background: "none", border: "1px dashed rgba(255,180,120,0.14)", borderRadius: 6, padding: "5px 12px", color: "#8a7a6a", fontSize: 11, fontFamily: mono, cursor: "pointer", marginTop: 4 }}>
+            <button onClick={() => addBullet(item.id)} style={{ background: "none", border: "1px dashed var(--border-subtle)", borderRadius: 6, padding: "5px 12px", color: "rgb(var(--text-muted))", fontSize: 11, fontFamily: mono, cursor: "pointer", marginTop: 4 }}>
               + Add bullet
             </button>
           </div>
@@ -383,7 +383,7 @@ function CertificationsEditor({ data, onChange }: any) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {data.items.map((item: any) => (
-        <div key={item.id} style={{ background: "rgba(255,237,213,0.05)", borderRadius: 10, padding: 12, border: "1px solid rgba(255,180,120,0.14)", display: "flex", flexDirection: "column", gap: 8 }}>
+        <div key={item.id} style={{ background: "var(--glass-bg)", borderRadius: 10, padding: 12, border: "1px solid var(--border-subtle)", display: "flex", flexDirection: "column", gap: 8 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {[
               { key: "name",   label: "Certification Name", placeholder: "AWS Solutions Architect", col: "span 2" },
@@ -392,7 +392,7 @@ function CertificationsEditor({ data, onChange }: any) {
               { key: "link",   label: "Credential URL",     placeholder: "credly.com/...", col: "span 2" },
             ].map((f: any) => (
               <div key={f.key} style={{ gridColumn: f.col || "auto" }}>
-                <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>{f.label}</label>
+                <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>{f.label}</label>
                 <Input value={item[f.key]} onChange={(e: any) => updateItem(item.id, f.key, e.target.value)} placeholder={f.placeholder} />
               </div>
             ))}
@@ -422,22 +422,22 @@ function CustomEditor({ data, onChange }: any) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {data.items.map((item: any) => (
-        <div key={item.id} style={{ background: "rgba(255,237,213,0.05)", borderRadius: 10, padding: 12, border: "1px solid rgba(255,180,120,0.14)", display: "flex", flexDirection: "column", gap: 8 }}>
+        <div key={item.id} style={{ background: "var(--glass-bg)", borderRadius: 10, padding: 12, border: "1px solid var(--border-subtle)", display: "flex", flexDirection: "column", gap: 8 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             <div style={{ gridColumn: "span 2" }}>
-              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Title</label>
+              <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>Title</label>
               <Input value={item.title} onChange={(e: any) => updateItem(item.id, "title", e.target.value)} placeholder="Achievement title" />
             </div>
             <div>
-              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Subtitle</label>
+              <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>Subtitle</label>
               <Input value={item.subtitle} onChange={(e: any) => updateItem(item.id, "subtitle", e.target.value)} placeholder="Organisation" />
             </div>
             <div>
-              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Date</label>
+              <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>Date</label>
               <Input value={item.date} onChange={(e: any) => updateItem(item.id, "date", e.target.value)} placeholder="2024" />
             </div>
             <div style={{ gridColumn: "span 2" }}>
-              <label style={{ fontSize: 10, color: "#8a7a6a", fontFamily: mono, display: "block", marginBottom: 4 }}>Description</label>
+              <label style={{ fontSize: 10, color: "rgb(var(--text-muted))", fontFamily: mono, display: "block", marginBottom: 4 }}>Description</label>
               <Textarea value={item.description} onChange={(e: any) => updateItem(item.id, "description", e.target.value)} placeholder="Describe this achievement..." rows={2} />
             </div>
           </div>
@@ -891,7 +891,7 @@ export default function ResumeBuilderPage() {
   if (!hydrated || !token) return null
   if (isLoading) return (
     <div className="bg-base">
-      <p style={{ color: "#8a7a6a", fontFamily: mono }}>Loading builder...</p>
+      <p style={{ color: "rgb(var(--text-muted))", fontFamily: mono }}>Loading builder...</p>
     </div>
   )
 
@@ -904,7 +904,7 @@ export default function ResumeBuilderPage() {
       
       {/* ── Top Bar ── */}
       <div style={{
-        height: 60, flexShrink: 0, borderBottom: "1px solid rgba(255,180,120,0.14)",
+        height: 60, flexShrink: 0, borderBottom: "1px solid var(--border-subtle)",
         background: "#110d0c", display: "flex", alignItems: "center",
         justifyContent: "space-between", padding: "0 24px", zIndex: 10
       }}>
@@ -921,7 +921,7 @@ export default function ResumeBuilderPage() {
               onClick={() => setShowUploadModal(true)}
               style={{
                 padding: "8px 16px", borderRadius: 12, border: "1px dashed rgba(255,180,120,0.4)",
-                background: "rgba(255,237,213,0.02)", color: "#8a7a6a", fontSize: 12,
+                background: "rgba(var(--glass-bg-rgb),0.02)", color: "rgb(var(--text-muted))", fontSize: 12,
                 fontFamily: mono, cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: 8
               }}
             >
@@ -947,7 +947,7 @@ export default function ResumeBuilderPage() {
 
         <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
           {/* Zoom Controls */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12, color: "#8a7a6a", fontFamily: mono }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12, color: "rgb(var(--text-muted))", fontFamily: mono }}>
             <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
               <input type="checkbox" checked={autoscale} onChange={e => setAutoscale(e.target.checked)} style={{ accentColor: "#ea580c" }} />
               Autoscale
@@ -961,14 +961,14 @@ export default function ResumeBuilderPage() {
             <span style={{ width: 36 }}>{Math.round(zoom * 100)}%</span>
           </div>
           
-          <div style={{ width: 1, height: 20, background: "rgba(255,180,120,0.14)" }} />
+          <div style={{ width: 1, height: 20, background: "var(--border-subtle)" }} />
 
           {/* Action Buttons */}
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={handleSave} disabled={saveBuilder.isPending} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid rgba(255,180,120,0.14)", background: saved_ ? "#10b98120" : "transparent", color: saved_ ? "#10b981" : "#fdf6f0", fontSize: 13, fontWeight: 500, cursor: "pointer", transition: "all 0.2s" }}>
+            <button onClick={handleSave} disabled={saveBuilder.isPending} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid var(--border-subtle)", background: saved_ ? "#10b98120" : "transparent", color: saved_ ? "#10b981" : "rgb(var(--text-primary))", fontSize: 13, fontWeight: 500, cursor: "pointer", transition: "all 0.2s" }}>
               {saved_ ? "✓ Saved" : "Save"}
             </button>
-            <button onClick={handleExportPDF} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "#fdf6f0", color: "#171210", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+            <button onClick={handleExportPDF} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "rgb(var(--text-primary))", color: "#171210", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
               Download PDF
             </button>
@@ -980,7 +980,7 @@ export default function ResumeBuilderPage() {
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
         
         {/* ── Left Sidebar (Tabs) ── */}
-        <div style={{ width: 220, flexShrink: 0, borderRight: "1px solid rgba(255,180,120,0.14)", background: "#140f0e", display: "flex", flexDirection: "column", padding: "16px 12px" }}>
+        <div style={{ width: 220, flexShrink: 0, borderRight: "1px solid var(--border-subtle)", background: "#140f0e", display: "flex", flexDirection: "column", padding: "16px 12px" }}>
           {TABS.map(tab => (
             <button
               key={tab}
@@ -992,7 +992,7 @@ export default function ResumeBuilderPage() {
               style={{
                 padding: "10px 14px", borderRadius: 8, border: "none",
                 background: activeTab === tab ? "rgba(234,88,12,0.15)" : "transparent",
-                color: activeTab === tab ? "#ea580c" : "#8a7a6a",
+                color: activeTab === tab ? "#ea580c" : "rgb(var(--text-muted))",
                 fontSize: 13, fontWeight: activeTab === tab ? 600 : 500,
                 textAlign: "left", cursor: "pointer", transition: "all 0.2s",
                 display: "flex", alignItems: "center", gap: 8, marginBottom: 4
@@ -1018,7 +1018,7 @@ export default function ResumeBuilderPage() {
                   style={{
                     padding: "6px 12px", borderRadius: 99,
                     background: activeSection === s.id ? "rgba(255,255,255,0.08)" : "transparent",
-                    color: activeSection === s.id ? "#fdf6f0" : "#8a7a6a",
+                    color: activeSection === s.id ? "rgb(var(--text-primary))" : "rgb(var(--text-muted))",
                     fontSize: 12, cursor: "pointer", transition: "all 0.2s",
                     display: "flex", alignItems: "center", justifyContent: "space-between"
                   }}
@@ -1042,7 +1042,7 @@ export default function ResumeBuilderPage() {
         </div>
 
         {/* ── Middle Pane (Form Editor) ── */}
-        <div style={{ width: 450, flexShrink: 0, borderRight: "1px solid rgba(255,180,120,0.14)", background: "var(--bg-base)", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+        <div style={{ width: 450, flexShrink: 0, borderRight: "1px solid var(--border-subtle)", background: "var(--bg-base)", overflowY: "auto", display: "flex", flexDirection: "column" }}>
           
           {/* Editor Content */}
           {activeTab === "Core Sections" || activeTab === "More Sections" ? (
@@ -1050,20 +1050,20 @@ export default function ResumeBuilderPage() {
               {activeS && (
                 <>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                    <h2 style={{ fontSize: 16, fontWeight: 700, color: "#fdf6f0", textTransform: "uppercase", letterSpacing: 1, margin: 0 }}>
+                    <h2 style={{ fontSize: 16, fontWeight: 700, color: "rgb(var(--text-primary))", textTransform: "uppercase", letterSpacing: 1, margin: 0 }}>
                       {activeS.title}
                     </h2>
                     <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                       <button
                         onClick={() => toggleSection(activeS.id)}
-                        style={{ background: "none", border: "none", color: activeS.enabled ? "#10b981" : "#8a7a6a", fontSize: 12, cursor: "pointer", fontWeight: 500 }}
+                        style={{ background: "none", border: "none", color: activeS.enabled ? "#10b981" : "rgb(var(--text-muted))", fontSize: 12, cursor: "pointer", fontWeight: 500 }}
                       >
                         {activeS.enabled ? "✅ Enabled" : "❌ Disabled"}
                       </button>
                       <button onClick={() => {
                         // Reset logic: just clear data based on type
                         if (confirm("Reset this section?")) updateSectionData(activeS.id, DEFAULT_SECTIONS.find(d => d.type === activeS.type)?.data || { items: [] })
-                      }} style={{ padding: "4px 10px", borderRadius: 99, border: "1px solid rgba(255,180,120,0.2)", background: "transparent", color: "#8a7a6a", fontSize: 11, cursor: "pointer" }}>
+                      }} style={{ padding: "4px 10px", borderRadius: 99, border: "1px solid rgba(255,180,120,0.2)", background: "transparent", color: "rgb(var(--text-muted))", fontSize: 11, cursor: "pointer" }}>
                         Reset
                       </button>
                     </div>
@@ -1085,16 +1085,16 @@ export default function ResumeBuilderPage() {
 
               {/* Add Custom Section Panel overlay */}
               {showAddPanel && (
-                <div style={{ padding: 16, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,180,120,0.14)", marginTop: 20 }}>
+                <div style={{ padding: 16, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-subtle)", marginTop: 20 }}>
                   <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Add New Section</h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {AVAILABLE_SECTIONS.map(s => (
-                      <button key={s.type} onClick={() => addAvailableSection(s.type, s.title)} style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(255,180,120,0.14)", background: "transparent", color: "#fdf6f0", fontSize: 12, textAlign: "left", cursor: "pointer" }}>
+                      <button key={s.type} onClick={() => addAvailableSection(s.type, s.title)} style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid var(--border-subtle)", background: "transparent", color: "rgb(var(--text-primary))", fontSize: 12, textAlign: "left", cursor: "pointer" }}>
                         + {s.title}
                       </button>
                     ))}
                     <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                      <input value={customName} onChange={e => setCustomName(e.target.value)} placeholder="Custom name..." style={{ flex: 1, padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(234,88,12,0.4)", background: "#0a0807", color: "#fdf6f0", fontSize: 12, outline: "none" }} />
+                      <input value={customName} onChange={e => setCustomName(e.target.value)} placeholder="Custom name..." style={{ flex: 1, padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(234,88,12,0.4)", background: "#0a0807", color: "rgb(var(--text-primary))", fontSize: 12, outline: "none" }} />
                       <button onClick={addCustomSection} style={{ padding: "0 16px", borderRadius: 8, border: "none", background: "#ea580c", color: "#fff", cursor: "pointer", fontWeight: 600 }}>Add</button>
                     </div>
                   </div>
@@ -1103,7 +1103,7 @@ export default function ResumeBuilderPage() {
             </div>
           ) : activeTab === "Templates" ? (
             <div style={{ padding: 24 }}>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: "#fdf6f0", textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Choose Template</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: "rgb(var(--text-primary))", textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Choose Template</h2>
               
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 {TEMPLATES.map(t => {
@@ -1119,7 +1119,7 @@ export default function ResumeBuilderPage() {
                             <t.component sections={sections.length > 0 ? sections : DEFAULT_SECTIONS} />
                          </div>
                       </div>
-                      <p style={{ textAlign: "center", fontSize: 11, fontWeight: isSelected ? 600 : 500, marginTop: 8, color: isSelected ? "#ea580c" : "#8a7a6a" }}>{t.name}</p>
+                      <p style={{ textAlign: "center", fontSize: 11, fontWeight: isSelected ? 600 : 500, marginTop: 8, color: isSelected ? "#ea580c" : "rgb(var(--text-muted))" }}>{t.name}</p>
                     </div>
                   )
                 })}
@@ -1131,8 +1131,8 @@ export default function ResumeBuilderPage() {
             </div>
           ) : (
             <div style={{ padding: 24 }}>
-               <h2 style={{ fontSize: 16, fontWeight: 700, color: "#fdf6f0", textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Customize</h2>
-               <p style={{ color: "#8a7a6a", fontSize: 13 }}>Custom fonts, spacing, and accent colors coming soon!</p>
+               <h2 style={{ fontSize: 16, fontWeight: 700, color: "rgb(var(--text-primary))", textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Customize</h2>
+               <p style={{ color: "rgb(var(--text-muted))", fontSize: 13 }}>Custom fonts, spacing, and accent colors coming soon!</p>
             </div>
           )}
         </div>
@@ -1165,15 +1165,15 @@ export default function ResumeBuilderPage() {
           <div style={{
             position: "fixed", bottom: 32, right: 32,
             background: "rgba(10, 8, 7, 0.8)", backdropFilter: "blur(12px)",
-            border: "1px solid rgba(255,180,120,0.14)", borderRadius: 99,
+            border: "1px solid var(--border-subtle)", borderRadius: 99,
             padding: "8px 16px", display: "flex", alignItems: "center", gap: 12,
             boxShadow: "0 10px 25px rgba(0,0,0,0.3)", zIndex: 50
           }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "#8a7a6a" }}>Completion</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "rgb(var(--text-muted))" }}>Completion</div>
             <div style={{ width: 100, height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 99, overflow: "hidden" }}>
               <div style={{ width: `${completionScore}%`, height: "100%", background: completionScore > 80 ? "#10b981" : "#ea580c", transition: "width 0.5s ease" }} />
             </div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#fdf6f0", minWidth: 32 }}>{completionScore}%</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "rgb(var(--text-primary))", minWidth: 32 }}>{completionScore}%</div>
           </div>
         </div>
       </div>
@@ -1189,7 +1189,7 @@ export default function ResumeBuilderPage() {
             <div className="bg-base">
                <button 
                   onClick={() => setShowUploadModal(false)}
-                  style={{ position: "absolute", top: 16, right: 16, background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "#8a7a6a", fontFamily: mono }}
+                  style={{ position: "absolute", top: 16, right: 16, background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "rgb(var(--text-muted))", fontFamily: mono }}
                >
                   ✕
                </button>
@@ -1197,13 +1197,13 @@ export default function ResumeBuilderPage() {
                <div style={{
                   border: "2px dashed rgba(234,88,12,0.4)", borderRadius: 16, padding: "40px 20px",
                   display: "flex", flexDirection: "column", alignItems: "center", gap: 16,
-                  background: "rgba(255,237,213,0.02)"
+                  background: "rgba(var(--glass-bg-rgb),0.02)"
                }}>
                   <div style={{ fontSize: 48 }}>📄</div>
-                  <h2 style={{ fontSize: 18, color: "#fdf6f0", margin: 0, fontWeight: 600, fontFamily: mono }}>
+                  <h2 style={{ fontSize: 18, color: "rgb(var(--text-primary))", margin: 0, fontWeight: 600, fontFamily: mono }}>
                      Browse a pdf file or drop it here
                   </h2>
-                  <p style={{ fontSize: 13, color: "#8a7a6a", margin: 0, display: "flex", alignItems: "center", gap: 6, fontFamily: mono }}>
+                  <p style={{ fontSize: 13, color: "rgb(var(--text-muted))", margin: 0, display: "flex", alignItems: "center", gap: 6, fontFamily: mono }}>
                      🔒 File data is securely parsed directly into your builder session
                   </p>
                   

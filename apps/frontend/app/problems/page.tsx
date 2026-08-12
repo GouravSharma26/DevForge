@@ -55,10 +55,10 @@ export default function ProblemsPage() {
                 style={{
                   padding: "6px 16px", borderRadius: 99, fontSize: 12, cursor: "pointer",
                   fontFamily: "JetBrains Mono, monospace", transition: "all 0.2s",
-                  background: active ? "rgba(217,119,6,0.18)" : "rgba(255,237,213,0.05)",
+                  background: active ? "rgba(217,119,6,0.18)" : "var(--glass-bg)",
                   backdropFilter: active ? "blur(8px)" : "blur(16px)", WebkitBackdropFilter: active ? "blur(8px)" : "blur(16px)",
-                  border: active ? "1px solid rgba(253,186,116,0.45)" : "1px solid rgba(255,180,120,0.14)",
-                  color: active ? "#fed7aa" : "#8a7a6a",
+                  border: active ? "1px solid rgba(253,186,116,0.45)" : "1px solid var(--border-subtle)",
+                  color: active ? "#fed7aa" : "rgb(var(--text-muted))",
                   boxShadow: active ? "0 4px 20px rgba(234,88,12,0.1)" : "none",
                 }}
               >
@@ -70,13 +70,13 @@ export default function ProblemsPage() {
 
         {/* Table */}
         <div style={{
-          background: "rgba(255,237,213,0.05)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
-          border: "1px solid rgba(255,180,120,0.14)",
+          background: "var(--glass-bg)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+          border: "1px solid var(--border-subtle)",
           borderRadius: 16, overflow: "hidden",
         }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ borderBottom: "1px solid rgba(255,180,120,0.14)" }}>
+              <tr style={{ borderBottom: "1px solid var(--border-subtle)" }}>
                 {["#", "Title", "Category", "Difficulty"].map((h) => (
                   <th key={h} style={{
                     textAlign: "left", padding: "12px 20px",
@@ -90,7 +90,7 @@ export default function ProblemsPage() {
             </thead>
             <tbody>
               {isLoading && Array.from({ length: 8 }).map((_, i) => (
-                <tr key={i} style={{ borderBottom: "1px solid rgba(255,180,120,0.08)" }}>
+                <tr key={i} style={{ borderBottom: "1px solid rgba(var(--border-subtle-rgb),0.08)" }}>
                   {[40, 200, 120, 80].map((w, j) => (
                     <td key={j} style={{ padding: "14px 20px" }}>
                       <div style={{ height: 12, width: w, borderRadius: 6, background: "rgba(255,180,120,0.1)" }} />
@@ -103,18 +103,18 @@ export default function ProblemsPage() {
                   key={problem.id}
                   onClick={() => router.push(`/problems/${problem.slug}`)}
                   style={{
-                    borderBottom: "1px solid rgba(255,180,120,0.08)", cursor: "pointer", transition: "background 0.15s",
+                    borderBottom: "1px solid rgba(var(--border-subtle-rgb),0.08)", cursor: "pointer", transition: "background 0.15s",
                   }}
-                  onMouseEnter={(e) => (e.currentTarget as HTMLTableRowElement).style.background = "rgba(255,180,120,0.08)"}
+                  onMouseEnter={(e) => (e.currentTarget as HTMLTableRowElement).style.background = "rgba(var(--border-subtle-rgb),0.08)"}
                   onMouseLeave={(e) => (e.currentTarget as HTMLTableRowElement).style.background = "transparent"}
                 >
-                  <td style={{ padding: "14px 20px", fontSize: 12, color: "#8a7a6a", fontFamily: "JetBrains Mono, monospace" }}>
+                  <td style={{ padding: "14px 20px", fontSize: 12, color: "rgb(var(--text-muted))", fontFamily: "JetBrains Mono, monospace" }}>
                     {problem.order}
                   </td>
-                  <td style={{ padding: "14px 20px", fontSize: 13, color: "#fdf6f0", fontWeight: 500, fontFamily: "JetBrains Mono, monospace" }}>
+                  <td style={{ padding: "14px 20px", fontSize: 13, color: "rgb(var(--text-primary))", fontWeight: 500, fontFamily: "JetBrains Mono, monospace" }}>
                     {problem.title}
                   </td>
-                  <td style={{ padding: "14px 20px", fontSize: 12, color: "#8a7a6a", fontFamily: "JetBrains Mono, monospace" }}>
+                  <td style={{ padding: "14px 20px", fontSize: 12, color: "rgb(var(--text-muted))", fontFamily: "JetBrains Mono, monospace" }}>
                     {problem.category}
                   </td>
                   <td style={{ padding: "14px 20px", fontSize: 12, fontWeight: 600, fontFamily: "JetBrains Mono, monospace", color: DIFF_COLOR[problem.difficulty] }}>
@@ -143,9 +143,9 @@ export default function ProblemsPage() {
                   disabled={btn.disabled}
                   style={{
                     padding: "6px 16px", borderRadius: 10, fontSize: 12, cursor: btn.disabled ? "not-allowed" : "pointer",
-                    background: "rgba(255,237,213,0.05)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
-                    border: "1px solid rgba(255,180,120,0.14)",
-                    color: btn.disabled ? "#8a7a6a" : "#d4a373", opacity: btn.disabled ? 0.4 : 1,
+                    background: "var(--glass-bg)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+                    border: "1px solid var(--border-subtle)",
+                    color: btn.disabled ? "rgb(var(--text-muted))" : "rgb(var(--text-secondary))", opacity: btn.disabled ? 0.4 : 1,
                     fontFamily: "JetBrains Mono, monospace",
                   }}
                 >

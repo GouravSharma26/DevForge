@@ -72,9 +72,9 @@ async function handleSubmit() {
     width: "100%",
     padding: "12px 16px",
     borderRadius: 12,
-    border: `1px solid ${focused === name ? "rgba(234,88,12,0.8)" : "rgba(255,180,120,0.14)"}`,
+    border: `1px solid ${focused === name ? "rgba(234,88,12,0.8)" : "var(--border-subtle)"}`,
     background: "var(--bg-base)",
-    color: "#fdf6f0",
+    color: "rgb(var(--text-primary))",
     fontSize: 13,
     fontFamily: mono,
     outline: "none",
@@ -127,10 +127,10 @@ async function handleSubmit() {
             ⚔
           </div>
           <div>
-            <h1 style={{ fontSize: 20, fontWeight: 800, color: "#fdf6f0", fontFamily: mono, margin: 0 }}>
+            <h1 style={{ fontSize: 20, fontWeight: 800, color: "rgb(var(--text-primary))", fontFamily: mono, margin: 0 }}>
               Dev<span style={{ color: "#ea580c" }}>Forge</span>
             </h1>
-            <p style={{ fontSize: 12, color: "#8a7a6a", fontFamily: mono, marginTop: 4 }}>
+            <p style={{ fontSize: 12, color: "rgb(var(--text-muted))", fontFamily: mono, marginTop: 4 }}>
               {isRegister ? "Create your account" : "Welcome back"}
             </p>
           </div>
@@ -138,8 +138,8 @@ async function handleSubmit() {
 
         {/* Form card */}
         <div style={{
-          background: "rgba(255,237,213,0.05)",
-          border: "1px solid rgba(255,180,120,0.14)",
+          background: "var(--glass-bg)",
+          border: "1px solid var(--border-subtle)",
           borderRadius: 20,
           padding: 28,
           display: "flex",
@@ -150,7 +150,7 @@ async function handleSubmit() {
 
           {isRegister && (
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label style={{ fontSize: 11, color: "#8a7a6a", fontFamily: mono }}>Username</label>
+              <label style={{ fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: mono }}>Username</label>
               <input
                 type="text"
                 placeholder="gourav"
@@ -164,7 +164,7 @@ async function handleSubmit() {
           )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <label style={{ fontSize: 11, color: "#8a7a6a", fontFamily: mono }}>Email</label>
+            <label style={{ fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: mono }}>Email</label>
             <input
               type="email"
               placeholder="you@example.com"
@@ -177,7 +177,7 @@ async function handleSubmit() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <label style={{ fontSize: 11, color: "#8a7a6a", fontFamily: mono }}>Password</label>
+            <label style={{ fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: mono }}>Password</label>
             <input
               type="password"
               placeholder="••••••••"
@@ -213,7 +213,7 @@ async function handleSubmit() {
               background: loading
                 ? "rgba(255,255,255,0.05)"
                 : "linear-gradient(135deg, #ea580c, #d97706)",
-              color: loading ? "#8a7a6a" : "#fdf6f0",
+              color: loading ? "rgb(var(--text-muted))" : "rgb(var(--text-primary))",
               fontSize: 14,
               fontWeight: 700,
               fontFamily: mono,
@@ -235,9 +235,9 @@ async function handleSubmit() {
 
           {/* Divider */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ flex: 1, height: 1, background: "rgba(255,180,120,0.14)" }} />
+            <div style={{ flex: 1, height: 1, background: "var(--border-subtle)" }} />
             <span style={{ fontSize: 11, color: "#5a5780", fontFamily: mono }}>or</span>
-            <div style={{ flex: 1, height: 1, background: "rgba(255,180,120,0.14)" }} />
+            <div style={{ flex: 1, height: 1, background: "var(--border-subtle)" }} />
           </div>
 
           {/* Toggle register/login */}
@@ -247,21 +247,21 @@ async function handleSubmit() {
               width: "100%",
               padding: "11px 0",
               borderRadius: 12,
-              border: "1px solid rgba(255,180,120,0.14)",
+              border: "1px solid var(--border-subtle)",
               cursor: "pointer",
-              background: "rgba(255,237,213,0.05)",
-              color: "#8a7a6a",
+              background: "var(--glass-bg)",
+              color: "rgb(var(--text-muted))",
               fontSize: 13,
               fontFamily: mono,
               transition: "all 0.2s",
             }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(234,88,12,0.4)"
-              ;(e.currentTarget as HTMLButtonElement).style.color = "#fdf6f0"
+              ;(e.currentTarget as HTMLButtonElement).style.color = "rgb(var(--text-primary))"
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,180,120,0.14)"
-              ;(e.currentTarget as HTMLButtonElement).style.color = "#8a7a6a"
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border-subtle)"
+              ;(e.currentTarget as HTMLButtonElement).style.color = "rgb(var(--text-muted))"
             }}
           >
             {isRegister ? "Already have an account? Sign in" : "New here? Create an account"}
@@ -274,7 +274,7 @@ async function handleSubmit() {
         }}>
           {["DSA Practice", "PvP Arena", "AI Resume Scan"].map((f) => (
             <span key={f} style={{
-              fontSize: 11, color: "#8a7a6a", fontFamily: mono,
+              fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: mono,
               display: "flex", alignItems: "center", gap: 4,
             }}>
               <span style={{ color: "#ea580c" }}>✓</span> {f}
@@ -284,9 +284,9 @@ async function handleSubmit() {
 
         {/* Landing link */}
         <p style={{ textAlign: "center", fontSize: 11, color: "#5a5780", fontFamily: mono }}>
-          <a href="/landing" style={{ color: "#8a7a6a", textDecoration: "none" }}
+          <a href="/landing" style={{ color: "rgb(var(--text-muted))", textDecoration: "none" }}
             onMouseEnter={(e) => (e.currentTarget.style.color = "#ea580c")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#8a7a6a")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "rgb(var(--text-muted))")}
           >
             ← Back to home
           </a>
