@@ -102,7 +102,7 @@ export default function ResumeHubPage() {
   const PreviewComponent = TEMPLATES.find(t => t.id === selectedPreviewId)?.component || ModernProfessional
 
   return (
-    <main style={{ display: "flex", height: "calc(100vh - 56px)", background: "rgb(var(--bg-base))" }}>
+    <main style={{ display: "flex", height: "calc(100vh - 56px)", background: "var(--bg-base)" }}>
       
       {/* ── Left Column: Template Gallery ── */}
       <div style={{ width: "55%", minWidth: 600, display: "flex", flexDirection: "column", borderRight: "1px solid rgba(255,180,120,0.1)" }}>
@@ -110,8 +110,8 @@ export default function ResumeHubPage() {
         {/* Header */}
         <div style={{ padding: "32px 40px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid rgba(255,180,120,0.05)", background: "rgba(255,255,255,0.02)" }}>
           <div>
-            <h1 style={{ fontSize: 26, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: mono, margin: 0, letterSpacing: -0.5 }}>Resume Templates</h1>
-            <p style={{ fontSize: 13, color: "rgb(var(--text-muted))", marginTop: 8, fontFamily: mono, maxWidth: 380, lineHeight: 1.5 }}>
+            <h1 style={{ fontSize: 26, fontWeight: 700, color: "var(--text-primary)", fontFamily: mono, margin: 0, letterSpacing: -0.5 }}>Resume Templates</h1>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 8, fontFamily: mono, maxWidth: 380, lineHeight: 1.5 }}>
               Choose a template below to start building your targeted resume.
             </p>
           </div>
@@ -173,7 +173,7 @@ export default function ResumeHubPage() {
                   <div style={{
                     position: "absolute", top: 12, right: 12,
                     background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", padding: "4px 8px",
-                    borderRadius: 6, fontSize: 10, fontWeight: 600, color: "rgb(var(--text-primary))", fontFamily: mono,
+                    borderRadius: 6, fontSize: 10, fontWeight: 600, color: "var(--text-primary)", fontFamily: mono,
                     display: "flex", alignItems: "center", gap: 4
                   }}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
@@ -184,8 +184,8 @@ export default function ResumeHubPage() {
 
               {/* Meta */}
               <div>
-                <h3 style={{ fontSize: 15, fontWeight: 600, color: "rgb(var(--text-primary))", margin: 0, fontFamily: "Inter, sans-serif" }}>{t.name}</h3>
-                <p style={{ fontSize: 12, color: "rgb(var(--text-muted))", marginTop: 4, margin: 0, fontFamily: mono }}>By {t.author}</p>
+                <h3 style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)", margin: 0, fontFamily: "Inter, sans-serif" }}>{t.name}</h3>
+                <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4, margin: 0, fontFamily: mono }}>By {t.author}</p>
               </div>
             </div>
           ))}

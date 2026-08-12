@@ -74,15 +74,15 @@ export default function AdminDashboard() {
               <Shield size={24} color="#ea580c" />
             </div>
             <div>
-              <h1 style={{ fontSize: 24, fontWeight: 800, color: "rgb(var(--text-primary))", fontFamily: "JetBrains Mono, monospace" }}>Admin Command Center</h1>
-              <p style={{ color: "rgb(var(--text-muted))", fontSize: 14 }}>Global system configuration and bot tuning.</p>
+              <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" }}>Admin Command Center</h1>
+              <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Global system configuration and bot tuning.</p>
             </div>
           </div>
 
           <div style={{ background: "#1c1815", border: "1px solid #332b26", borderRadius: 16, padding: 32 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24, borderBottom: "1px solid #332b26", paddingBottom: 16 }}>
               <Bot size={20} color="#ea580c" />
-              <h2 style={{ fontSize: 18, color: "rgb(var(--text-primary))", fontWeight: 600 }}>PvP Arena AI Bots</h2>
+              <h2 style={{ fontSize: 18, color: "var(--text-primary)", fontWeight: 600 }}>PvP Arena AI Bots</h2>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
@@ -95,27 +95,27 @@ export default function AdminDashboard() {
                     onChange={e => setConfig({...config, botEnabled: e.target.checked})}
                     style={{ width: 18, height: 18, accentColor: "#ea580c" }}
                   />
-                  <span style={{ color: "rgb(var(--text-primary))", fontWeight: 500 }}>Enable Bot Injection</span>
+                  <span style={{ color: "var(--text-primary)", fontWeight: 500 }}>Enable Bot Injection</span>
                 </label>
 
                 <div style={{ marginBottom: 24 }}>
-                  <label style={{ display: "block", color: "rgb(var(--text-muted))", fontSize: 13, marginBottom: 8 }}>Queue Wait Time (seconds)</label>
+                  <label style={{ display: "block", color: "var(--text-muted)", fontSize: 13, marginBottom: 8 }}>Queue Wait Time (seconds)</label>
                   <input 
                     type="number" 
                     value={config.botQueueWaitTime}
                     onChange={e => setConfig({...config, botQueueWaitTime: Number(e.target.value)})}
-                    style={{ width: "100%", background: "rgb(var(--bg-base))", border: "1px solid #332b26", borderRadius: 8, padding: "10px 14px", color: "rgb(var(--text-primary))", fontFamily: "JetBrains Mono, monospace" }}
+                    style={{ width: "100%", background: "var(--bg-base)", border: "1px solid #332b26", borderRadius: 8, padding: "10px 14px", color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" }}
                   />
                   <p style={{ fontSize: 11, color: "#5a5780", marginTop: 6 }}>How long to wait before injecting a bot if no human joins.</p>
                 </div>
 
                 <div style={{ marginBottom: 24 }}>
-                  <label style={{ display: "block", color: "rgb(var(--text-muted))", fontSize: 13, marginBottom: 8 }}>Base Time: EASY (seconds)</label>
+                  <label style={{ display: "block", color: "var(--text-muted)", fontSize: 13, marginBottom: 8 }}>Base Time: EASY (seconds)</label>
                   <input 
                     type="number" 
                     value={config.baseTimeEasy}
                     onChange={e => setConfig({...config, baseTimeEasy: Number(e.target.value)})}
-                    style={{ width: "100%", background: "rgb(var(--bg-base))", border: "1px solid #332b26", borderRadius: 8, padding: "10px 14px", color: "rgb(var(--text-primary))", fontFamily: "JetBrains Mono, monospace" }}
+                    style={{ width: "100%", background: "var(--bg-base)", border: "1px solid #332b26", borderRadius: 8, padding: "10px 14px", color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" }}
                   />
                 </div>
               </div>
@@ -123,22 +123,22 @@ export default function AdminDashboard() {
               {/* Right Column */}
               <div>
                 <div style={{ marginBottom: 24 }}>
-                  <label style={{ display: "block", color: "rgb(var(--text-muted))", fontSize: 13, marginBottom: 8 }}>Beginner Multiplier (Slower)</label>
+                  <label style={{ display: "block", color: "var(--text-muted)", fontSize: 13, marginBottom: 8 }}>Beginner Multiplier (Slower)</label>
                   <input 
                     type="number" step="0.1"
                     value={config.multBeginner}
                     onChange={e => setConfig({...config, multBeginner: Number(e.target.value)})}
-                    style={{ width: "100%", background: "rgb(var(--bg-base))", border: "1px solid #332b26", borderRadius: 8, padding: "10px 14px", color: "rgb(var(--text-primary))", fontFamily: "JetBrains Mono, monospace" }}
+                    style={{ width: "100%", background: "var(--bg-base)", border: "1px solid #332b26", borderRadius: 8, padding: "10px 14px", color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" }}
                   />
                 </div>
 
                 <div style={{ marginBottom: 24 }}>
-                  <label style={{ display: "block", color: "rgb(var(--text-muted))", fontSize: 13, marginBottom: 8 }}>Intermediate Multiplier</label>
+                  <label style={{ display: "block", color: "var(--text-muted)", fontSize: 13, marginBottom: 8 }}>Intermediate Multiplier</label>
                   <input 
                     type="number" step="0.1"
                     value={config.multIntermediate}
                     onChange={e => setConfig({...config, multIntermediate: Number(e.target.value)})}
-                    style={{ width: "100%", background: "rgb(var(--bg-base))", border: "1px solid #332b26", borderRadius: 8, padding: "10px 14px", color: "rgb(var(--text-primary))", fontFamily: "JetBrains Mono, monospace" }}
+                    style={{ width: "100%", background: "var(--bg-base)", border: "1px solid #332b26", borderRadius: 8, padding: "10px 14px", color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" }}
                   />
                 </div>
 
@@ -148,7 +148,7 @@ export default function AdminDashboard() {
                     type="number" step="0.1"
                     value={config.multGrandmaster}
                     onChange={e => setConfig({...config, multGrandmaster: Number(e.target.value)})}
-                    style={{ width: "100%", background: "rgba(234,88,12,0.05)", border: "1px solid rgba(234,88,12,0.2)", borderRadius: 8, padding: "10px 14px", color: "rgb(var(--text-primary))", fontFamily: "JetBrains Mono, monospace" }}
+                    style={{ width: "100%", background: "rgba(234,88,12,0.05)", border: "1px solid rgba(234,88,12,0.2)", borderRadius: 8, padding: "10px 14px", color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" }}
                   />
                 </div>
               </div>

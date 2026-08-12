@@ -368,7 +368,7 @@ export default function LandingPage() {
           <h1 style={{
             fontSize: "clamp(36px, 6vw, 72px)",
             fontWeight: 900, lineHeight: 1.1,
-            color: "rgb(var(--text-primary))", marginBottom: 24, maxWidth: 820,
+            color: "var(--text-primary)", marginBottom: 24, maxWidth: 820,
           }}>
             Master the Code.<br />
             <span style={{
@@ -382,7 +382,7 @@ export default function LandingPage() {
           {/* Subheadline */}
           <p style={{
             fontSize: "clamp(14px, 2vw, 18px)",
-            color: "rgb(var(--text-muted))", maxWidth: 560, lineHeight: 1.8,
+            color: "var(--text-muted)", maxWidth: 560, lineHeight: 1.8,
             marginBottom: 48,
           }}>
             The elite training ground for software engineers. Level up your DSA, crush technical rounds, and compete in the arena.
@@ -396,7 +396,7 @@ export default function LandingPage() {
                 padding: "14px 36px", borderRadius: 14, fontSize: 14,
                 fontWeight: 700, cursor: "pointer", border: "none",
                 background: "linear-gradient(135deg, #ea580c, #d97706)",
-                color: "rgb(var(--text-primary))", fontFamily: mono,
+                color: "var(--text-primary)", fontFamily: mono,
                 boxShadow: "0 4px 24px rgba(234,88,12,0.4), 0 0 0 1px rgba(234,88,12,0.3)",
                 transition: "all 0.2s",
               }}
@@ -411,15 +411,15 @@ export default function LandingPage() {
                 padding: "14px 36px", borderRadius: 14, fontSize: 14,
                 fontWeight: 600, cursor: "pointer",
                 background: "var(--glass-bg)", border: "1px solid var(--border-subtle)",
-                color: "rgb(var(--text-muted))", fontFamily: mono, transition: "all 0.2s",
+                color: "var(--text-muted)", fontFamily: mono, transition: "all 0.2s",
               }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(234,88,12,0.5)"
-                ;(e.currentTarget as HTMLButtonElement).style.color = "rgb(var(--text-primary))"
+                ;(e.currentTarget as HTMLButtonElement).style.color = "var(--text-primary)"
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border-subtle)"
-                ;(e.currentTarget as HTMLButtonElement).style.color = "rgb(var(--text-muted))"
+                ;(e.currentTarget as HTMLButtonElement).style.color = "var(--text-muted)"
               }}
             >
               See Features ↓
@@ -487,8 +487,8 @@ export default function LandingPage() {
                   {card.icon}
                 </div>
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ color: "rgb(var(--text-primary))", fontWeight: 700, fontFamily: mono, fontSize: 16 }}>{card.title}</div>
-                  <div style={{ color: "rgb(var(--text-muted))", fontFamily: mono, fontSize: 13, marginTop: 6 }}>{card.desc}</div>
+                  <div style={{ color: "var(--text-primary)", fontWeight: 700, fontFamily: mono, fontSize: 16 }}>{card.title}</div>
+                  <div style={{ color: "var(--text-muted)", fontFamily: mono, fontSize: 13, marginTop: 6 }}>{card.desc}</div>
                 </div>
               </div>
             ))}
@@ -517,7 +517,7 @@ export default function LandingPage() {
                 }}>
                   <Counter target={s.value} suffix={s.suffix} />
                 </div>
-                <div style={{ fontSize: 12, color: "rgb(var(--text-muted))", marginTop: 8, fontFamily: mono }}>
+                <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 8, fontFamily: mono }}>
                   {s.label}
                 </div>
               </div>
@@ -539,10 +539,10 @@ export default function LandingPage() {
               }}>
                 Everything you need
               </div>
-              <h2 style={{ fontSize: "clamp(24px, 4vw, 40px)", fontWeight: 800, color: "rgb(var(--text-primary))", fontFamily: mono }}>
+              <h2 style={{ fontSize: "clamp(24px, 4vw, 40px)", fontWeight: 800, color: "var(--text-primary)", fontFamily: mono }}>
                 7 features. 1 platform.
               </h2>
-              <p style={{ fontSize: 14, color: "rgb(var(--text-muted))", marginTop: 12, maxWidth: 500, margin: "12px auto 0" }}>
+              <p style={{ fontSize: 14, color: "var(--text-muted)", marginTop: 12, maxWidth: 500, margin: "12px auto 0" }}>
                 Built with Next.js, Fastify, PostgreSQL, Redis, Socket.io, and Gemini AI.
               </p>
             </div>
@@ -576,10 +576,10 @@ export default function LandingPage() {
                       {f.tag}
                     </span>
                   </div>
-                  <h3 style={{ fontSize: 15, fontWeight: 700, color: "rgb(var(--text-primary))", marginBottom: 10, fontFamily: mono }}>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 10, fontFamily: mono }}>
                     {f.title}
                   </h3>
-                  <p style={{ fontSize: 12, color: "rgb(var(--text-muted))", lineHeight: 1.8, fontFamily: mono }}>
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.8, fontFamily: mono }}>
                     {f.desc}
                   </p>
                 </div>
@@ -616,11 +616,11 @@ export default function LandingPage() {
               </div>
               <h2 style={{
                 fontSize: "clamp(22px, 4vw, 36px)", fontWeight: 900,
-                color: "rgb(var(--text-primary))", marginBottom: 16, fontFamily: mono,
+                color: "var(--text-primary)", marginBottom: 16, fontFamily: mono,
               }}>
                 Ready to level up?
               </h2>
-              <p style={{ fontSize: 14, color: "rgb(var(--text-muted))", lineHeight: 1.8, marginBottom: 40, fontFamily: mono }}>
+              <p style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.8, marginBottom: 40, fontFamily: mono }}>
                 Join DevForge. Practice daily. Battle weekly.
                 <br />Get your resume interview-ready. Land the job.
               </p>
@@ -631,7 +631,7 @@ export default function LandingPage() {
                     padding: "14px 40px", borderRadius: 14, fontSize: 14,
                     fontWeight: 700, cursor: "pointer", border: "none",
                     background: "linear-gradient(135deg, #ea580c, #d97706)",
-                    color: "rgb(var(--text-primary))", fontFamily: mono,
+                    color: "var(--text-primary)", fontFamily: mono,
                     boxShadow: "0 4px 24px rgba(234,88,12,0.4)",
                     transition: "all 0.2s",
                   }}
@@ -646,15 +646,15 @@ export default function LandingPage() {
                     padding: "14px 40px", borderRadius: 14, fontSize: 14,
                     fontWeight: 600, cursor: "pointer",
                     background: "transparent", border: "1px solid var(--border-subtle)",
-                    color: "rgb(var(--text-muted))", fontFamily: mono, transition: "all 0.2s",
+                    color: "var(--text-muted)", fontFamily: mono, transition: "all 0.2s",
                   }}
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(234,88,12,0.5)"
-                    ;(e.currentTarget as HTMLButtonElement).style.color = "rgb(var(--text-primary))"
+                    ;(e.currentTarget as HTMLButtonElement).style.color = "var(--text-primary)"
                   }}
                   onMouseLeave={(e) => {
                     (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border-subtle)"
-                    ;(e.currentTarget as HTMLButtonElement).style.color = "rgb(var(--text-muted))"
+                    ;(e.currentTarget as HTMLButtonElement).style.color = "var(--text-muted)"
                   }}
                 >
                   ★ Star on GitHub
@@ -669,7 +669,7 @@ export default function LandingPage() {
         ════════════════════════════════════════════ */}
         <footer style={{
           borderTop: "1px solid var(--border-subtle)", padding: "40px 24px",
-          background: "rgb(var(--bg-base))",
+          background: "var(--bg-base)",
         }}>
           <div style={{
             maxWidth: 1100, margin: "0 auto",
@@ -685,7 +685,7 @@ export default function LandingPage() {
               }}>
                 <Anvil size={14} className="text-white" strokeWidth={3} />
               </div>
-              <span style={{ fontWeight: 700, fontSize: 14, color: "rgb(var(--text-primary))", fontFamily: mono }}>
+              <span style={{ fontWeight: 700, fontSize: 14, color: "var(--text-primary)", fontFamily: mono }}>
                 Dev<span style={{ color: "#ea580c" }}>Forge</span>
               </span>
             </div>
@@ -693,7 +693,7 @@ export default function LandingPage() {
 
 
             {/* Credit */}
-            <p style={{ fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: mono }}>
+            <p style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: mono }}>
               Built by{" "}
               <span style={{ color: "#ea580c" }}>Gourav Sharma</span>
               {" "}· {new Date().getFullYear()}

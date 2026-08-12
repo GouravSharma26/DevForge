@@ -71,22 +71,22 @@ export default function InterviewHubPage() {
         {/* ── Header ── */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: mono, margin: 0 }}>Interview Hub</h1>
-            <p style={{ fontSize: 12, color: "rgb(var(--text-muted))", marginTop: 4, fontFamily: mono }}>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", fontFamily: mono, margin: 0 }}>Interview Hub</h1>
+            <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4, fontFamily: mono }}>
               Practice mock interviews based on your specific resumes
             </p>
           </div>
           
           <div style={{ display: "flex", alignItems: "center", gap: 12, background: "var(--glass-bg)", padding: "8px 12px", borderRadius: 12, border: "1px solid var(--border-subtle)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
-            <span style={{ fontSize: 12, color: "rgb(var(--text-secondary))", fontFamily: mono }}>Target Resume:</span>
+            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: mono }}>Target Resume:</span>
             <select
               value={selectedResumeId}
               onChange={(e) => setSelectedResumeId(e.target.value)}
               disabled={resumesLoading || startInterview.isPending}
               style={{
-                background: "rgb(var(--bg-surface))",
+                background: "var(--bg-surface)",
                 border: "1px solid var(--border-subtle)",
-                color: "rgb(var(--text-primary))",
+                color: "var(--text-primary)",
                 padding: "6px 12px",
                 borderRadius: 8,
                 fontFamily: mono,
@@ -110,8 +110,8 @@ export default function InterviewHubPage() {
               title="Upload New Resume"
               style={{
                 width: 32, height: 32, borderRadius: 8, border: "1px solid var(--border-subtle)",
-                background: uploadResume.isPending ? "var(--glass-bg)" : "rgb(var(--bg-surface))",
-                color: uploadResume.isPending ? "rgb(var(--text-muted))" : "#ea580c",
+                background: uploadResume.isPending ? "var(--glass-bg)" : "var(--bg-surface)",
+                color: uploadResume.isPending ? "var(--text-muted)" : "#ea580c",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 cursor: uploadResume.isPending ? "not-allowed" : "pointer",
                 transition: "all 0.2s"
@@ -152,8 +152,8 @@ export default function InterviewHubPage() {
             </div>
             <div style={{ padding: 20, flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: mono, marginBottom: 8 }}>Standard Mock</h3>
-                <p style={{ fontSize: 12, color: "rgb(var(--text-muted))", fontFamily: mono, lineHeight: 1.5, marginBottom: 20 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", fontFamily: mono, marginBottom: 8 }}>Standard Mock</h3>
+                <p style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: mono, lineHeight: 1.5, marginBottom: 20 }}>
                   A rigorous 10-question gauntlet: 9 advanced multiple-choice questions followed by 1 interactive Grandmaster coding challenge.
                 </p>
               </div>
@@ -163,7 +163,7 @@ export default function InterviewHubPage() {
                 style={{
                   width: "100%", padding: "10px", borderRadius: 10, border: "none",
                   background: (startInterview.isPending || !selectedResumeId) ? "var(--glass-bg)" : "linear-gradient(135deg, #ea580c, #d97706)",
-                  color: (startInterview.isPending || !selectedResumeId) ? "rgb(var(--text-muted))" : "rgb(var(--text-primary))", fontSize: 13,
+                  color: (startInterview.isPending || !selectedResumeId) ? "var(--text-muted)" : "var(--text-primary)", fontSize: 13,
                   fontFamily: mono, cursor: (startInterview.isPending || !selectedResumeId) ? "not-allowed" : "pointer", fontWeight: 700,
                   boxShadow: (startInterview.isPending || !selectedResumeId) ? "none" : "0 4px 16px rgba(234,88,12,0.3)",
                   transition: "all 0.2s"
@@ -194,8 +194,8 @@ export default function InterviewHubPage() {
             </div>
             <div style={{ padding: 20, flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: mono, marginBottom: 8 }}>1-on-1 AI Agent</h3>
-                <p style={{ fontSize: 12, color: "rgb(var(--text-muted))", fontFamily: mono, lineHeight: 1.5, marginBottom: 20 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", fontFamily: mono, marginBottom: 8 }}>1-on-1 AI Agent</h3>
+                <p style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: mono, lineHeight: 1.5, marginBottom: 20 }}>
                   A completely immersive verbal and collaborative technical interview with an autonomous AI recruiter.
                 </p>
               </div>
@@ -203,7 +203,7 @@ export default function InterviewHubPage() {
                 onClick={() => setShowModal(true)}
                 style={{
                   width: "100%", padding: "10px", borderRadius: 10, border: "1px solid var(--border-subtle)",
-                  background: "var(--glass-bg)", color: "rgb(var(--text-primary))", fontSize: 13,
+                  background: "var(--glass-bg)", color: "var(--text-primary)", fontSize: 13,
                   fontFamily: mono, cursor: "pointer", fontWeight: 700, transition: "all 0.2s"
                 }}
                 onMouseEnter={(e) => {
@@ -219,17 +219,17 @@ export default function InterviewHubPage() {
           </div>
         </div>
 
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: mono, marginTop: 24, marginBottom: -4, borderBottom: "1px solid var(--border-subtle)", paddingBottom: 12 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", fontFamily: mono, marginTop: 24, marginBottom: -4, borderBottom: "1px solid var(--border-subtle)", paddingBottom: 12 }}>
           Past Interviews
         </h2>
 
         {/* ── Saved Interviews Grid ── */}
         {isLoading ? (
-          <p style={{ color: "rgb(var(--text-muted))", fontFamily: mono, fontSize: 12, textAlign: "center", marginTop: 40 }}>Loading your sessions...</p>
+          <p style={{ color: "var(--text-muted)", fontFamily: mono, fontSize: 12, textAlign: "center", marginTop: 40 }}>Loading your sessions...</p>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16, marginTop: 16 }}>
             {interviews?.length === 0 && (
-              <p style={{ color: "rgb(var(--text-muted))", fontFamily: mono, fontSize: 12, gridColumn: "1 / -1", textAlign: "center", marginTop: 40 }}>
+              <p style={{ color: "var(--text-muted)", fontFamily: mono, fontSize: 12, gridColumn: "1 / -1", textAlign: "center", marginTop: 40 }}>
                 No past interviews found. Select a resume and start one!
               </p>
             )}
@@ -253,10 +253,10 @@ export default function InterviewHubPage() {
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
                   <div>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: mono, margin: "0 0 4px" }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", fontFamily: mono, margin: "0 0 4px" }}>
                       {interview.resume?.profileName || "Deleted Profile"}
                     </h3>
-                    <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 6, background: "rgb(var(--bg-surface))", color: "rgb(var(--text-secondary))", fontFamily: mono }}>
+                    <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 6, background: "var(--bg-surface)", color: "var(--text-secondary)", fontFamily: mono }}>
                       {interview.resume?.targetRole || "General Target"}
                     </span>
                   </div>
@@ -325,10 +325,10 @@ export default function InterviewHubPage() {
             }}>
               🚧
             </div>
-            <h3 style={{ fontSize: 18, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: mono, marginBottom: 8 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", fontFamily: mono, marginBottom: 8 }}>
               Coming Soon
             </h3>
-            <p style={{ fontSize: 13, color: "rgb(var(--text-muted))", fontFamily: mono, lineHeight: 1.5, marginBottom: 24 }}>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", fontFamily: mono, lineHeight: 1.5, marginBottom: 24 }}>
               The 1-on-1 AI autonomous voice recruiter is currently in active development. Check back soon!
             </p>
             <button
@@ -337,7 +337,7 @@ export default function InterviewHubPage() {
                 width: "100%", padding: "10px 0", borderRadius: 12, fontSize: 13,
                 fontFamily: mono, cursor: "pointer", fontWeight: 600,
                 background: "var(--glass-bg)", border: "1px solid var(--border-subtle)",
-                color: "rgb(var(--text-primary))", transition: "all 0.2s"
+                color: "var(--text-primary)", transition: "all 0.2s"
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = "rgba(var(--glass-bg-rgb),0.1)"
