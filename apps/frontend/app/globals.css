@@ -80,11 +80,10 @@ body {
 }
 
 .glass-panel {
-    background: rgba(28, 23, 21, 0.7);
+    background: var(--glass-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid;
-    border-color: rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.05) rgba(255, 255, 255, 0.05) rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
 }
 .glow-active {
     box-shadow: 0 0 15px rgba(234, 88, 12, 0.2);
