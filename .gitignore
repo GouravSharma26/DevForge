@@ -14,3 +14,8 @@ temp_landing.html
 apps/backend/scripts/
 docs/
 ui-prototype/
+
+# Global OS & Misc
+.DS_Store
+coverage/
+*.tsbuildinfo
