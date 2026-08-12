@@ -62,7 +62,7 @@ const TEMPLATES = [
 const inp = (focused = false): React.CSSProperties => ({
   width: "100%", padding: "8px 12px", borderRadius: 8, boxSizing: "border-box",
   border: `1px solid ${focused ? "rgba(234,88,12,0.6)" : "var(--border-subtle)"}`,
-  background: "var(--bg-base)", color: "rgb(var(--text-primary))", fontSize: 12, fontFamily: mono,
+  background: "rgb(var(--bg-base))", color: "rgb(var(--text-primary))", fontSize: 12, fontFamily: mono,
   outline: "none", transition: "all 0.2s",
   boxShadow: focused ? "0 0 0 3px rgba(234,88,12,0.15)" : "none",
 })
@@ -1042,7 +1042,7 @@ export default function ResumeBuilderPage() {
         </div>
 
         {/* ── Middle Pane (Form Editor) ── */}
-        <div style={{ width: 450, flexShrink: 0, borderRight: "1px solid var(--border-subtle)", background: "var(--bg-base)", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+        <div style={{ width: 450, flexShrink: 0, borderRight: "1px solid var(--border-subtle)", background: "rgb(var(--bg-base))", overflowY: "auto", display: "flex", flexDirection: "column" }}>
           
           {/* Editor Content */}
           {activeTab === "Core Sections" || activeTab === "More Sections" ? (

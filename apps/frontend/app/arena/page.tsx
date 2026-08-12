@@ -9,7 +9,7 @@ import { useAuthStore } from "@/store/auth.store"
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), { ssr: false })
 
 const S: Record<string, React.CSSProperties> = {
-  page: { background: "var(--bg-base)", minHeight: "100%", display: "flex", flexDirection: "column" },
+  page: { background: "rgb(var(--bg-base))", minHeight: "100%", display: "flex", flexDirection: "column" },
   center: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, gap: 32, padding: "40px 24px" },
   card: { background: "var(--glass-bg)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid var(--border-subtle)", borderRadius: 20, padding: 28, maxWidth: 420, width: "100%" },
   h1: { fontSize: 28, fontWeight: 800, color: "rgb(var(--text-primary))", fontFamily: "JetBrains Mono, monospace", textAlign: "center" },
@@ -218,7 +218,7 @@ export default function ArenaPage() {
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           {/* Editor */}
           <div style={{ flex: "0 0 70%", display: "flex", flexDirection: "column", borderBottom: "1px solid var(--border-subtle)" }}>
-            <div style={{ padding: "8px 16px", borderBottom: "1px solid rgba(255,255,255,0.1)", background: "var(--bg-base)", fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: "JetBrains Mono, monospace", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ padding: "8px 16px", borderBottom: "1px solid rgba(255,255,255,0.1)", background: "rgb(var(--bg-base))", fontSize: 11, color: "rgb(var(--text-muted))", fontFamily: "JetBrains Mono, monospace", display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#5a5780" }} />
               Your Code
             </div>

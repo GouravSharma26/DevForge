@@ -669,7 +669,7 @@ export default function LandingPage() {
         ════════════════════════════════════════════ */}
         <footer style={{
           borderTop: "1px solid var(--border-subtle)", padding: "40px 24px",
-          background: "var(--bg-base)",
+          background: "rgb(var(--bg-base))",
         }}>
           <div style={{
             maxWidth: 1100, margin: "0 auto",

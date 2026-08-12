@@ -102,7 +102,7 @@ export default function ResumeHubPage() {
   const PreviewComponent = TEMPLATES.find(t => t.id === selectedPreviewId)?.component || ModernProfessional
 
   return (
-    <main style={{ display: "flex", height: "calc(100vh - 56px)", background: "var(--bg-base)" }}>
+    <main style={{ display: "flex", height: "calc(100vh - 56px)", background: "rgb(var(--bg-base))" }}>
       
       {/* ── Left Column: Template Gallery ── */}
       <div style={{ width: "55%", minWidth: 600, display: "flex", flexDirection: "column", borderRight: "1px solid rgba(255,180,120,0.1)" }}>
