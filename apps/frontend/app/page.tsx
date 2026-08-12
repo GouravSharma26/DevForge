@@ -393,7 +393,6 @@ export default function LandingPage() {
   const router = useRouter()
   const token = useAuthStore((s) => s.token)
   const hydrated = useAuthStore((s) => s.hydrated)
-  const hydrated = useAuthStore((s) => s.hydrated)
 
   useEffect(() => {
     if (hydrated && token) {
