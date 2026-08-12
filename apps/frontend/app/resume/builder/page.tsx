@@ -832,7 +832,7 @@ export default function ResumeBuilderPage() {
   async function handleFile(file: File) {
     if (file.type !== "application/pdf") return alert("Please upload a PDF file")
     try {
-      const newResume = await upload.mutateAsync(file)
+      const newResume = await upload.mutateAsync({ file, skipAI: false })
       setSelectedResumeId(newResume.id)
       
       const parsed = await aiFill.mutateAsync({ sections: DEFAULT_SECTIONS, resumeId: newResume.id })
