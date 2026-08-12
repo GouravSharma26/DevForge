@@ -37,11 +37,11 @@ export async function generateResumeWithAI(userId: string, sections: any[], resu
   }
 
   const context = resume
-    ? `Skills: ${(Array.isArray(resume.skills) ? resume.skills : []).join(", ")}\nExperience Level: ${resume.experienceLevel || "Mid"}\nTarget Role: ${resume.targetRole || "Software Developer"}`
+    ? `Original Resume Text from PDF:\n${resume.redactedText}\n\nAdditional Info:\nSkills: ${(Array.isArray(resume.skills) ? resume.skills : []).join(", ")}\nExperience Level: ${resume.experienceLevel || "Mid"}\nTarget Role: ${resume.targetRole || "Software Developer"}`
     : "Software Developer with experience in web development"
 
   const prompt = `
-You are a professional resume writer. Generate realistic, ATS-friendly resume content.
+You are an expert resume parser and writer. Your job is to extract the candidate's information from the provided context and format it perfectly into the JSON structure provided.
 
 Candidate context:
 ${context}
@@ -49,14 +49,15 @@ ${context}
 Current sections:
 ${JSON.stringify(sections, null, 2)}
 
-Fill in all empty fields with professional, realistic content.
-Keep existing non-empty content as-is.
-For bullet points, use strong action verbs and include metrics where possible.
-For skills, organize by category.
-Make experience and projects sound impressive but realistic.
+Instructions:
+1. Extract the actual name, contact info, experience, education, projects, and skills from the "Original Resume Text" and fill in the empty fields.
+2. Only use the candidate's actual information from the text. DO NOT hallucinate fake names like "Alex Chen" or fake experiences.
+3. If some information is missing from the text (e.g. they don't have a LinkedIn), leave that specific field as an empty string.
+4. For bullet points, format the extracted text to use strong action verbs and professional phrasing while maintaining accuracy.
+5. Keep existing non-empty content as-is.
 
-Return ONLY valid JSON with the same structure as the input sections array.
-Fill every empty string field. Do not change section types or IDs.
+Return ONLY valid JSON with the exact same structure as the input sections array.
+Do not change section types or IDs. Do not include markdown code block formatting (\`\`\`json).
 `
 
   let result;
