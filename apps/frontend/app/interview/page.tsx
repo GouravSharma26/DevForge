@@ -50,7 +50,7 @@ export default function InterviewHubPage() {
     }
     
     try {
-      const newResume = await uploadResume.mutateAsync(file)
+      const newResume = await uploadResume.mutateAsync({ file, skipAI: false })
       if (newResume && newResume.id) {
         setSelectedResumeId(newResume.id)
       }
