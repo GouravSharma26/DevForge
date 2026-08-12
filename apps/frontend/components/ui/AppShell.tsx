@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Anvil, User, Settings, LogOut, Moon, Sun, Flame } from "lucide-react"
+import { Anvil, User, Settings, LogOut, Moon, Sun, Flame, HelpCircle } from "lucide-react"
 import { Navbar } from "./Navbar"
 import { useAuthStore } from "@/store/auth.store"
 import { useMe } from "@/hooks/useUser"
@@ -123,6 +123,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </Link>
                     <Link href="/settings" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#fdf6f0] hover:bg-white/5 transition-colors">
                       <Settings size={16} className="text-[#a39486]" /> Settings
+                    </Link>
+                    <Link href="/about" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#fdf6f0] hover:bg-white/5 transition-colors">
+                      <HelpCircle size={16} className="text-[#a39486]" /> About
                     </Link>
                   </div>
                   
