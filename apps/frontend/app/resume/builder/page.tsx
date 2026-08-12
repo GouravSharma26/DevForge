@@ -920,7 +920,7 @@ export default function ResumeBuilderPage() {
             <button
               onClick={() => setShowUploadModal(true)}
               style={{
-                padding: "8px 16px", borderRadius: 12, border: "1px dashed rgba(255,180,120,0.4)",
+                padding: "8px 16px", borderRadius: 12, border: "1px dashed var(--border-subtle)",
                 background: "rgba(var(--glass-bg-rgb),0.02)", color: "var(--text-muted)", fontSize: 12,
                 fontFamily: mono, cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: 8
               }}
@@ -980,7 +980,7 @@ export default function ResumeBuilderPage() {
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
         
         {/* ── Left Sidebar (Tabs) ── */}
-        <div style={{ width: 220, flexShrink: 0, borderRight: "1px solid var(--border-subtle)", background: "#140f0e", display: "flex", flexDirection: "column", padding: "16px 12px" }}>
+        <div style={{ width: 220, flexShrink: 0, borderRight: "1px solid var(--border-subtle)", background: "var(--bg-surface)", display: "flex", flexDirection: "column", padding: "16px 12px" }}>
           {TABS.map(tab => (
             <button
               key={tab}
@@ -1017,7 +1017,7 @@ export default function ResumeBuilderPage() {
                   onClick={() => setActiveSection(s.id)}
                   style={{
                     padding: "6px 12px", borderRadius: 99,
-                    background: activeSection === s.id ? "rgba(255,255,255,0.08)" : "transparent",
+                    background: activeSection === s.id ? "var(--bg-card)" : "transparent",
                     color: activeSection === s.id ? "var(--text-primary)" : "var(--text-muted)",
                     fontSize: 12, cursor: "pointer", transition: "all 0.2s",
                     display: "flex", alignItems: "center", justifyContent: "space-between"
@@ -1032,7 +1032,7 @@ export default function ResumeBuilderPage() {
               {activeTab === "More Sections" && (
                 <button
                   onClick={() => setShowAddPanel(!showAddPanel)}
-                  style={{ marginTop: 8, padding: "6px 12px", borderRadius: 99, border: "1px dashed rgba(255,180,120,0.3)", background: "transparent", color: "#ea580c", fontSize: 12, cursor: "pointer", textAlign: "left" }}
+                  style={{ marginTop: 8, padding: "6px 12px", borderRadius: 99, border: "1px dashed var(--border-subtle)", background: "transparent", color: "#ea580c", fontSize: 12, cursor: "pointer", textAlign: "left" }}
                 >
                   + Add Custom Section
                 </button>
@@ -1063,7 +1063,7 @@ export default function ResumeBuilderPage() {
                       <button onClick={() => {
                         // Reset logic: just clear data based on type
                         if (confirm("Reset this section?")) updateSectionData(activeS.id, DEFAULT_SECTIONS.find(d => d.type === activeS.type)?.data || { items: [] })
-                      }} style={{ padding: "4px 10px", borderRadius: 99, border: "1px solid rgba(255,180,120,0.2)", background: "transparent", color: "var(--text-muted)", fontSize: 11, cursor: "pointer" }}>
+                      }} style={{ padding: "4px 10px", borderRadius: 99, border: "1px solid var(--border-subtle)", background: "transparent", color: "var(--text-muted)", fontSize: 11, cursor: "pointer" }}>
                         Reset
                       </button>
                     </div>
@@ -1085,7 +1085,7 @@ export default function ResumeBuilderPage() {
 
               {/* Add Custom Section Panel overlay */}
               {showAddPanel && (
-                <div style={{ padding: 16, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-subtle)", marginTop: 20 }}>
+                <div style={{ padding: 16, borderRadius: 12, background: "var(--glass-bg)", border: "1px solid var(--border-subtle)", marginTop: 20 }}>
                   <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Add New Section</h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {AVAILABLE_SECTIONS.map(s => (
@@ -1094,7 +1094,7 @@ export default function ResumeBuilderPage() {
                       </button>
                     ))}
                     <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                      <input value={customName} onChange={e => setCustomName(e.target.value)} placeholder="Custom name..." style={{ flex: 1, padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(234,88,12,0.4)", background: "#0a0807", color: "var(--text-primary)", fontSize: 12, outline: "none" }} />
+                      <input value={customName} onChange={e => setCustomName(e.target.value)} placeholder="Custom name..." style={{ flex: 1, padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(234,88,12,0.4)", background: "var(--bg-base)", color: "var(--text-primary)", fontSize: 12, outline: "none" }} />
                       <button onClick={addCustomSection} style={{ padding: "0 16px", borderRadius: 8, border: "none", background: "#ea580c", color: "#fff", cursor: "pointer", fontWeight: 600 }}>Add</button>
                     </div>
                   </div>
@@ -1112,7 +1112,7 @@ export default function ResumeBuilderPage() {
                     <div 
                       key={t.id} 
                       onClick={() => setSelectedTemplate(t.id)} 
-                      style={{ border: isSelected ? "2px solid #ea580c" : "1px solid rgba(255,180,120,0.2)", borderRadius: 12, padding: 4, cursor: "pointer", transition: "all 0.2s" }}
+                      style={{ border: isSelected ? "2px solid #ea580c" : "1px solid var(--border-subtle)", borderRadius: 12, padding: 4, cursor: "pointer", transition: "all 0.2s" }}
                     >
                       <div style={{ aspectRatio: "794/1123", background: "#fff", borderRadius: 8, overflow: "hidden", position: "relative" }}>
                          <div style={{ position: "absolute", top: 0, left: 0, width: "794px", height: "1123px", transform: "scale(0.243)", transformOrigin: "top left", pointerEvents: "none" }}>
@@ -1138,7 +1138,7 @@ export default function ResumeBuilderPage() {
         </div>
 
         {/* ── Right Pane (Live Preview A4) ── */}
-        <div ref={rightPaneRef} style={{ flex: 1, background: "#1f1a18", overflowY: "auto", position: "relative" }}>
+        <div ref={rightPaneRef} style={{ flex: 1, background: "var(--bg-base)", overflowY: "auto", position: "relative" }}>
           <div style={{ 
             minHeight: "100%", padding: "40px 0", 
             display: "flex", justifyContent: "center", alignItems: "flex-start" 
@@ -1170,7 +1170,7 @@ export default function ResumeBuilderPage() {
             boxShadow: "0 10px 25px rgba(0,0,0,0.3)", zIndex: 50
           }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)" }}>Completion</div>
-            <div style={{ width: 100, height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 99, overflow: "hidden" }}>
+            <div style={{ width: 100, height: 6, background: "var(--border-subtle)", borderRadius: 99, overflow: "hidden" }}>
               <div style={{ width: `${completionScore}%`, height: "100%", background: completionScore > 80 ? "#10b981" : "#ea580c", transition: "width 0.5s ease" }} />
             </div>
             <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", minWidth: 32 }}>{completionScore}%</div>
