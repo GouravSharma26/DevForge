@@ -55,8 +55,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <header 
         className={`fixed z-[60] h-14 flex items-center justify-between px-4 transition-all duration-700 ease-in-out backdrop-blur-xl ${
           scrolled && isLandingPage
-            ? "top-4 left-4 right-4 rounded-2xl bg-surface-container/80 border border-border shadow-lg max-w-[1200px] mx-auto"
-            : "top-0 left-0 right-0 border-b border-border bg-background/50"
+            ? "top-4 left-4 right-4 rounded-2xl bg-glass border border-border shadow-lg max-w-[1200px] mx-auto"
+            : "top-0 left-0 right-0 border-b border-border bg-base/80"
         }`}
       >
         <div className="flex items-center gap-3">
