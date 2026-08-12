@@ -12,7 +12,9 @@
     --accent-primary: 234 88 12;
     --accent-light: 245 158 11;
     --border-subtle: rgba(255, 180, 120, 0.14);
+    --border-subtle-rgb: 255 180 120;
     --glass-bg: rgba(255, 237, 213, 0.05);
+    --glass-bg-rgb: 255 237 213;
     --glass-border: rgba(255, 180, 120, 0.14);
   }
 
@@ -27,7 +29,9 @@
     --accent-primary: 234 88 12;
     --accent-light: 245 158 11;
     --border-subtle: rgba(0, 0, 0, 0.1);
+    --border-subtle-rgb: 0 0 0;
     --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-bg-rgb: 255 255 255;
     --glass-border: rgba(0, 0, 0, 0.1);
   }
 
@@ -42,7 +46,9 @@
     --accent-primary: 234 88 12;
     --accent-light: 245 158 11;
     --border-subtle: rgba(255, 255, 255, 0.1);
+    --border-subtle-rgb: 255 255 255;
     --glass-bg: rgba(25, 25, 25, 0.5);
+    --glass-bg-rgb: 25 25 25;
     --glass-border: rgba(255, 255, 255, 0.1);
   }
 }

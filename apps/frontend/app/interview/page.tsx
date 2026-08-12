@@ -71,22 +71,22 @@ export default function InterviewHubPage() {
         {/* ── Header ── */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: "#fdf6f0", fontFamily: mono, margin: 0 }}>Interview Hub</h1>
-            <p style={{ fontSize: 12, color: "#8a7a6a", marginTop: 4, fontFamily: mono }}>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: mono, margin: 0 }}>Interview Hub</h1>
+            <p style={{ fontSize: 12, color: "rgb(var(--text-muted))", marginTop: 4, fontFamily: mono }}>
               Practice mock interviews based on your specific resumes
             </p>
           </div>
           
-          <div style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(255,237,213,0.05)", padding: "8px 12px", borderRadius: 12, border: "1px solid rgba(255,180,120,0.14)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
-            <span style={{ fontSize: 12, color: "#d4a373", fontFamily: mono }}>Target Resume:</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, background: "var(--glass-bg)", padding: "8px 12px", borderRadius: 12, border: "1px solid var(--border-subtle)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
+            <span style={{ fontSize: 12, color: "rgb(var(--text-secondary))", fontFamily: mono }}>Target Resume:</span>
             <select
               value={selectedResumeId}
               onChange={(e) => setSelectedResumeId(e.target.value)}
               disabled={resumesLoading || startInterview.isPending}
               style={{
-                background: "#1c1712",
-                border: "1px solid rgba(255,180,120,0.14)",
-                color: "#fdf6f0",
+                background: "rgb(var(--bg-surface))",
+                border: "1px solid var(--border-subtle)",
+                color: "rgb(var(--text-primary))",
                 padding: "6px 12px",
                 borderRadius: 8,
                 fontFamily: mono,
@@ -109,9 +109,9 @@ export default function InterviewHubPage() {
               disabled={uploadResume.isPending}
               title="Upload New Resume"
               style={{
-                width: 32, height: 32, borderRadius: 8, border: "1px solid rgba(255,180,120,0.14)",
-                background: uploadResume.isPending ? "rgba(255,237,213,0.05)" : "#1c1712",
-                color: uploadResume.isPending ? "#8a7a6a" : "#ea580c",
+                width: 32, height: 32, borderRadius: 8, border: "1px solid var(--border-subtle)",
+                background: uploadResume.isPending ? "var(--glass-bg)" : "rgb(var(--bg-surface))",
+                color: uploadResume.isPending ? "rgb(var(--text-muted))" : "#ea580c",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 cursor: uploadResume.isPending ? "not-allowed" : "pointer",
                 transition: "all 0.2s"
@@ -134,8 +134,8 @@ export default function InterviewHubPage() {
           
           {/* Standard Mock */}
           <div style={{
-            background: "rgba(255,237,213,0.02)",
-            border: "1px solid rgba(255,180,120,0.14)",
+            background: "rgba(var(--glass-bg-rgb),0.02)",
+            border: "1px solid var(--border-subtle)",
             borderRadius: 16,
             overflow: "hidden",
             display: "flex",
@@ -144,7 +144,7 @@ export default function InterviewHubPage() {
             <div style={{
               height: 140,
               background: "linear-gradient(135deg, rgba(234,88,12,0.15) 0%, rgba(217,119,6,0.05) 100%)",
-              borderBottom: "1px solid rgba(255,180,120,0.14)",
+              borderBottom: "1px solid var(--border-subtle)",
               display: "flex", alignItems: "center", justifyContent: "center",
               overflow: "hidden"
             }}>
@@ -152,8 +152,8 @@ export default function InterviewHubPage() {
             </div>
             <div style={{ padding: 20, flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fdf6f0", fontFamily: mono, marginBottom: 8 }}>Standard Mock</h3>
-                <p style={{ fontSize: 12, color: "#8a7a6a", fontFamily: mono, lineHeight: 1.5, marginBottom: 20 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: mono, marginBottom: 8 }}>Standard Mock</h3>
+                <p style={{ fontSize: 12, color: "rgb(var(--text-muted))", fontFamily: mono, lineHeight: 1.5, marginBottom: 20 }}>
                   A rigorous 10-question gauntlet: 9 advanced multiple-choice questions followed by 1 interactive Grandmaster coding challenge.
                 </p>
               </div>
@@ -162,8 +162,8 @@ export default function InterviewHubPage() {
                 disabled={startInterview.isPending || !selectedResumeId}
                 style={{
                   width: "100%", padding: "10px", borderRadius: 10, border: "none",
-                  background: (startInterview.isPending || !selectedResumeId) ? "rgba(255,237,213,0.05)" : "linear-gradient(135deg, #ea580c, #d97706)",
-                  color: (startInterview.isPending || !selectedResumeId) ? "#8a7a6a" : "#fdf6f0", fontSize: 13,
+                  background: (startInterview.isPending || !selectedResumeId) ? "var(--glass-bg)" : "linear-gradient(135deg, #ea580c, #d97706)",
+                  color: (startInterview.isPending || !selectedResumeId) ? "rgb(var(--text-muted))" : "rgb(var(--text-primary))", fontSize: 13,
                   fontFamily: mono, cursor: (startInterview.isPending || !selectedResumeId) ? "not-allowed" : "pointer", fontWeight: 700,
                   boxShadow: (startInterview.isPending || !selectedResumeId) ? "none" : "0 4px 16px rgba(234,88,12,0.3)",
                   transition: "all 0.2s"
@@ -176,8 +176,8 @@ export default function InterviewHubPage() {
 
           {/* AI Agent Mock */}
           <div style={{
-            background: "rgba(255,237,213,0.02)",
-            border: "1px solid rgba(255,180,120,0.14)",
+            background: "rgba(var(--glass-bg-rgb),0.02)",
+            border: "1px solid var(--border-subtle)",
             borderRadius: 16,
             overflow: "hidden",
             display: "flex",
@@ -186,7 +186,7 @@ export default function InterviewHubPage() {
             <div style={{
               height: 140,
               background: "linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(5,150,105,0.05) 100%)",
-              borderBottom: "1px solid rgba(255,180,120,0.14)",
+              borderBottom: "1px solid var(--border-subtle)",
               display: "flex", alignItems: "center", justifyContent: "center",
               overflow: "hidden"
             }}>
@@ -194,23 +194,23 @@ export default function InterviewHubPage() {
             </div>
             <div style={{ padding: 20, flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fdf6f0", fontFamily: mono, marginBottom: 8 }}>1-on-1 AI Agent</h3>
-                <p style={{ fontSize: 12, color: "#8a7a6a", fontFamily: mono, lineHeight: 1.5, marginBottom: 20 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: mono, marginBottom: 8 }}>1-on-1 AI Agent</h3>
+                <p style={{ fontSize: 12, color: "rgb(var(--text-muted))", fontFamily: mono, lineHeight: 1.5, marginBottom: 20 }}>
                   A completely immersive verbal and collaborative technical interview with an autonomous AI recruiter.
                 </p>
               </div>
               <button
                 onClick={() => setShowModal(true)}
                 style={{
-                  width: "100%", padding: "10px", borderRadius: 10, border: "1px solid rgba(255,180,120,0.14)",
-                  background: "rgba(255,237,213,0.05)", color: "#fdf6f0", fontSize: 13,
+                  width: "100%", padding: "10px", borderRadius: 10, border: "1px solid var(--border-subtle)",
+                  background: "var(--glass-bg)", color: "rgb(var(--text-primary))", fontSize: 13,
                   fontFamily: mono, cursor: "pointer", fontWeight: 700, transition: "all 0.2s"
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(255,237,213,0.1)"
+                  e.currentTarget.style.background = "rgba(var(--glass-bg-rgb),0.1)"
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "rgba(255,237,213,0.05)"
+                  e.currentTarget.style.background = "var(--glass-bg)"
                 }}
               >
                 Start AI Agent
@@ -219,17 +219,17 @@ export default function InterviewHubPage() {
           </div>
         </div>
 
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: "#fdf6f0", fontFamily: mono, marginTop: 24, marginBottom: -4, borderBottom: "1px solid rgba(255,180,120,0.14)", paddingBottom: 12 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: mono, marginTop: 24, marginBottom: -4, borderBottom: "1px solid var(--border-subtle)", paddingBottom: 12 }}>
           Past Interviews
         </h2>
 
         {/* ── Saved Interviews Grid ── */}
         {isLoading ? (
-          <p style={{ color: "#8a7a6a", fontFamily: mono, fontSize: 12, textAlign: "center", marginTop: 40 }}>Loading your sessions...</p>
+          <p style={{ color: "rgb(var(--text-muted))", fontFamily: mono, fontSize: 12, textAlign: "center", marginTop: 40 }}>Loading your sessions...</p>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16, marginTop: 16 }}>
             {interviews?.length === 0 && (
-              <p style={{ color: "#8a7a6a", fontFamily: mono, fontSize: 12, gridColumn: "1 / -1", textAlign: "center", marginTop: 40 }}>
+              <p style={{ color: "rgb(var(--text-muted))", fontFamily: mono, fontSize: 12, gridColumn: "1 / -1", textAlign: "center", marginTop: 40 }}>
                 No past interviews found. Select a resume and start one!
               </p>
             )}
@@ -238,7 +238,7 @@ export default function InterviewHubPage() {
                 key={interview.id}
                 onClick={() => router.push(`/resume/interview/${interview.id}`)}
                 style={{
-                  background: "rgba(255,237,213,0.05)", border: "1px solid rgba(255,180,120,0.14)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: 16, padding: 20,
+                  background: "var(--glass-bg)", border: "1px solid var(--border-subtle)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: 16, padding: 20,
                   cursor: "pointer", transition: "all 0.2s", display: "flex", flexDirection: "column",
                   justifyContent: "space-between"
                 }}
@@ -247,16 +247,16 @@ export default function InterviewHubPage() {
                   e.currentTarget.style.transform = "translateY(-2px)"
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(255,180,120,0.14)"
+                  e.currentTarget.style.borderColor = "var(--border-subtle)"
                   e.currentTarget.style.transform = "translateY(0)"
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
                   <div>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "#fdf6f0", fontFamily: mono, margin: "0 0 4px" }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: mono, margin: "0 0 4px" }}>
                       {interview.resume?.profileName || "Deleted Profile"}
                     </h3>
-                    <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 6, background: "#1c1712", color: "#d4a373", fontFamily: mono }}>
+                    <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 6, background: "rgb(var(--bg-surface))", color: "rgb(var(--text-secondary))", fontFamily: mono }}>
                       {interview.resume?.targetRole || "General Target"}
                     </span>
                   </div>
@@ -264,9 +264,9 @@ export default function InterviewHubPage() {
                     {interview.status === "COMPLETED" && interview.score != null ? (
                       <div style={{
                         width: 40, height: 40, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-                        background: "rgba(255,180,120,0.08)",
+                        background: "rgba(var(--border-subtle-rgb),0.08)",
                         color: interview.score >= 80 ? "#10b981" : interview.score >= 60 ? "#eab308" : "#ef4444",
-                        border: "1px solid rgba(255,180,120,0.18)",
+                        border: "1px solid rgba(var(--border-subtle-rgb),0.18)",
                         backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)",
                         fontFamily: mono, fontWeight: 800, fontSize: 13
                       }}>
@@ -325,10 +325,10 @@ export default function InterviewHubPage() {
             }}>
               🚧
             </div>
-            <h3 style={{ fontSize: 18, fontWeight: 700, color: "#fdf6f0", fontFamily: mono, marginBottom: 8 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: "rgb(var(--text-primary))", fontFamily: mono, marginBottom: 8 }}>
               Coming Soon
             </h3>
-            <p style={{ fontSize: 13, color: "#8a7a6a", fontFamily: mono, lineHeight: 1.5, marginBottom: 24 }}>
+            <p style={{ fontSize: 13, color: "rgb(var(--text-muted))", fontFamily: mono, lineHeight: 1.5, marginBottom: 24 }}>
               The 1-on-1 AI autonomous voice recruiter is currently in active development. Check back soon!
             </p>
             <button
@@ -336,14 +336,14 @@ export default function InterviewHubPage() {
               style={{
                 width: "100%", padding: "10px 0", borderRadius: 12, fontSize: 13,
                 fontFamily: mono, cursor: "pointer", fontWeight: 600,
-                background: "rgba(255,237,213,0.05)", border: "1px solid rgba(255,180,120,0.14)",
-                color: "#fdf6f0", transition: "all 0.2s"
+                background: "var(--glass-bg)", border: "1px solid var(--border-subtle)",
+                color: "rgb(var(--text-primary))", transition: "all 0.2s"
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(255,237,213,0.1)"
+                e.currentTarget.style.background = "rgba(var(--glass-bg-rgb),0.1)"
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = "rgba(255,237,213,0.05)"
+                e.currentTarget.style.background = "var(--glass-bg)"
               }}
             >
               Got it
