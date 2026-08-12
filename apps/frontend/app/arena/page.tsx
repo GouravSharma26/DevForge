@@ -212,38 +212,60 @@ export default function ArenaPage() {
               <p style={{ color: "#8a7a6a", marginTop: 4 }}>Output: <code style={{ color: "#d4a373", background: "#1c1712", padding: "2px 6px", borderRadius: 4 }}>{ex.output}</code></p>
             </div>
           ))}
-          {state.results && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <p style={{ fontSize: 10, color: "#8a7a6a", fontFamily: "JetBrains Mono, monospace", textTransform: "uppercase", letterSpacing: 1 }}>Your Results</p>
-              {state.results.map((r: any, i: number) => (
-                <div key={i} style={{
-                  padding: "8px 12px", borderRadius: 8, fontSize: 11,
-                  background: r.passed ? "#10b98108" : "#ef444408",
-                  border: `1px solid ${r.passed ? "#10b98130" : "#ef444430"}`,
-                  color: r.passed ? "#10b981" : "#ef4444",
-                  fontFamily: "JetBrains Mono, monospace",
-                }}>
-                  Test {i + 1}: {r.passed ? "✅" : "❌"} — Got: {r.output || "no output"}
-                </div>
-              ))}
-            </div>
-          )}
         </div>
 
-        {/* Editor */}
-        <div style={{ flex: 1 }}>
-          <div style={{ padding: "8px 16px", borderBottom: "1px solid rgba(255,255,255,0.1)", background: "#171210", fontSize: 11, color: "#8a7a6a", fontFamily: "JetBrains Mono, monospace", display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#5a5780" }} />
-            Your Code
+        {/* Editor & Terminal */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          {/* Editor */}
+          <div style={{ flex: "0 0 70%", display: "flex", flexDirection: "column", borderBottom: "1px solid rgba(255,180,120,0.14)" }}>
+            <div style={{ padding: "8px 16px", borderBottom: "1px solid rgba(255,255,255,0.1)", background: "#171210", fontSize: 11, color: "#8a7a6a", fontFamily: "JetBrains Mono, monospace", display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#5a5780" }} />
+              Your Code
+            </div>
+            <div style={{ flex: 1, position: "relative" }}>
+              <MonacoEditor
+                height="100%"
+                language="javascript"
+                value={code}
+                onChange={(val) => handleCodeChange(val || "")}
+                theme="vs-dark"
+                options={{ fontSize: 13, minimap: { enabled: false }, scrollBeyondLastLine: false, padding: { top: 16 } }}
+              />
+            </div>
           </div>
-          <MonacoEditor
-            height="calc(100% - 37px)"
-            language="javascript"
-            value={code}
-            onChange={(val) => handleCodeChange(val || "")}
-            theme="vs-dark"
-            options={{ fontSize: 13, minimap: { enabled: false }, scrollBeyondLastLine: false, padding: { top: 16 } }}
-          />
+          
+          {/* Terminal */}
+          <div style={{ flex: "1 1 30%", background: "#0a0a0a", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+            <div style={{ padding: "8px 16px", borderBottom: "1px solid rgba(255,255,255,0.05)", background: "#111", fontSize: 11, color: "#8a7a6a", fontFamily: "JetBrains Mono, monospace", display: "flex", alignItems: "center", gap: 8, position: "sticky", top: 0, zIndex: 10 }}>
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ea580c" }} />
+              Terminal Output
+            </div>
+            <div style={{ padding: 16, fontFamily: "JetBrains Mono, monospace", fontSize: 12, display: "flex", flexDirection: "column", gap: 16 }}>
+              {!state.results ? (
+                <div style={{ color: "#555" }}>&gt; Ready. Awaiting code execution...</div>
+              ) : (
+                state.results.map((r: any, i: number) => (
+                  <div key={i} style={{ display: "flex", flexDirection: "column", gap: 6, background: "rgba(255,255,255,0.02)", padding: 12, borderRadius: 8, border: `1px solid ${r.passed ? "#10b98130" : "#ef444430"}` }}>
+                    <div style={{ color: r.passed ? "#10b981" : "#ef4444", fontWeight: 700 }}>
+                      Test {i + 1}: {r.passed ? "✅ Passed" : "❌ Failed"}
+                    </div>
+                    <div style={{ display: "flex", gap: 16 }}>
+                      <div style={{ color: "#8a7a6a", fontSize: 11 }}>Input: <code style={{ color: "#d4a373" }}>{r.input}</code></div>
+                      <div style={{ color: "#8a7a6a", fontSize: 11 }}>Expected: <code style={{ color: "#d4a373" }}>{r.expected}</code></div>
+                    </div>
+                    <div style={{ color: "#8a7a6a", fontSize: 11 }}>
+                      Output: <code style={{ color: r.passed ? "#10b981" : "#ef4444" }}>{r.output || "no output"}</code>
+                    </div>
+                    {r.stderr && (
+                      <div style={{ color: "#ef4444", fontSize: 11, marginTop: 4, padding: 8, background: "#ef444410", borderRadius: 4, whiteSpace: "pre-wrap" }}>
+                        {r.stderr}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </main>

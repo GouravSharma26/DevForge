@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client"
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import { consumeAiRequest } from "../utils/ai-rate-limit"
 
 const prisma = new PrismaClient()
 
@@ -19,6 +20,8 @@ export async function loadResumeBuilder(userId: string) {
 }
 
 export async function generateResumeWithAI(userId: string, sections: any[], resumeId?: string) {
+  await consumeAiRequest(userId, prisma)
+  
   let resume = null
 
   if (resumeId) {
@@ -34,7 +37,7 @@ export async function generateResumeWithAI(userId: string, sections: any[], resu
   }
 
   const context = resume
-    ? `Skills: ${resume.skills.join(", ")}\nExperience Level: ${resume.experienceLevel}\nTarget Role: ${resume.targetRole || "Software Developer"}`
+    ? `Skills: ${(Array.isArray(resume.skills) ? resume.skills : []).join(", ")}\nExperience Level: ${resume.experienceLevel || "Mid"}\nTarget Role: ${resume.targetRole || "Software Developer"}`
     : "Software Developer with experience in web development"
 
   const prompt = `
@@ -56,7 +59,64 @@ Return ONLY valid JSON with the same structure as the input sections array.
 Fill every empty string field. Do not change section types or IDs.
 `
 
-  const result = await model.generateContent(prompt)
+  let result;
+  let retries = 5;
+  let delay = 5000;
+
+  while (retries > 0) {
+    try {
+      result = await model.generateContent(prompt);
+      break;
+    } catch (error: any) {
+      const isRateLimit = error.status === 503 || error.status === 429 || 
+                          (error.message && (error.message.includes("429") || error.message.includes("503") || error.message.includes("exhausted") || error.message.includes("quota")));
+                          
+      if (isRateLimit && retries > 1) {
+        console.warn(`⏳ Gemini API busy/rate-limited in aiFill. Retrying in ${delay / 1000} seconds...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        retries--;
+        delay *= 2;
+      } else {
+        console.warn("⚠️ Rate limit exhausted! Switching to Regex Fallback in aiFill...")
+        break;
+      }
+    }
+  }
+
+  if (!result) {
+    const rawText = resume?.redactedText || ""
+    const emailMatch = rawText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)
+    const phoneMatch = rawText.match(/(\+\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/)
+    
+    const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean)
+    const nameStr = lines.length > 0 ? lines[0].substring(0, 50) : "Candidate Name"
+    
+    return sections.map(sec => {
+      if (sec.id === 'personal' || sec.type === 'Personal Info') {
+        return {
+          ...sec,
+          data: {
+            ...sec.data,
+            fullName: nameStr,
+            email: emailMatch ? emailMatch[0] : "candidate@example.com",
+            phone: phoneMatch ? phoneMatch[0] : "+1 234 567 8900",
+          }
+        }
+      }
+      if (sec.id === 'summary' || sec.type === 'Professional Summary') {
+        return {
+           ...sec,
+           data: {
+             ...sec.data,
+             content: "Regex parser active. Please manually edit this section. " + (resume?.targetRole || "")
+           }
+        }
+      }
+      return sec
+    })
+  }
+
+  // @ts-ignore
   const text = result.response.text().trim()
 
   try {

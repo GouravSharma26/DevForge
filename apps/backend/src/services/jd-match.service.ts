@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai"
 import { PrismaClient } from "@prisma/client"
 import { redactPII } from "../utils/redact"
 import { getResumeById } from "./resume.service"
+import { consumeAiRequest } from "../utils/ai-rate-limit"
 
 const prisma = new PrismaClient()
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
@@ -13,6 +14,8 @@ async function executeJDMatchCore(
   geminiParts: any[],
   fallbackJdText: string = ""
 ) {
+  await consumeAiRequest(userId, prisma)
+
   let result;
   let retries = 3;
   let delay = 2000;

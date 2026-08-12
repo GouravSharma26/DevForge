@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react"
 import { io, Socket } from "socket.io-client"
 import { useAuthStore } from "@/store/auth.store"
+import { useMe } from "./useUser"
 
 interface ArenaState {
   status: "idle" | "searching" | "waiting" | "active" | "won" | "lost"
@@ -38,6 +39,13 @@ export function useArena() {
   const updateState = (partial: Partial<ArenaState>) =>
     setState((prev) => ({ ...prev, ...partial }))
 
+  const { data: dbUser } = useMe()
+  const myIdRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    myIdRef.current = dbUser?.id || useAuthStore.getState().user?.id || null
+  }, [dbUser])
+
   useEffect(() => {
     if (!token) return
 
@@ -69,7 +77,7 @@ export function useArena() {
     })
 
     socket.on("arena:match_over", ({ winnerId, winnerUsername, results }) => {
-      const myId = useAuthStore.getState().user?.id
+      const myId = myIdRef.current
       updateState({
         status: winnerId === myId ? "won" : "lost",
         winnerUsername,
@@ -116,5 +124,27 @@ export function useArena() {
 
   const reset = useCallback(() => setState(INITIAL), [])
 
-  return { state, joinQueue, sendCodeChange, submitCode, leaveMatch, reset }
+  return {
+    state,
+    joinQueue,
+    sendCodeChange,
+    submitCode,
+    leaveMatch,
+    reset,
+  }
+}
+
+import { useQuery } from "@tanstack/react-query"
+import { api } from "@/lib/api"
+
+export function useMatchHistory() {
+  const token = useAuthStore((s) => s.token)
+  return useQuery({
+    queryKey: ["matchHistory"],
+    queryFn: async () => {
+      const res = await api.get("/arena/history")
+      return res.data.data
+    },
+    enabled: !!token,
+  })
 }

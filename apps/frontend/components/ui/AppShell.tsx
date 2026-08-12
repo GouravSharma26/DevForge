@@ -2,18 +2,39 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Anvil } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
+import { Anvil, User, Settings, LogOut, Moon, Sun, Flame } from "lucide-react"
 import { Navbar } from "./Navbar"
 import { useAuthStore } from "@/store/auth.store"
+import { useMe } from "@/hooks/useUser"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(true)
   const [scrolled, setScrolled] = useState(false)
   const token = useAuthStore((s) => s.token)
   const hydrated = useAuthStore((s) => s.hydrated)
+  const logout = useAuthStore((s) => s.logout)
   const pathname = usePathname()
+  const router = useRouter()
   const isLandingPage = pathname === "/"
+  const [profileOpen, setProfileOpen] = useState(false)
+  const { data: user } = useMe()
+
+  // Calculate Credits
+  let displayCredits = ""
+  if (user) {
+    if (user.role === "ADMIN") {
+      displayCredits = "ult"
+    } else {
+      let count = user.aiRequestCount || 0
+      if (user.lastAiRequestAt) {
+        const hours = (new Date().getTime() - new Date(user.lastAiRequestAt).getTime()) / (1000 * 60 * 60)
+        if (hours >= 24) count = 0
+      }
+      const remaining = Math.max(0, 3 - count)
+      displayCredits = `${remaining * 5}$`
+    }
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -76,6 +97,70 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </Link>
             </div>
           </>
+        )}
+        {token && hydrated && !isLandingPage && (
+          <div className="relative flex items-center gap-3">
+            {user && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1c1614] border border-[#ea580c]/30 shadow-[0_0_10px_rgba(234,88,12,0.1)]">
+                <span className="text-xs font-mono text-[#a39486]">Credits:</span>
+                <span className={`text-xs font-bold font-mono ${displayCredits === 'ult' ? 'text-[#f59e0b]' : 'text-[#ea580c]'}`}>{displayCredits}</span>
+              </div>
+            )}
+            <button 
+              onClick={() => setProfileOpen(!profileOpen)}
+              className="w-9 h-9 rounded-full bg-[#1f1a18] border border-white/5 flex items-center justify-center hover:bg-[#ea580c]/10 hover:border-[#ea580c]/30 hover:text-[#ea580c] transition-all text-[#8a7a6a]"
+            >
+              <User size={16} strokeWidth={2.5} />
+            </button>
+            
+            {profileOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
+                <div className="absolute right-0 top-12 w-56 rounded-xl border border-white/10 bg-[#171210]/95 backdrop-blur-xl shadow-2xl z-50 overflow-hidden font-mono text-sm">
+                  <div className="p-2 space-y-1">
+                    <Link href="/profile" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#fdf6f0] hover:bg-white/5 transition-colors">
+                      <User size={16} className="text-[#a39486]" /> Profile
+                    </Link>
+                    <Link href="/settings" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#fdf6f0] hover:bg-white/5 transition-colors">
+                      <Settings size={16} className="text-[#a39486]" /> Settings
+                    </Link>
+                  </div>
+                  
+                  <div className="h-px bg-white/5 w-full my-1" />
+                  
+                  <div className="p-2">
+                    <div className="px-3 py-1.5 text-xs text-[#8a7a6a] uppercase tracking-wider mb-1">Theme</div>
+                    <div className="flex items-center justify-between gap-1">
+                      <button onClick={() => setProfileOpen(false)} className="flex-1 flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-white/5 text-[#8a7a6a] hover:text-[#fdf6f0] transition-colors">
+                        <Moon size={16} /> <span className="text-[10px]">Dark</span>
+                      </button>
+                      <button onClick={() => setProfileOpen(false)} className="flex-1 flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-white/5 text-[#ea580c] bg-[#ea580c]/10 transition-colors">
+                        <Flame size={16} /> <span className="text-[10px]">Ember</span>
+                      </button>
+                      <button onClick={() => setProfileOpen(false)} className="flex-1 flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-white/5 text-[#8a7a6a] hover:text-[#fdf6f0] transition-colors">
+                        <Sun size={16} /> <span className="text-[10px]">Light</span>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="h-px bg-white/5 w-full my-1" />
+                  
+                  <div className="p-2">
+                    <button 
+                      onClick={() => {
+                        logout()
+                        setProfileOpen(false)
+                        router.push("/")
+                      }} 
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-red-400 hover:bg-red-400/10 transition-colors text-left"
+                    >
+                      <LogOut size={16} /> Log out
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         )}
       </header>
 

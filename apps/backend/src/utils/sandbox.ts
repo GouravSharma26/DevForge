@@ -17,11 +17,13 @@ export async function runInSandbox(
 ): Promise<SandboxResult> {
   const id = randomUUID()
 
-  if (language === "javascript") {
+  const lang = language.toLowerCase()
+
+  if (lang === "javascript" || lang === "js" || lang === "node" || lang === "typescript" || lang === "ts") {
     return runJS(code, id, timeoutMs)
   }
 
-  if (language === "python") {
+  if (lang === "python" || lang === "py" || lang === "python3") {
     return runPython(code, id, timeoutMs)
   }
 

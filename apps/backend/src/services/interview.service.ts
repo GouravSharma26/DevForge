@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { PrismaClient } from "@prisma/client"
+import { consumeAiRequest } from "../utils/ai-rate-limit"
 
 const prisma = new PrismaClient()
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
@@ -8,17 +9,21 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
 // ─── Generate Questions ───────────────────────────────────────────────────────
 
 export async function generateInterview(userId: string, resumeId: string) {
+  await consumeAiRequest(userId, prisma)
   const resume = await prisma.resume.findUnique({ where: { id: resumeId } })
   if (!resume) throw new Error("Resume not found")
 
+  const primaryLanguage = resume.skills[0] || "JavaScript"
+
   const prompt = `
-You are a senior technical interviewer. Based on this candidate's resume data, generate exactly 9 interview questions — 3 per round.
+You are a senior technical interviewer. Based on this candidate's resume data, generate exactly 9 interview questions (3 per round) PLUS 1 Grandmaster debug challenge.
 
 CANDIDATE DATA:
 - Skills: ${resume.skills.join(", ")}
 - Experience Level: ${resume.experienceLevel}
 - Target Role: ${resume.targetRole || "Software Developer"}
 - Skill Gaps: ${resume.gaps.join(", ")}
+- Primary Language: ${primaryLanguage}
 
 Return ONLY valid JSON (no markdown):
 {
@@ -27,14 +32,20 @@ Return ONLY valid JSON (no markdown):
       "round": 1,
       "question": "technical question based on their listed skills",
       "context": "why you're asking this based on their resume"
-    },
-    ... 9 total questions, 3 per round
-  ]
+    }
+  ],
+  "grandmaster": {
+    "scenario": "Explanation of what the buggy code is supposed to do",
+    "language": "${primaryLanguage}",
+    "buggyCode": "function solve() { ... } console.log(solve());",
+    "expectedOutput": "The exact stdout expected if fixed"
+  }
 }
 
 Round 1 (Technical): Questions about technologies they listed
 Round 2 (Projects): Questions about their actual project experience
 Round 3 (Gaps): Questions about skills missing from their resume for their target role
+Grandmaster: A concise, self-contained debug challenge with a logical bug (no syntax errors) that prints output to stdout.
 `
 
   let result;
@@ -73,10 +84,20 @@ Round 3 (Gaps): Questions about skills missing from their resume for their targe
     round: q.round,
     question: q.question,
     context: q.context || null,
+    isGrandmaster: false,
   }))
 
-
-
+  if (parsed.grandmaster) {
+    questionsData.push({
+      round: 4,
+      isGrandmaster: true,
+      question: parsed.grandmaster.scenario,
+      language: parsed.grandmaster.language,
+      buggyCode: parsed.grandmaster.buggyCode,
+      expectedOutput: parsed.grandmaster.expectedOutput,
+      context: "Grandmaster Debug Challenge",
+    })
+  }
   const interview = await prisma.interview.create({
     data: {
       userId,
@@ -97,23 +118,8 @@ export async function appendGrandmasterChallenge(interviewId: string, userId: st
   })
   if (!interview) throw new Error("Interview not found or unauthorized")
 
-  const { generateGrandmasterChallenge } = await import("./grandmaster.service")
-  
-  // We use javascript as default. Ideally, we could parse from resume skills.
-  const gmChallenge = await generateGrandmasterChallenge(interviewId, "javascript")
-  
-  await prisma.question.create({
-    data: {
-      interviewId,
-      round: 4,
-      isGrandmaster: true,
-      language: gmChallenge.language,
-      question: gmChallenge.scenario,
-      buggyCode: gmChallenge.buggyCode,
-      expectedOutput: gmChallenge.expectedOutput,
-      context: "Grandmaster Debug Challenge",
-    }
-  })
+  // The Grandmaster question is now pre-generated and stored in the DB during interview creation.
+  // We just need to reopen the interview.
 
   // Reopen the interview
   return prisma.interview.update({
@@ -132,6 +138,7 @@ export async function submitAnswer(
 ) {
   const question = await prisma.question.findUnique({
     where: { id: questionId },
+    include: { interview: true }
   })
   if (!question) throw new Error("Question not found")
 
@@ -143,6 +150,7 @@ export async function submitAnswer(
     const sandboxRes = await runInSandbox(userAnswer, question.language || "javascript")
     
     const evalResult = await evaluateGrandmasterSubmission(
+      question.interview.userId,
       question.question, // The scenario
       question.expectedOutput || "", 
       userAnswer, 
@@ -210,6 +218,8 @@ export async function completeInterview(interviewId: string) {
     include: { questions: true, resume: true },
   })
   if (!interview) throw new Error("Interview not found")
+  
+  await consumeAiRequest(interview.userId, prisma)
 
   const standardQuestions = interview.questions.filter(q => !q.isGrandmaster)
   
@@ -267,16 +277,27 @@ Format exactly like this:
           retries--;
           delay *= 2;
         } else {
-          console.error("❌ Gemini batch evaluation exhausted all retries.");
-          throw new Error("Failed to evaluate answers. Please try again.");
+          console.error("❌ Gemini batch evaluation exhausted all retries. Using fallback.");
+          success = true;
+          // Create fallback array for ungraded questions
+          parsedArray = ungraded.map(q => ({
+            questionId: q.id,
+            score: null, // No score given
+            feedback: "Evaluation failed due to API quota limits. Please review your answer manually.",
+            strengths: "N/A",
+            improvements: "N/A"
+          }));
         }
       }
     }
 
-    // Apply the valid evaluations
+    // Apply the valid evaluations (or fallbacks)
     for (const item of parsedArray) {
-      if (item.questionId && typeof item.score === 'number' && item.feedback) {
-        const fullFeedback = `${item.feedback}\n\n✅ Strengths: ${item.strengths || "N/A"}\n📈 Improve: ${item.improvements || "N/A"}`
+      if (item.questionId && item.feedback) {
+        const fullFeedback = item.score !== null 
+          ? `${item.feedback}\n\n✅ Strengths: ${item.strengths || "N/A"}\n📈 Improve: ${item.improvements || "N/A"}`
+          : item.feedback;
+        
         await prisma.question.update({
           where: { id: item.questionId },
           data: {

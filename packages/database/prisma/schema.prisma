@@ -7,6 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 enum ExperienceLevel {
   BEGINNER
   MID
@@ -22,10 +27,13 @@ model User {
   bio             String?
   targetRole      String?
   experienceLevel ExperienceLevel @default(BEGINNER)
+  role            Role            @default(USER)
   xp              Int             @default(0)
   streak          Int             @default(0)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
+  aiRequestCount  Int             @default(0)
+  lastAiRequestAt DateTime?
   enrollments     Enrollment[]
   progress        UserProgress[]
   submissions     Submission[]
@@ -243,5 +251,24 @@ model Question {
 enum InterviewStatus {
   IN_PROGRESS
   COMPLETED
+}
+
+model SystemConfig {
+  id               String   @id @default("global") 
+  botEnabled       Boolean  @default(true)
+  botQueueWaitTime Int      @default(10) 
+  
+  // Base Problem Times
+  baseTimeEasy     Int      @default(120)
+  baseTimeMedium   Int      @default(300)
+  baseTimeHard     Int      @default(600)
+  
+  // Bot Skill Multipliers
+  multBeginner     Float    @default(1.8)
+  multIntermediate Float    @default(1.0)
+  multGrandmaster  Float    @default(0.4)
+  
+  variancePercent  Float    @default(0.20)
+  updatedAt        DateTime @updatedAt
 }
 

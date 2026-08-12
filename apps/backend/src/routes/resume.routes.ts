@@ -387,7 +387,8 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
         return reply.send({ success: true, data: result })
       } catch (err: any) {
         console.error("[Submit Answer Error]:", err)
-        return reply.status(500).send({ success: false, error: err.message })
+        const status = err.statusCode || 500
+        return reply.status(status).send({ success: false, error: err.message })
       }
     }
   )
@@ -401,7 +402,8 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
         const interview = await completeInterview(req.params.id)
         return reply.send({ success: true, data: interview })
       } catch (err: any) {
-        return reply.status(500).send({ success: false, error: err.message })
+        const status = err.statusCode || 500
+        return reply.status(status).send({ success: false, error: err.message })
       }
     }
   )
@@ -440,7 +442,8 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
         const result = await runGrandmasterCode(req.params.questionId, req.body.code)
         return reply.send({ success: true, data: result })
       } catch (err: any) {
-        return reply.status(500).send({ success: false, error: err.message })
+        const status = err.statusCode || 500
+        return reply.status(status).send({ success: false, error: err.message })
       }
     }
   )

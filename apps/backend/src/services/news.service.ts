@@ -24,8 +24,11 @@ export async function fetchAndStoreNews() {
       const res = await fetch(
         `${BASE_URL}/top-headlines?category=${category}&language=en&pageSize=20&apiKey=${NEWS_API_KEY}`
       )
-      const data = (await res.json()) as { articles: NewsAPIArticle[] }
-      if (!data.articles?.length) continue
+      const data = (await res.json()) as any
+      if (!data.articles?.length) {
+        console.warn(`No articles for ${category}:`, data)
+        continue
+      }
 
       for (const article of data.articles) {
         if (!article.title || !article.url || article.title === "[Removed]") continue

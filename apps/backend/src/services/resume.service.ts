@@ -1,6 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { PrismaClient } from "@prisma/client"
 import { redactPII } from "../utils/redact"
+import { consumeAiRequest } from "../utils/ai-rate-limit"
+const pdfParse = require("pdf-parse")
 
 const prisma = new PrismaClient()
 
@@ -10,6 +12,8 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
 // ─── Resume Analysis (Native PDF Parsing) ─────────────────────────────────────
 
 export async function analyzeResume(userId: string, pdfBuffer: Buffer, profileName: string = "PDF Upload") {
+  await consumeAiRequest(userId, prisma)
+
   const prompt = `
 You are an expert technical recruiter and resume analyst. Read this candidate's resume and return a JSON response.
 
@@ -45,8 +49,8 @@ Scoring criteria:
 `
 
   let result;
-  let retries = 3;
-  let delay = 2000; 
+  let retries = 5;
+  let delay = 5000; 
 
   while (retries > 0) {
     try {
@@ -61,27 +65,52 @@ Scoring criteria:
       ])
       break; 
     } catch (error: any) {
-      if (error.status === 503 && retries > 1) {
-        console.warn(`⏳ Gemini API busy. Retrying in ${delay / 1000} seconds...`);
+      const isRateLimit = error.status === 503 || error.status === 429 || 
+                          (error.message && (error.message.includes("429") || error.message.includes("503") || error.message.includes("exhausted") || error.message.includes("quota")));
+      
+      if (isRateLimit && retries > 1) {
+        console.warn(`⏳ Gemini API busy/rate-limited. Retrying in ${delay / 1000} seconds...`);
         await new Promise((resolve) => setTimeout(resolve, delay));
         retries--;
         delay *= 2; 
       } else {
-        throw error; 
+        console.warn("⚠️ Rate limit exhausted! Switching to Regex Fallback in analyzeResume...")
+        break; 
       }
     }
   }
 
-  // @ts-ignore
-  const text = result.response.text().trim()
-
   let parsed
-  try {
-    parsed = JSON.parse(text)
-  } catch {
-    const match = text.match(/\{[\s\S]*\}/)
-    if (!match) throw new Error("Failed to parse AI response")
-    parsed = JSON.parse(match[0])
+  if (!result) {
+    let rawText = ""
+    try {
+      const parseFn = typeof pdfParse === "function" ? pdfParse : (pdfParse.default || pdfParse.PDFParse)
+      const pdfData = await parseFn(pdfBuffer)
+      rawText = pdfData?.text || ""
+    } catch (err) {
+      console.warn("Failed to parse PDF text natively:", err)
+    }
+    const skillsMatch = rawText.match(/(?:skills|technologies|expertise)[^\n]*\n(.*?)(?:\n\n|\n[A-Z]|$)/is)
+    
+    parsed = {
+      redactedText: rawText,
+      skills: skillsMatch ? skillsMatch[1].split(/[,•|]/).map(s => s.trim()).filter(Boolean).slice(0, 10) : [],
+      experienceLevel: "MID",
+      targetRole: "Software Engineer",
+      scores: { skills: 50, projects: 50, writing: 50, ats: 50, overall: 50 },
+      gaps: ["Regex fallback active, details limited."],
+      suggestions: []
+    }
+  } else {
+    // @ts-ignore
+    const text = result.response.text().trim()
+    try {
+      parsed = JSON.parse(text)
+    } catch {
+      const match = text.match(/\{[\s\S]*\}/)
+      if (!match) throw new Error("Failed to parse AI response")
+      parsed = JSON.parse(match[0])
+    }
   }
 
   // Handle redaction fallback and regex backstop
@@ -175,8 +204,10 @@ export async function forkResume(sourceId: string, userId: string, newProfileNam
 // ─── Builder/Text Analysis ──────────────────────────────────────────────────
 
 export async function analyzeResumeFromText(userId: string, resumeText: string, profileName: string = "Builder Draft") {
+  await consumeAiRequest(userId, prisma)
+  
   const prompt = `
-You are an expert technical recruiter and resume analyst. Analyze this resume text and return a JSON response.
+You are an expert technical recruiter and recruiter and resume analyst. Analyze this resume text and return a JSON response.
 
 RESUME TEXT:
 ${resumeText}
@@ -204,17 +235,52 @@ Return ONLY valid JSON in this exact format (no markdown, no backticks):
   ]
 }
 `
+  let result;
+  let retries = 5;
+  let delay = 5000;
 
-  const result = await model.generateContent(prompt)
-  const text = result.response.text().trim()
+  while (retries > 0) {
+    try {
+      result = await model.generateContent(prompt);
+      break;
+    } catch (error: any) {
+      const isRateLimit = error.status === 503 || error.status === 429 || 
+                          (error.message && (error.message.includes("429") || error.message.includes("503") || error.message.includes("exhausted") || error.message.includes("quota")));
+                          
+      if (isRateLimit && retries > 1) {
+        console.warn(`⏳ Gemini API busy/rate-limited in analyzeResumeFromText. Retrying in ${delay / 1000} seconds...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        retries--;
+        delay *= 2;
+      } else {
+        console.warn("⚠️ Rate limit exhausted! Switching to Regex Fallback in analyzeResumeFromText...")
+        break;
+      }
+    }
+  }
 
   let parsed
-  try {
-    parsed = JSON.parse(text)
-  } catch {
-    const match = text.match(/\{[\s\S]*\}/)
-    if (!match) throw new Error("Failed to parse AI response")
-    parsed = JSON.parse(match[0])
+  if (!result) {
+    const skillsMatch = resumeText.match(/(?:skills|technologies|expertise)[^\n]*\n(.*?)(?:\n\n|\n[A-Z]|$)/is)
+    parsed = {
+      redactedText: resumeText,
+      skills: skillsMatch ? skillsMatch[1].split(/[,•|]/).map(s => s.trim()).filter(Boolean).slice(0, 10) : [],
+      experienceLevel: "MID",
+      targetRole: "Software Engineer",
+      scores: { skills: 50, projects: 50, writing: 50, ats: 50, overall: 50 },
+      gaps: ["Regex fallback active, details limited."],
+      suggestions: []
+    }
+  } else {
+    // @ts-ignore
+    const text = result.response.text().trim()
+    try {
+      parsed = JSON.parse(text)
+    } catch {
+      const match = text.match(/\{[\s\S]*\}/)
+      if (!match) throw new Error("Failed to parse AI response")
+      parsed = JSON.parse(match[0])
+    }
   }
 
   // Handle redaction fallback and regex backstop

@@ -17,6 +17,7 @@ import { arenaRoutes } from "./routes/arena.routes"
 import { scheduleNewsJob } from "./workers/news.worker"
 import { registerArenaHandlers } from "./sockets/arena.socket"
 import { resumeRoutes } from "./routes/resume.routes"
+import { adminRoutes } from "./routes/admin.routes"
 
 const app = Fastify({ logger: true })
 
@@ -54,6 +55,27 @@ async function start() {
   await app.register(problemRoutes, { prefix: "/api/problems" })
   await app.register(arenaRoutes, { prefix: "/api/arena" })
   await app.register(resumeRoutes, { prefix: "/api/resume" })
+  await app.register(adminRoutes, { prefix: "/api/admin" })
+  // Global Error Handler
+  app.setErrorHandler((error, request, reply) => {
+    app.log.error(error)
+    
+    // Check if it's a Prisma Database Connection Error
+    if (error.name === "PrismaClientInitializationError" || error.message.includes("Can't reach database server")) {
+      return reply.status(503).send({ 
+        success: false, 
+        error: "Database connection timeout. Please try again." 
+      })
+    }
+
+    // Default fastify error
+    const statusCode = error.statusCode || 500
+    reply.status(statusCode).send({
+      success: false,
+      error: statusCode === 500 ? "Internal Server Error" : error.message
+    })
+  })
+
   app.get("/health", async () => ({
     status: "ok",
     timestamp: new Date().toISOString(),
@@ -94,5 +116,14 @@ async function start() {
     process.exit(1)
   }
 }
+
+// Handle Uncaught Exceptions gracefully
+process.on("uncaughtException", (err) => {
+  console.error("🔥 Uncaught Exception:", err)
+})
+
+process.on("unhandledRejection", (err) => {
+  console.error("🔥 Unhandled Rejection:", err)
+})
 
 start()

@@ -8,6 +8,10 @@ import {
   getMatchById,
 } from "../services/arena.service"
 import { submitSolution } from "../services/problems.service"
+import { PrismaClient } from "@prisma/client"
+import { calculateBotSolveTime, startBotBattle, cancelBotBattle } from "../services/arena-bot.service"
+
+const prisma = new PrismaClient()
 
 // In-memory map: userId → socketId
 const userSockets = new Map<string, string>()
@@ -62,6 +66,39 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
         })
 
         console.log(`⏳ Waiting for opponent: ${match.id}`)
+
+        // 🤖 Bot Matchmaking Logic
+        const config = await prisma.systemConfig.findUnique({ where: { id: "global" } })
+        if (config?.botEnabled) {
+          setTimeout(async () => {
+            try {
+              // Check if match is still WAITING (i.e. no human joined)
+              const currentMatch = await getMatchById(match.id)
+              if (currentMatch && currentMatch.status === "WAITING") {
+                const botData = await calculateBotSolveTime(currentMatch.problem.difficulty)
+                
+                // Join the bot
+                const botMatch = await joinMatch(match.id, botData.botId)
+                
+                // Track players
+                matchPlayers.set(match.id, new Set([match.player1Id, botData.botId]))
+                
+                // Notify human
+                io.to(match.id).emit("arena:match_found", {
+                  matchId: botMatch.id,
+                  problem: botMatch.problem,
+                  player1: botMatch.player1,
+                  player2: botMatch.player2,
+                })
+                
+                // Start bot simulation
+                startBotBattle(match.id, botData.botId, botData.ms, io)
+              }
+            } catch (e) {
+              console.error("Bot injection failed", e)
+            }
+          }, config.botQueueWaitTime * 1000)
+        }
       }
     } catch (err) {
       console.error("arena:join_queue error", err)
@@ -109,6 +146,8 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
 
           console.log(`🏆 Match ${matchId} won by ${userId}`)
 
+          cancelBotBattle(matchId)
+
           // 🛠️ MEMORY LEAK FIX 1: Cleanup when match naturally completes
           matchPlayers.delete(matchId)
         } else {
@@ -130,6 +169,8 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     socket.leave(matchId)
     socket.to(matchId).emit("arena:opponent_left")
 
+    cancelBotBattle(matchId)
+
     // 🛠️ MEMORY LEAK FIX 2: Cleanup when player manually leaves
     matchPlayers.delete(matchId)
   })
@@ -142,6 +183,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     for (const [matchId, players] of matchPlayers.entries()) {
       if (players.has(userId)) {
         socket.to(matchId).emit("arena:opponent_left")
+        cancelBotBattle(matchId)
         matchPlayers.delete(matchId)
       }
     }
