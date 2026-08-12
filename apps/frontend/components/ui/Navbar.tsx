@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
-import { LayoutDashboard, Newspaper, FileText, Mic, Puzzle, Zap, Anvil, Shield } from "lucide-react"
+import { LayoutDashboard, Newspaper, FileText, Mic, Puzzle, Zap, Anvil, Shield, Map } from "lucide-react"
 import { useAuthStore } from "@/store/auth.store"
 import { useInterviews } from "@/hooks/useResume"
 
@@ -65,6 +65,7 @@ export function Navbar({ open }: { open: boolean }) {
         <NavItem href="/interview" label="Interview Hub" icon={Mic} />
 
         <GroupTitle>Practice</GroupTitle>
+        <NavItem href="/paths" label="Learning Paths" icon={Map} />
         <NavItem href="/problems" label="Problems" icon={Puzzle} />
         <NavItem href="/arena" label="PvP Arena" icon={Zap} />
 
