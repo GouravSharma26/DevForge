@@ -6,8 +6,31 @@ import { LayoutDashboard, Newspaper, FileText, Mic, Puzzle, Zap, Anvil, Shield, 
 import { useAuthStore } from "@/store/auth.store"
 import { useInterviews } from "@/hooks/useResume"
 
-export function Navbar({ open }: { open: boolean }) {
+const NavItem = ({ href, label, icon: Icon }: { href: string, label: string, icon: any }) => {
   const pathname = usePathname()
+  const active = pathname === href
+  return (
+    <Link
+      href={href}
+      className={`flex items-center gap-2.5 px-2.5 py-2 rounded-[9px] text-[12px] transition-colors ${
+        active 
+          ? "bg-[rgba(234,88,12,0.14)] text-highlight" 
+          : "text-secondary hover:bg-card hover:text-primary"
+      }`}
+    >
+      <span className="w-4 flex items-center justify-center"><Icon size={14} /></span>
+      {label}
+    </Link>
+  )
+}
+
+const GroupTitle = ({ children }: { children: React.ReactNode }) => (
+  <div className="text-[9.5px] text-muted uppercase tracking-[0.07em] px-2.5 mt-3.5 mb-1.5 font-mono">
+    {children}
+  </div>
+)
+
+export function Navbar({ open }: { open: boolean }) {
   const router = useRouter()
   const { token, user } = useAuthStore()
   
@@ -18,29 +41,6 @@ export function Navbar({ open }: { open: boolean }) {
     : 0
 
   if (!token) return null
-
-  const NavItem = ({ href, label, icon: Icon }: { href: string, label: string, icon: any }) => {
-    const active = pathname === href
-    return (
-      <Link
-        href={href}
-        className={`flex items-center gap-2.5 px-2.5 py-2 rounded-[9px] text-[12px] transition-colors ${
-          active 
-            ? "bg-[rgba(234,88,12,0.14)] text-highlight" 
-            : "text-secondary hover:bg-card hover:text-primary"
-        }`}
-      >
-        <span className="w-4 flex items-center justify-center"><Icon size={14} /></span>
-        {label}
-      </Link>
-    )
-  }
-
-  const GroupTitle = ({ children }: { children: React.ReactNode }) => (
-    <div className="text-[9.5px] text-muted uppercase tracking-[0.07em] px-2.5 mt-3.5 mb-1.5 font-mono">
-      {children}
-    </div>
-  )
 
   return (
     <aside

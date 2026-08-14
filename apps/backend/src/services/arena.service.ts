@@ -2,17 +2,35 @@ import { PrismaClient } from "@prisma/client"
 const prisma = new PrismaClient()
 
 export async function getRandomEasyProblem() {
-  const problems = await prisma.problem.findMany({
-    where: { difficulty: "EASY" },
-    select: { id: true },
-  })
-  const random = problems[Math.floor(Math.random() * problems.length)]
-  return random
+  return getRandomProblemByDifficulty("EASY")
 }
 
-export async function createMatch(player1Id: string, problemId: string) {
+export async function getRandomProblemByDifficulty(difficulty: "EASY" | "MEDIUM" | "HARD") {
+  const random = await getNRandomProblems(1, [difficulty])
+  return random[0]
+}
+
+export async function getNRandomProblems(count: number, difficulties?: string[]) {
+  const problems = await prisma.problem.findMany({
+    where: difficulties?.length ? { difficulty: { in: difficulties as any[] } } : undefined,
+    select: { id: true, title: true, slug: true, description: true, category: true, difficulty: true, examples: true, constraints: true, starterCode: true },
+  })
+  
+  if (!problems.length) {
+    if (difficulties?.length) {
+      return getNRandomProblems(count) // fallback to any
+    }
+    return []
+  }
+
+  // Shuffle array
+  const shuffled = problems.sort(() => 0.5 - Math.random())
+  return shuffled.slice(0, Math.max(1, count))
+}
+
+export async function createMatch(player1Id: string, problemId: string, isFriendly: boolean = false) {
   return prisma.match.create({
-    data: { player1Id, problemId, status: "WAITING" },
+    data: { player1Id, problemId, status: "WAITING", isFriendly },
     include: {
       problem: true,
       player1: { select: { id: true, username: true, xp: true } },
@@ -46,11 +64,13 @@ export async function completeMatch(matchId: string, winnerId: string) {
     },
   })
 
-  // Award XP to winner
-  await prisma.user.update({
-    where: { id: winnerId },
-    data: { xp: { increment: 100 } },
-  })
+  // Award XP to winner ONLY if not friendly match
+  if (!match.isFriendly) {
+    await prisma.user.update({
+      where: { id: winnerId },
+      data: { xp: { increment: 100 } },
+    })
+  }
 
   return match
 }
@@ -96,3 +116,14 @@ export async function getMatchHistory(userId: string) {
     }
   })
 }
+
+export async function cancelMatch(matchId: string) {
+  try {
+    const match = await prisma.match.findUnique({ where: { id: matchId } })
+    if (match && match.status === "WAITING") {
+      return await prisma.match.delete({ where: { id: matchId } })
+    }
+  } catch (err) {
+    console.error("Failed to cancel match:", err)
+  }
+}

@@ -3,11 +3,9 @@
 import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useResumes, useInterviews, useStartInterview, useDeleteInterview, useUploadResume } from "@/hooks/useResume"
-import { Plus } from "lucide-react"
+import { Plus, ChevronDown, Bot, Code2, Trash2 } from "lucide-react"
 import { useAuthStore } from "@/store/auth.store"
 import type { Interview, Resume } from "@devforge/shared-types"
-
-const mono = "JetBrains Mono, monospace"
 
 export default function InterviewHubPage() {
   const router = useRouter()
@@ -23,6 +21,7 @@ export default function InterviewHubPage() {
 
   const [selectedResumeId, setSelectedResumeId] = useState<string>("")
   const [showModal, setShowModal] = useState(false)
+  const [showResumeSelectModal, setShowResumeSelectModal] = useState(false)
 
   useEffect(() => {
     if (hydrated && !token) router.push("/login")
@@ -37,7 +36,6 @@ export default function InterviewHubPage() {
 
   async function handleStart() {
     if (!selectedResumeId) return alert("Please select a resume first")
-    // NOTE: This calls the existing useStartInterview() hook with the selectedResumeId.
     const interview = await startInterview.mutateAsync(selectedResumeId)
     router.push(`/resume/interview/${interview.id}`)
   }
@@ -55,7 +53,6 @@ export default function InterviewHubPage() {
         setSelectedResumeId(newResume.id)
       }
     } catch (err: any) {
-      // Errors handled by global interceptor or mutation
       console.error(err)
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = ""
@@ -65,57 +62,41 @@ export default function InterviewHubPage() {
   if (!hydrated || !token) return null
 
   return (
-    <main style={{ minHeight: "calc(100vh - 56px)" }}>
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "32px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
+    <main className="min-h-[calc(100vh-56px)] font-mono text-[var(--color-text-primary)] relative">
+      <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 800px 500px at 50% 0%, var(--glass-border), transparent 70%)' }} />
+
+      <div className="max-w-[860px] mx-auto py-8 px-6 flex flex-col gap-6 relative z-10">
 
         {/* ── Header ── */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
+        <div className="flex justify-between items-end flex-wrap gap-4 fade-up" style={{ animationDelay: '0.1s' }}>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", fontFamily: mono, margin: 0 }}>Interview Hub</h1>
-            <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4, fontFamily: mono }}>
+            <h1 className="text-[24px] font-extrabold m-0 text-[var(--color-text-primary)]">Interview Hub</h1>
+            <p className="text-[13px] text-[var(--color-muted)] mt-1">
               Practice mock interviews based on your specific resumes
             </p>
           </div>
           
-          <div style={{ display: "flex", alignItems: "center", gap: 12, background: "var(--glass-bg)", padding: "8px 12px", borderRadius: 12, border: "1px solid var(--border-subtle)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
-            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: mono }}>Target Resume:</span>
-            <select
-              value={selectedResumeId}
-              onChange={(e) => setSelectedResumeId(e.target.value)}
+          <div className="flex items-center gap-3 glass-panel px-3 py-2 rounded-[14px]">
+            <span className="text-[12px] text-[var(--color-text-secondary)] font-semibold ml-1">Target:</span>
+            
+            <button
+              onClick={() => setShowResumeSelectModal(true)}
               disabled={resumesLoading || startInterview.isPending}
-              style={{
-                background: "var(--bg-surface)",
-                border: "1px solid var(--border-subtle)",
-                color: "var(--text-primary)",
-                padding: "6px 12px",
-                borderRadius: 8,
-                fontFamily: mono,
-                fontSize: 12,
-                outline: "none",
-                cursor: "pointer",
-                minWidth: 200
-              }}
+              className="flex items-center justify-between gap-3 bg-[var(--color-surface-theme)] border border-[var(--color-border)] text-[var(--color-text-primary)] px-3 py-1.5 rounded-[8px] text-[12px] outline-none cursor-pointer min-w-[240px] hover:border-[var(--color-accent)] transition-colors disabled:opacity-50 text-left line-clamp-1"
             >
-              <option value="" disabled>Select a profile...</option>
-              {resumes?.map((res) => (
-                <option key={res.id} value={res.id}>
-                  {res.profileName} {res.targetRole ? `(${res.targetRole})` : ""}
-                </option>
-              ))}
-            </select>
+              <span className="truncate flex-1">
+                {resumes?.find((r) => r.id === selectedResumeId)
+                  ? `${resumes.find((r) => r.id === selectedResumeId)?.profileName} ${resumes.find((r) => r.id === selectedResumeId)?.targetRole ? `(${resumes.find((r) => r.id === selectedResumeId)?.targetRole})` : ""}`
+                  : "Select a profile..."}
+              </span>
+              <ChevronDown size={14} className="text-[var(--color-muted)] shrink-0" />
+            </button>
 
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadResume.isPending}
               title="Upload New Resume"
-              style={{
-                width: 32, height: 32, borderRadius: 8, border: "1px solid var(--border-subtle)",
-                background: uploadResume.isPending ? "var(--glass-bg)" : "var(--bg-surface)",
-                color: uploadResume.isPending ? "var(--text-muted)" : "#ea580c",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: uploadResume.isPending ? "not-allowed" : "pointer",
-                transition: "all 0.2s"
-              }}
+              className="w-8 h-8 rounded-[8px] border border-[var(--color-border)] bg-[var(--color-surface-theme)] text-[var(--color-accent)] flex items-center justify-center cursor-pointer hover:border-[var(--color-accent)] hover:bg-[var(--color-card)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Plus size={16} />
             </button>
@@ -124,50 +105,30 @@ export default function InterviewHubPage() {
               ref={fileInputRef}
               onChange={handleFileUpload}
               accept="application/pdf"
-              style={{ display: "none" }}
+              className="hidden"
             />
           </div>
         </div>
 
         {/* ── Interview Types ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20, marginTop: 10 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2 fade-up" style={{ animationDelay: '0.2s' }}>
           
           {/* Standard Mock */}
-          <div style={{
-            background: "rgba(var(--glass-bg-rgb),0.02)",
-            border: "1px solid var(--border-subtle)",
-            borderRadius: 16,
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column"
-          }}>
-            <div style={{
-              height: 140,
-              background: "linear-gradient(135deg, rgba(234,88,12,0.15) 0%, rgba(217,119,6,0.05) 100%)",
-              borderBottom: "1px solid var(--border-subtle)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              overflow: "hidden"
-            }}>
-              <img src="/images/interview_standard_banner.png" alt="Standard Mock" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <div className="glass-panel rounded-[16px] overflow-hidden flex flex-col group transition-all hover:border-[var(--color-accent)] hover:-translate-y-1">
+            <div className="h-[140px] border-b border-[var(--color-border)] flex items-center justify-center overflow-hidden relative">
+              <img src="/images/interview_standard_banner.png" alt="Standard Mock" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
             </div>
-            <div style={{ padding: 20, flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <div className="p-5 flex-1 flex flex-col justify-between">
               <div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", fontFamily: mono, marginBottom: 8 }}>Standard Mock</h3>
-                <p style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: mono, lineHeight: 1.5, marginBottom: 20 }}>
+                <h3 className="text-[16px] font-bold text-[var(--color-text-primary)] mb-2">Standard Mock</h3>
+                <p className="text-[12px] text-[var(--color-muted)] leading-relaxed mb-5">
                   A rigorous 10-question gauntlet: 9 advanced multiple-choice questions followed by 1 interactive Grandmaster coding challenge.
                 </p>
               </div>
               <button
                 onClick={handleStart}
                 disabled={startInterview.isPending || !selectedResumeId}
-                style={{
-                  width: "100%", padding: "10px", borderRadius: 10, border: "none",
-                  background: (startInterview.isPending || !selectedResumeId) ? "var(--glass-bg)" : "linear-gradient(135deg, #ea580c, #d97706)",
-                  color: (startInterview.isPending || !selectedResumeId) ? "var(--text-muted)" : "var(--text-primary)", fontSize: 13,
-                  fontFamily: mono, cursor: (startInterview.isPending || !selectedResumeId) ? "not-allowed" : "pointer", fontWeight: 700,
-                  boxShadow: (startInterview.isPending || !selectedResumeId) ? "none" : "0 4px 16px rgba(234,88,12,0.3)",
-                  transition: "all 0.2s"
-                }}
+                className="w-full py-2.5 rounded-[10px] font-bold text-[13px] transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-[var(--color-accent)] bg-[var(--color-accent)] text-white hover:shadow-[0_0_20px_rgba(234,88,12,0.4)] disabled:hover:shadow-none"
               >
                 {startInterview.isPending ? "Starting..." : !selectedResumeId ? "Select Resume First" : "Start Standard"}
               </button>
@@ -175,43 +136,20 @@ export default function InterviewHubPage() {
           </div>
 
           {/* AI Agent Mock */}
-          <div style={{
-            background: "rgba(var(--glass-bg-rgb),0.02)",
-            border: "1px solid var(--border-subtle)",
-            borderRadius: 16,
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column"
-          }}>
-            <div style={{
-              height: 140,
-              background: "linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(5,150,105,0.05) 100%)",
-              borderBottom: "1px solid var(--border-subtle)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              overflow: "hidden"
-            }}>
-              <img src="/images/interview_ai_banner.png" alt="AI Agent" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <div className="glass-panel rounded-[16px] overflow-hidden flex flex-col group transition-all hover:border-[var(--color-border)] hover:-translate-y-1">
+            <div className="h-[140px] border-b border-[var(--color-border)] flex items-center justify-center overflow-hidden relative">
+              <img src="/images/interview_ai_banner.png" alt="AI Agent" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
             </div>
-            <div style={{ padding: 20, flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <div className="p-5 flex-1 flex flex-col justify-between">
               <div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", fontFamily: mono, marginBottom: 8 }}>1-on-1 AI Agent</h3>
-                <p style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: mono, lineHeight: 1.5, marginBottom: 20 }}>
+                <h3 className="text-[16px] font-bold text-[var(--color-text-primary)] mb-2">1-on-1 AI Agent</h3>
+                <p className="text-[12px] text-[var(--color-muted)] leading-relaxed mb-5">
                   A completely immersive verbal and collaborative technical interview with an autonomous AI recruiter.
                 </p>
               </div>
               <button
                 onClick={() => setShowModal(true)}
-                style={{
-                  width: "100%", padding: "10px", borderRadius: 10, border: "1px solid var(--border-subtle)",
-                  background: "var(--glass-bg)", color: "var(--text-primary)", fontSize: 13,
-                  fontFamily: mono, cursor: "pointer", fontWeight: 700, transition: "all 0.2s"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(var(--glass-bg-rgb),0.1)"
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "var(--glass-bg)"
-                }}
+                className="w-full py-2.5 rounded-[10px] font-bold text-[13px] transition-all border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text-primary)] hover:border-[#10b981] hover:text-[#10b981]"
               >
                 Start AI Agent
               </button>
@@ -219,17 +157,17 @@ export default function InterviewHubPage() {
           </div>
         </div>
 
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", fontFamily: mono, marginTop: 24, marginBottom: -4, borderBottom: "1px solid var(--border-subtle)", paddingBottom: 12 }}>
+        <h2 className="text-[16px] font-bold text-[var(--color-text-primary)] mt-6 -mb-1 border-b border-[var(--color-border)] pb-3 fade-up" style={{ animationDelay: '0.3s' }}>
           Past Interviews
         </h2>
 
         {/* ── Saved Interviews Grid ── */}
         {isLoading ? (
-          <p style={{ color: "var(--text-muted)", fontFamily: mono, fontSize: 12, textAlign: "center", marginTop: 40 }}>Loading your sessions...</p>
+          <p className="text-[var(--color-muted)] text-[12px] text-center mt-10">Loading your sessions...</p>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16, marginTop: 16 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2 fade-up" style={{ animationDelay: '0.4s' }}>
             {interviews?.length === 0 && (
-              <p style={{ color: "var(--text-muted)", fontFamily: mono, fontSize: 12, gridColumn: "1 / -1", textAlign: "center", marginTop: 40 }}>
+              <p className="text-[var(--color-muted)] text-[12px] col-span-full text-center mt-10">
                 No past interviews found. Select a resume and start one!
               </p>
             )}
@@ -237,43 +175,24 @@ export default function InterviewHubPage() {
               <div
                 key={interview.id}
                 onClick={() => router.push(`/resume/interview/${interview.id}`)}
-                style={{
-                  background: "var(--glass-bg)", border: "1px solid var(--border-subtle)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: 16, padding: 20,
-                  cursor: "pointer", transition: "all 0.2s", display: "flex", flexDirection: "column",
-                  justifyContent: "space-between"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(234,88,12,0.5)"
-                  e.currentTarget.style.transform = "translateY(-2px)"
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "var(--border-subtle)"
-                  e.currentTarget.style.transform = "translateY(0)"
-                }}
+                className="glass-panel rounded-[16px] p-5 cursor-pointer flex flex-col justify-between transition-all hover:border-[var(--color-accent)] hover:-translate-y-1 group"
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+                <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", fontFamily: mono, margin: "0 0 4px" }}>
+                    <h3 className="text-[15px] font-bold text-[var(--color-text-primary)] m-0 mb-1 line-clamp-1">
                       {interview.resume?.profileName || "Deleted Profile"}
                     </h3>
-                    <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 6, background: "var(--bg-surface)", color: "var(--text-secondary)", fontFamily: mono }}>
+                    <span className="text-[10px] px-2 py-1 rounded-[6px] bg-[var(--color-surface-theme)] text-[var(--color-text-secondary)] border border-[var(--color-border)] inline-block">
                       {interview.resume?.targetRole || "General Target"}
                     </span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div className="flex items-center gap-3">
                     {interview.status === "COMPLETED" && interview.score != null ? (
-                      <div style={{
-                        width: 40, height: 40, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-                        background: "rgba(var(--border-subtle-rgb),0.08)",
-                        color: interview.score >= 80 ? "#10b981" : interview.score >= 60 ? "#eab308" : "#ef4444",
-                        border: "1px solid rgba(var(--border-subtle-rgb),0.18)",
-                        backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)",
-                        fontFamily: mono, fontWeight: 800, fontSize: 13
-                      }}>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-[13px] border border-[var(--color-border)] bg-[var(--color-card)] ${interview.score >= 80 ? 'text-[#10b981]' : interview.score >= 60 ? 'text-[#eab308]' : 'text-[#ef4444]'}`}>
                         {interview.score}
                       </div>
                     ) : (
-                      <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 6, background: "#eab30815", color: "#eab308", border: "1px solid #eab30830", fontFamily: mono }}>
+                      <span className="text-[10px] px-2 py-1 rounded-[6px] bg-[#eab30815] text-[#eab308] border border-[#eab30830]">
                         IN PROGRESS
                       </span>
                     )}
@@ -283,24 +202,18 @@ export default function InterviewHubPage() {
                         if (confirm("Delete this interview?")) deleteInterview.mutate(interview.id)
                       }}
                       disabled={deleteInterview.isPending}
-                      style={{
-                        background: "none", border: "none", color: "#ef4444", cursor: "pointer",
-                        padding: 4, display: "flex", alignItems: "center", justifyContent: "center",
-                        opacity: 0.6, transition: "opacity 0.2s"
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
-                      onMouseLeave={(e) => e.currentTarget.style.opacity = "0.6"}
+                      className="text-[#ef4444] opacity-40 hover:opacity-100 transition-opacity p-1"
                       title="Delete Interview"
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <p style={{ fontSize: 11, color: "#5a5780", margin: 0, fontFamily: mono }}>
+                <div className="flex justify-between items-center mt-2">
+                  <p className="text-[11px] text-[var(--color-muted)] m-0">
                     {new Date(interview.createdAt).toLocaleDateString()}
                   </p>
-                  <span style={{ fontSize: 11, color: "#a09dc0", fontFamily: mono }}>
+                  <span className="text-[11px] text-[var(--color-muted)] font-medium">
                     {(interview.questions || []).filter((q: any) => q.score != null).length} / {(interview.questions || []).length} Ans
                   </span>
                 </div>
@@ -312,42 +225,81 @@ export default function InterviewHubPage() {
 
       {/* Coming Soon Modal */}
       {showModal && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 100,
-          background: "rgba(23, 18, 16, 0.8)", backdropFilter: "blur(4px)",
-          display: "flex", alignItems: "center", justifyContent: "center", padding: 24
-        }}>
-          <div className="bg-base">
-            <div style={{
-              width: 48, height: 48, borderRadius: "50%", background: "rgba(234,88,12,0.1)",
-              color: "#ea580c", display: "flex", alignItems: "center", justifyContent: "center",
-              margin: "0 auto 20px", fontSize: 24, border: "1px solid rgba(234,88,12,0.2)"
-            }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+          <div className="glass-panel bg-[var(--color-surface-theme)] border-[var(--color-accent)] rounded-[20px] p-8 max-w-[400px] w-full text-center shadow-[0_0_40px_rgba(234,88,12,0.15)] animate-fade-in-up">
+            <div className="w-12 h-12 mx-auto rounded-full bg-[var(--color-card)] text-[var(--color-accent)] border border-[var(--color-accent)] flex items-center justify-center mb-5 text-[24px]">
               🚧
             </div>
-            <h3 style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", fontFamily: mono, marginBottom: 8 }}>
+            <h3 className="text-[18px] font-bold text-[var(--color-text-primary)] mb-2">
               Coming Soon
             </h3>
-            <p style={{ fontSize: 13, color: "var(--text-muted)", fontFamily: mono, lineHeight: 1.5, marginBottom: 24 }}>
+            <p className="text-[13px] text-[var(--color-muted)] leading-relaxed mb-6">
               The 1-on-1 AI autonomous voice recruiter is currently in active development. Check back soon!
             </p>
             <button
               onClick={() => setShowModal(false)}
-              style={{
-                width: "100%", padding: "10px 0", borderRadius: 12, fontSize: 13,
-                fontFamily: mono, cursor: "pointer", fontWeight: 600,
-                background: "var(--glass-bg)", border: "1px solid var(--border-subtle)",
-                color: "var(--text-primary)", transition: "all 0.2s"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(var(--glass-bg-rgb),0.1)"
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "var(--glass-bg)"
-              }}
+              className="w-full py-2.5 rounded-[12px] text-[13px] font-bold cursor-pointer transition-all border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text-primary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
             >
               Got it
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Resume Select Modal */}
+      {showResumeSelectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm" onClick={() => setShowResumeSelectModal(false)}>
+          <div className="glass-panel bg-[var(--color-surface-theme)] border-[var(--color-border)] rounded-[20px] p-6 max-w-[500px] w-full shadow-[0_0_40px_rgba(0,0,0,0.5)] animate-fade-in-up" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-[16px] font-bold text-[var(--color-text-primary)]">Select Resume</h3>
+              <button onClick={() => setShowResumeSelectModal(false)} className="text-[var(--color-muted)] hover:text-[var(--color-text-primary)]">✕</button>
+            </div>
+            
+            <div className="flex flex-col gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+              {resumes?.map((res) => (
+                <div 
+                  key={res.id}
+                  onClick={() => {
+                    setSelectedResumeId(res.id)
+                    setShowResumeSelectModal(false)
+                  }}
+                  className={`p-4 rounded-[12px] border cursor-pointer transition-all flex justify-between items-center group ${selectedResumeId === res.id ? 'border-[var(--color-accent)] bg-[rgba(234,88,12,0.05)]' : 'border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-accent)]'}`}
+                >
+                  <div>
+                    <div className="text-[14px] font-bold text-[var(--color-text-primary)] mb-1">{res.profileName}</div>
+                    <div className="text-[11px] text-[var(--color-text-secondary)]">{res.targetRole || "General"}</div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    {res.atsScore != null && (
+                      <div className={`text-[12px] font-bold px-2.5 py-1 rounded-[6px] border ${res.atsScore >= 80 ? 'text-[#10b981] border-[#10b981]/30 bg-[#10b981]/10' : res.atsScore >= 60 ? 'text-[#eab308] border-[#eab308]/30 bg-[#eab308]/10' : 'text-[#ef4444] border-[#ef4444]/30 bg-[#ef4444]/10'}`}>
+                        ATS: {res.atsScore}
+                      </div>
+                    )}
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${selectedResumeId === res.id ? 'border-[var(--color-accent)]' : 'border-[var(--color-border)] group-hover:border-[var(--color-accent)]'}`}>
+                      {selectedResumeId === res.id && <div className="w-2 h-2 rounded-full bg-[var(--color-accent)]" />}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {resumes?.length === 0 && (
+                <div className="text-[12px] text-[var(--color-muted)] text-center py-6">
+                  No resumes found. Upload one to get started.
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-5 pt-4 border-t border-[var(--color-border)] flex justify-end">
+              <button
+                onClick={() => {
+                  setShowResumeSelectModal(false)
+                  fileInputRef.current?.click()
+                }}
+                className="py-2 px-4 rounded-[8px] text-[12px] font-bold border border-[var(--color-accent)] text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-white transition-colors"
+              >
+                + Upload New
+              </button>
+            </div>
           </div>
         </div>
       )}
