@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react"
 
-import { useMe } from "@/hooks/useUser"
+import { useMe, useUpdateMe } from "@/hooks/useUser"
 import { useResumes, useDeleteResume, useUploadResume } from "@/hooks/useResume"
 import { useRouter } from "next/navigation"
 import { Flame, Trophy, Star, Edit3, Mail, Target, Clock, Shield, FileText, Plus, Trash2, ArrowRight } from "lucide-react"
@@ -15,6 +15,31 @@ export default function ProfilePage() {
   const uploadResume = useUploadResume()
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  
+  const updateMe = useUpdateMe()
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState({ username: "", bio: "", targetRole: "", avatar: "" })
+
+  const openEditModal = () => {
+    if (user) {
+      setEditForm({
+        username: user.username || "",
+        bio: user.bio || "",
+        targetRole: user.targetRole || "",
+        avatar: user.avatar || ""
+      })
+      setIsEditing(true)
+    }
+  }
+
+  const handleSaveProfile = async () => {
+    try {
+      await updateMe.mutateAsync(editForm)
+      setIsEditing(false)
+    } catch (err: any) {
+      alert("Failed to update profile: " + err.message)
+    }
+  }
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -54,9 +79,13 @@ export default function ProfilePage() {
           
           <div className="p-8 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-8 relative z-10">
             {/* Avatar */}
-            <div className="w-32 h-32 rounded-full border-4 border-[#1f1a18] bg-gradient-to-br from-accent to-highlight shadow-[0_0_40px_rgba(234,88,12,0.3)] flex items-center justify-center text-5xl font-bold font-mono tracking-tighter shrink-0">
-              {user.username.substring(0, 2).toUpperCase()}
-            </div>
+            {user.avatar ? (
+              <img src={user.avatar} alt={user.username} className="w-32 h-32 rounded-full border-4 border-[#1f1a18] shadow-[0_0_40px_rgba(234,88,12,0.3)] object-cover shrink-0" />
+            ) : (
+              <div className="w-32 h-32 rounded-full border-4 border-[#1f1a18] bg-gradient-to-br from-accent to-highlight shadow-[0_0_40px_rgba(234,88,12,0.3)] flex items-center justify-center text-5xl font-bold font-mono tracking-tighter shrink-0 text-white">
+                {user.username.substring(0, 2).toUpperCase()}
+              </div>
+            )}
             
             {/* Info */}
             <div className="flex-1 text-center md:text-left space-y-4">
@@ -91,8 +120,8 @@ export default function ProfilePage() {
             {/* Edit Button */}
             <div className="shrink-0">
               <button 
-                onClick={() => alert("Edit Profile form coming soon!")}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-card hover:bg-card border border-border hover:border-border transition-all font-medium text-sm text-primary"
+                onClick={openEditModal}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-card hover:bg-card/80 border border-border hover:border-accent transition-all font-medium text-sm text-primary"
               >
                 <Edit3 size={16} className="text-accent" />
                 Edit Profile
@@ -268,6 +297,79 @@ export default function ProfilePage() {
                 className="flex-1 py-4 text-sm font-bold text-red-500 hover:bg-red-500/10 transition-colors"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit Profile Modal ── */}
+      {isEditing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-surface-theme border border-border rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col relative">
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-primary font-mono mb-6 flex items-center gap-2">
+                <Edit3 className="text-accent" size={20} /> Edit Profile
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-mono text-muted mb-1 uppercase tracking-wider">Username</label>
+                  <input 
+                    type="text" 
+                    value={editForm.username} 
+                    onChange={e => setEditForm({...editForm, username: e.target.value})}
+                    className="w-full bg-card border border-border rounded-lg px-4 py-2.5 text-sm text-primary outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-mono text-muted mb-1 uppercase tracking-wider">Target Role</label>
+                  <input 
+                    type="text" 
+                    value={editForm.targetRole} 
+                    onChange={e => setEditForm({...editForm, targetRole: e.target.value})}
+                    placeholder="e.g. Senior Frontend Engineer"
+                    className="w-full bg-card border border-border rounded-lg px-4 py-2.5 text-sm text-primary outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-mono text-muted mb-1 uppercase tracking-wider">Bio</label>
+                  <textarea 
+                    value={editForm.bio} 
+                    onChange={e => setEditForm({...editForm, bio: e.target.value})}
+                    placeholder="Tell us about yourself..."
+                    className="w-full bg-card border border-border rounded-lg px-4 py-2.5 text-sm text-primary outline-none focus:border-accent transition-colors resize-none h-24"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-muted mb-1 uppercase tracking-wider">Profile Picture URL</label>
+                  <input 
+                    type="text" 
+                    value={editForm.avatar} 
+                    onChange={e => setEditForm({...editForm, avatar: e.target.value})}
+                    placeholder="https://example.com/avatar.png"
+                    className="w-full bg-card border border-border rounded-lg px-4 py-2.5 text-sm text-primary outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex border-t border-border mt-2">
+              <button
+                onClick={() => setIsEditing(false)}
+                className="flex-1 py-4 text-sm font-bold text-muted hover:text-primary hover:bg-card transition-colors border-r border-border"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={updateMe.isPending}
+                onClick={handleSaveProfile}
+                className="flex-1 py-4 text-sm font-bold text-accent hover:bg-accent/10 transition-colors disabled:opacity-50"
+              >
+                {updateMe.isPending ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </div>
