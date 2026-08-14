@@ -5,8 +5,11 @@ import jwt from "@fastify/jwt"
 import rateLimit from "@fastify/rate-limit"
 import multipart from "@fastify/multipart"
 import { Server } from "socket.io"
+import { PrismaClient } from "@prisma/client"
 import { fetchAndStoreNews } from "./services/news.service"
 import "dotenv/config"
+
+const prisma = new PrismaClient()
 
 import { authRoutes } from "./routes/auth.routes"
 import { problemRoutes } from "./routes/problems.routes"
@@ -82,12 +85,23 @@ async function start() {
   }))
 
   // WebSocket Authentication Middleware
-  io.use((socket, next) => {
+  io.use(async (socket, next) => {
     const token = socket.handshake.auth?.token
     if (!token) return next(new Error("Unauthorized"))
     try {
       const decoded = app.jwt.verify(token) as { id: string }
       socket.data.userId = decoded.id
+
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.id },
+        select: { username: true, avatar: true }
+      })
+
+      if (user) {
+        socket.data.username = user.username
+        socket.data.avatar = user.avatar
+      }
+
       next()
     } catch {
       next(new Error("Invalid token"))
