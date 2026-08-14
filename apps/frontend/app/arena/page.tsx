@@ -648,7 +648,21 @@ export default function ArenaPage() {
             Play Again
           </button>
           <button
-            onClick={() => router.push("/problems")}
+            onClick={() => {
+              if (state.isFriendly) leaveRoom()
+              else leaveMatch(state.matchId || "")
+              reset()
+            }}
+            className="py-3 px-8 rounded-xl text-sm font-bold font-mono bg-[var(--glass-bg)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-white"
+          >
+            Back to Arena
+          </button>
+          <button
+            onClick={() => {
+              if (state.isFriendly) leaveRoom()
+              else leaveMatch(state.matchId || "")
+              router.push("/problems")
+            }}
             className="py-3 px-8 rounded-xl text-sm font-bold font-mono bg-[var(--glass-bg)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-white"
           >
             Practice
