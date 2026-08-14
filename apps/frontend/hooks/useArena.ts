@@ -10,8 +10,10 @@ export interface FriendlyRoom {
   name: string
   organizerId: string
   organizerUsername: string
+  organizerAvatar: string | null
   participantId: string | null
   participantUsername: string | null
+  participantAvatar: string | null
   participantReady: boolean
   numberOfQuestions: number
   timeLimitMinutes: number
