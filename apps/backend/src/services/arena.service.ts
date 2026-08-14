@@ -33,7 +33,7 @@ export async function createMatch(player1Id: string, problemId: string, isFriend
     data: { player1Id, problemId, status: "WAITING", isFriendly },
     include: {
       problem: true,
-      player1: { select: { id: true, username: true, xp: true } },
+      player1: { select: { id: true, username: true, xp: true, avatar: true } },
     },
   })
 }
@@ -48,8 +48,8 @@ export async function joinMatch(matchId: string, player2Id: string) {
     },
     include: {
       problem: true,
-      player1: { select: { id: true, username: true, xp: true } },
-      player2: { select: { id: true, username: true, xp: true } },
+      player1: { select: { id: true, username: true, xp: true, avatar: true } },
+      player2: { select: { id: true, username: true, xp: true, avatar: true } },
     },
   })
 }
@@ -90,8 +90,8 @@ export async function getMatchById(matchId: string) {
     where: { id: matchId },
     include: {
       problem: true,
-      player1: { select: { id: true, username: true, xp: true } },
-      player2: { select: { id: true, username: true, xp: true } },
+      player1: { select: { id: true, username: true, xp: true, avatar: true } },
+      player2: { select: { id: true, username: true, xp: true, avatar: true } },
       winner: { select: { id: true, username: true } },
     },
   })

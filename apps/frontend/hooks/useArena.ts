@@ -22,8 +22,8 @@ export interface ArenaState {
   status: "idle" | "searching" | "waiting" | "friendly_waiting" | "active" | "exam_active" | "won" | "lost"
   matchId: string | null
   problem: any | null
-  player1: any | null
-  player2: any | null
+  player1: { id: string; username: string; avatar?: string | null; xp?: number } | null
+  player2: { id: string; username: string; avatar?: string | null; xp?: number } | null
   opponentCode: string
   results: any[] | null
   winnerUsername: string | null

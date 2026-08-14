@@ -345,14 +345,43 @@ export default function ProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-muted mb-1 uppercase tracking-wider">Profile Picture URL</label>
-                  <input 
-                    type="text" 
-                    value={editForm.avatar} 
-                    onChange={e => setEditForm({...editForm, avatar: e.target.value})}
-                    placeholder="https://example.com/avatar.png"
-                    className="w-full bg-card border border-border rounded-lg px-4 py-2.5 text-sm text-primary outline-none focus:border-accent transition-colors"
-                  />
+                  <label className="block text-xs font-mono text-muted mb-2 uppercase tracking-wider">Profile Picture</label>
+                  <div className="flex items-center gap-4">
+                    {editForm.avatar ? (
+                       <img src={editForm.avatar} alt="Avatar preview" className="w-12 h-12 rounded-full object-cover border border-border" />
+                    ) : (
+                       <div className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center text-[10px] text-muted font-mono">None</div>
+                    )}
+                    <label className="cursor-pointer bg-card border border-border hover:border-accent text-primary px-4 py-2 rounded-lg text-xs font-bold font-mono transition-colors flex items-center gap-2">
+                      <Plus size={14} /> Browse File
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (!file) return
+                          if (file.size > 2 * 1024 * 1024) {
+                            alert("Image must be less than 2MB")
+                            return
+                          }
+                          const reader = new FileReader()
+                          reader.onloadend = () => {
+                            setEditForm({...editForm, avatar: reader.result as string})
+                          }
+                          reader.readAsDataURL(file)
+                        }}
+                      />
+                    </label>
+                    {editForm.avatar && (
+                       <button 
+                         onClick={() => setEditForm({...editForm, avatar: ""})} 
+                         className="text-red-500 text-xs font-bold font-mono hover:bg-red-500/10 px-3 py-2 rounded-lg transition-colors border border-transparent hover:border-red-500/20"
+                       >
+                         Remove
+                       </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
