@@ -6,7 +6,7 @@ import dynamic from "next/dynamic"
 import { useArena } from "@/hooks/useArena"
 import { useAuthStore } from "@/store/auth.store"
 import { useMe } from "@/hooks/useUser"
-import { Users, Zap, X, Copy, Check, Minus, Plus, Clock, Trophy, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react"
+import { Users, Zap, X, Copy, Check, Minus, Plus, Clock, Trophy, ChevronDown, ChevronUp, AlertTriangle, Swords } from "lucide-react"
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), { ssr: false })
 
@@ -180,10 +180,26 @@ export default function ArenaPage() {
   if (state.status === "idle") return (
     <main className="bg-base min-h-full flex flex-col pt-12 pb-24 px-6 relative overflow-y-auto">
       <div className="max-w-4xl w-full mx-auto flex flex-col items-center">
-        <div className="text-center mb-12 animate-fade-in-up">
-          <div className="text-5xl mb-4">⚔️</div>
-          <h1 className="text-3xl font-extrabold text-[var(--text-primary)] font-mono">PvP Arena</h1>
-          <p className="text-sm text-[var(--text-muted)] font-mono mt-2">Choose your battleground</p>
+        <div className="relative w-full flex flex-col items-center mb-16 animate-fade-in-up">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-[#ea580c] rounded-full blur-[100px] opacity-20 pointer-events-none" />
+          
+          <div className="flex items-center justify-center mb-6 relative z-10">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#ea580c] to-[#9a3412] rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(234,88,12,0.4)] border border-white/10 rotate-3">
+              <Swords size={32} className="text-white -rotate-3 drop-shadow-md" strokeWidth={2.5} />
+            </div>
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40 font-mono tracking-tight text-center relative z-10 mb-4 uppercase drop-shadow-md">
+            PvP Arena
+          </h1>
+          
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#ea580c]/50" />
+            <p className="text-xs md:text-sm font-bold text-[#ea580c] font-mono tracking-widest uppercase shadow-black drop-shadow-lg">
+              Choose your battleground
+            </p>
+            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#ea580c]/50" />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
@@ -196,7 +212,7 @@ export default function ArenaPage() {
             </p>
             <div className="w-full flex flex-col gap-3">
               <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] font-mono bg-black/20 p-2 rounded-lg justify-center border border-[var(--border-subtle)]">
-                <span>🏆</span> Ranked • +100 XP
+                <Trophy size={14} className="text-[#ea580c]" /> Ranked • +100 XP
               </div>
               <button 
                 onClick={joinQueue}
@@ -216,7 +232,7 @@ export default function ArenaPage() {
             </p>
             <div className="w-full flex flex-col gap-3">
               <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] font-mono bg-black/20 p-2 rounded-lg justify-center border border-[var(--border-subtle)]">
-                <span>🤝</span> Unranked • 0 XP
+                <Users size={14} className="text-[#ea580c]" /> Unranked • 0 XP
               </div>
               <div className="flex gap-3 w-full">
                 <button 
@@ -420,8 +436,17 @@ export default function ArenaPage() {
             {/* Organizer Slot */}
             <div className="flex flex-col items-center text-center p-6 bg-black/20 rounded-xl border border-[var(--border-subtle)] relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-b from-[#ea580c]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="w-16 h-16 rounded-full bg-[var(--bg-surface)] mb-4 flex items-center justify-center text-2xl border border-[var(--color-accent)] shadow-[0_0_15px_rgba(234,88,12,0.2)] relative z-10">
-                👑
+              <div className="relative mb-4 z-10">
+                {state.room.organizerAvatar ? (
+                  <img src={state.room.organizerAvatar} className="w-16 h-16 rounded-full object-cover border-2 border-[var(--color-accent)] shadow-[0_0_15px_rgba(234,88,12,0.2)]" alt="Organizer" />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-[var(--bg-surface)] flex items-center justify-center text-2xl border-2 border-[var(--color-accent)] shadow-[0_0_15px_rgba(234,88,12,0.2)] text-[var(--text-primary)]">
+                    {state.room.organizerUsername?.[0]?.toUpperCase()}
+                  </div>
+                )}
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#ea580c] rounded-full flex items-center justify-center border-2 border-[#111] text-xs shadow-lg">
+                  ⭐
+                </div>
               </div>
               <p className="text-sm font-bold text-white font-mono relative z-10">{state.room.organizerUsername}</p>
               <p className="text-xs text-[#ea580c] font-mono mt-1 relative z-10">Organizer</p>
@@ -435,8 +460,19 @@ export default function ArenaPage() {
               {state.room.participantId ? (
                 <>
                   <div className={`absolute inset-0 bg-gradient-to-b ${state.room.participantReady ? 'from-[#10b981]/10' : 'from-transparent'} to-transparent transition-colors`} />
-                  <div className={`w-16 h-16 rounded-full bg-[var(--bg-surface)] mb-4 flex items-center justify-center text-2xl border transition-colors relative z-10 ${state.room.participantReady ? 'border-[#10b981] shadow-[0_0_15px_rgba(16,185,129,0.3)] bg-[#10b981]/10' : 'border-[var(--border-subtle)]'}`}>
-                    {state.room.participantReady ? '🔥' : '⏳'}
+                  <div className="relative mb-4 z-10">
+                    {state.room.participantAvatar ? (
+                      <img src={state.room.participantAvatar} className={`w-16 h-16 rounded-full object-cover border-2 transition-colors ${state.room.participantReady ? 'border-[#10b981] shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'border-[var(--border-subtle)]'}`} alt="Participant" />
+                    ) : (
+                      <div className={`w-16 h-16 rounded-full bg-[var(--bg-surface)] flex items-center justify-center text-2xl border-2 transition-colors ${state.room.participantReady ? 'border-[#10b981] shadow-[0_0_15px_rgba(16,185,129,0.3)] bg-[#10b981]/10 text-[#10b981]' : 'border-[var(--border-subtle)] text-[var(--text-muted)]'}`}>
+                        {state.room.participantUsername?.[0]?.toUpperCase()}
+                      </div>
+                    )}
+                    {state.room.participantReady && (
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#10b981] rounded-full flex items-center justify-center border-2 border-[#111] text-[10px] shadow-lg">
+                        🔥
+                      </div>
+                    )}
                   </div>
                   <p className="text-sm font-bold text-white font-mono relative z-10">{state.room.participantUsername}</p>
                   <p className={`text-xs font-mono mt-1 relative z-10 ${state.room.participantReady ? 'text-[#10b981]' : 'text-[#f59e0b]'}`}>
@@ -571,23 +607,59 @@ export default function ArenaPage() {
   // ──────────────────────────────────────────────────────────────
   if (state.status === "searching" || state.status === "waiting") return (
     <main className="bg-base min-h-full flex items-center justify-center p-6 overflow-y-auto">
-      <div className="text-center flex flex-col gap-4 items-center">
-        <div className="text-5xl animate-pulse">⚔️</div>
-        <h2 className="text-xl font-bold text-[var(--text-primary)] font-mono">
-          {state.status === "searching" ? "Finding opponent..." : "Waiting for opponent..."}
-        </h2>
-        <p className="text-xs text-[var(--text-muted)] font-mono">Match ID: {state.matchId}</p>
-        <div className="flex gap-2">
-          {[0, 1, 2].map(i => (
-            <div key={i} className="w-2 h-2 rounded-full bg-[#ea580c]" style={{ animation: `bounce 1s ease infinite ${i * 0.15}s` }} />
-          ))}
+      <div className="flex flex-col items-center max-w-3xl w-full">
+        <div className="w-full bg-black/40 border border-[var(--border-subtle)] rounded-3xl p-12 flex flex-col items-center relative overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+          {/* Background effects */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#ea580c]/10 rounded-full blur-[100px] pointer-events-none" />
+          
+          <h2 className="text-2xl md:text-3xl font-bold text-white font-mono mb-2 relative z-10 tracking-widest uppercase">
+            {state.status === "searching" ? "Finding Opponent" : "Waiting for Player"}
+          </h2>
+          <p className="text-sm text-[var(--text-muted)] font-mono mb-16 relative z-10">Match ID: {state.matchId}</p>
+          
+          <div className="flex items-center gap-6 md:gap-16 relative z-10 w-full justify-center mb-16">
+            {/* Player (You) */}
+            <div className="flex flex-col items-center flex-1 items-end">
+              <div className="relative mb-6">
+                <div className="absolute inset-0 rounded-full bg-[#ea580c] blur-xl opacity-20 animate-pulse" />
+                {user?.avatar ? (
+                  <img src={user.avatar} className="w-28 h-28 md:w-32 md:h-32 rounded-full object-cover border-4 border-[#ea580c] shadow-[0_0_30px_rgba(234,88,12,0.3)] relative z-10 bg-[var(--bg-surface)]" alt="You" />
+                ) : (
+                  <div className="w-28 h-28 md:w-32 md:h-32 rounded-full bg-[var(--bg-surface)] flex items-center justify-center text-5xl font-bold text-white border-4 border-[#ea580c] shadow-[0_0_30px_rgba(234,88,12,0.3)] relative z-10">
+                    {user?.username?.[0]?.toUpperCase() || "U"}
+                  </div>
+                )}
+              </div>
+              <span className="text-xl font-bold text-white font-mono">{user?.username || "You"}</span>
+            </div>
+
+            {/* VS Badge */}
+            <div className="flex flex-col items-center justify-center shrink-0">
+              <div className="w-12 h-12 md:w-16 md:h-16 bg-[#111] border-2 border-[var(--border-subtle)] rounded-2xl flex items-center justify-center rotate-45 mb-2 shadow-[0_0_30px_rgba(0,0,0,0.8)] relative z-20">
+                <span className="font-mono font-bold text-[#ea580c] -rotate-45 text-sm md:text-lg">VS</span>
+              </div>
+            </div>
+
+            {/* Opponent (Searching) */}
+            <div className="flex flex-col items-center flex-1 items-start">
+              <div className="relative mb-6">
+                <div className="absolute inset-0 rounded-full border-4 border-dashed border-[#ea580c]/60 animate-[spin_4s_linear_infinite]" />
+                <div className="absolute inset-0 rounded-full border-4 border-dashed border-[#f59e0b]/40 animate-[spin_3s_linear_infinite_reverse]" />
+                <div className="w-28 h-28 md:w-32 md:h-32 rounded-full bg-black/40 flex items-center justify-center text-5xl font-bold text-[var(--text-muted)] border-4 border-transparent relative z-10 backdrop-blur-sm shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
+                  ?
+                </div>
+              </div>
+              <span className="text-xl font-bold text-[var(--text-muted)] font-mono animate-pulse">Searching...</span>
+            </div>
+          </div>
+          
+          <button
+            onClick={reset}
+            className="px-10 py-4 rounded-xl text-sm font-bold font-mono bg-[var(--glass-bg)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-white hover:bg-white/5 hover:border-red-500/50 transition-all relative z-10 group"
+          >
+            <span className="group-hover:text-red-400 transition-colors">Cancel Matchmaking</span>
+          </button>
         </div>
-        <button
-          onClick={reset}
-          className="text-xs text-[var(--text-muted)] bg-transparent border-none cursor-pointer font-mono hover:text-white transition-colors mt-4"
-        >
-          Cancel
-        </button>
       </div>
     </main>
   )
@@ -602,7 +674,15 @@ export default function ArenaPage() {
     return (
       <main className="bg-base min-h-full flex flex-col items-center justify-center p-6 overflow-y-auto">
         <div className="text-center mb-8 animate-fade-in-up">
-          <div className="text-6xl mb-4">{tie ? "🤝" : won ? "🏆" : "💀"}</div>
+          <div className="flex justify-center mb-6">
+            {tie ? (
+               <div className="w-24 h-24 bg-blue-500/10 rounded-full flex items-center justify-center border-2 border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.3)]"><Users size={48} className="text-blue-500" /></div>
+            ) : won ? (
+               <div className="w-24 h-24 bg-[#ea580c]/10 rounded-full flex items-center justify-center border-2 border-[#ea580c] shadow-[0_0_30px_rgba(234,88,12,0.3)]"><Trophy size={48} className="text-[#ea580c]" /></div>
+            ) : (
+               <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center border-2 border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.3)]"><X size={48} className="text-red-500" /></div>
+            )}
+          </div>
           <h1 className={`text-4xl font-extrabold font-mono ${tie ? "text-[#3b82f6]" : won ? "text-[#f59e0b]" : "text-[#ef4444]"}`}>
             {tie ? "It's a Tie!" : won ? "You Won!" : "You Lost"}
           </h1>
@@ -698,14 +778,22 @@ export default function ArenaPage() {
           
           <div className="flex items-center gap-5">
             <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#ea580c]" />
+              {state.player1?.avatar ? (
+                <img src={state.player1.avatar} className="w-5 h-5 rounded-full object-cover border border-[#ea580c]" alt={state.player1.username} />
+              ) : (
+                <div className="w-1.5 h-1.5 rounded-full bg-[#ea580c]" />
+              )}
               <span className={`text-xs font-mono ${state.player1?.id === user?.id ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}`}>
                 {state.player1?.username}
               </span>
             </div>
             <span className="text-[11px] text-[var(--text-muted)] font-mono font-bold">VS</span>
             <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />
+              {state.player2?.avatar ? (
+                <img src={state.player2.avatar} className="w-5 h-5 rounded-full object-cover border border-[#f59e0b]" alt={state.player2.username} />
+              ) : (
+                <div className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />
+              )}
               <span className={`text-xs font-mono ${state.player2?.id === user?.id ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}`}>
                 {state.player2?.username}
               </span>
@@ -889,9 +977,13 @@ export default function ArenaPage() {
             {/* Player 1 (You) */}
             <div className="flex flex-col items-center">
                <div className="flex items-center gap-2 mb-1">
-                 <div className="w-6 h-6 rounded-full bg-[#ea580c] text-white flex items-center justify-center text-[10px] font-bold">
-                   {state.player1?.id === myId ? state.player1?.username[0] : state.player2?.username[0]}
-                 </div>
+                 {(state.player1?.id === myId ? state.player1?.avatar : state.player2?.avatar) ? (
+                   <img src={(state.player1?.id === myId ? state.player1?.avatar : state.player2?.avatar)!} className="w-6 h-6 rounded-full object-cover border border-[#ea580c]" alt="You" />
+                 ) : (
+                   <div className="w-6 h-6 rounded-full bg-[#ea580c] text-white flex items-center justify-center text-[10px] font-bold">
+                     {state.player1?.id === myId ? state.player1?.username?.[0] : state.player2?.username?.[0]}
+                   </div>
+                 )}
                  <span className="text-xs font-bold text-white font-mono">YOU</span>
                </div>
                <div className="flex gap-1.5">
@@ -906,9 +998,13 @@ export default function ArenaPage() {
             {/* Player 2 (Opponent) */}
             <div className="flex flex-col items-center">
                <div className="flex items-center gap-2 mb-1">
-                 <div className="w-6 h-6 rounded-full bg-[#f59e0b] text-white flex items-center justify-center text-[10px] font-bold">
-                   {state.player1?.id === oppId ? state.player1?.username[0] : state.player2?.username[0]}
-                 </div>
+                 {(state.player1?.id === oppId ? state.player1?.avatar : state.player2?.avatar) ? (
+                   <img src={(state.player1?.id === oppId ? state.player1?.avatar : state.player2?.avatar)!} className="w-6 h-6 rounded-full object-cover border border-[#f59e0b]" alt="Opponent" />
+                 ) : (
+                   <div className="w-6 h-6 rounded-full bg-[#f59e0b] text-white flex items-center justify-center text-[10px] font-bold">
+                     {state.player1?.id === oppId ? state.player1?.username?.[0] : state.player2?.username?.[0]}
+                   </div>
+                 )}
                  <span className="text-xs font-bold text-[var(--text-muted)] font-mono uppercase truncate max-w-[80px]">
                    {state.player1?.id === oppId ? state.player1?.username : state.player2?.username}
                  </span>

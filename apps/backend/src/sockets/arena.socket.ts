@@ -30,8 +30,10 @@ interface FriendlyRoom {
   name: string
   organizerId: string
   organizerUsername: string
+  organizerAvatar: string | null
   participantId: string | null
   participantUsername: string | null
+  participantAvatar: string | null
   participantReady: boolean
   
   // Custom Settings
@@ -58,6 +60,7 @@ function generateRoomCode() {
 export function registerArenaHandlers(io: Server, socket: Socket) {
   const userId = socket.data.userId as string
   const username = socket.data.username as string || "Unknown Developer"
+  const avatar = socket.data.avatar as string | null
 
   userSockets.set(userId, socket.id)
   
@@ -78,8 +81,8 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
           roomCode: codeRoom,
           problems: room.problems,
           endTime: room.endTime,
-          player1: { id: room.organizerId, username: room.organizerUsername },
-          player2: { id: room.participantId, username: room.participantUsername },
+          player1: { id: room.organizerId, username: room.organizerUsername, avatar: room.organizerAvatar },
+          player2: { id: room.participantId, username: room.participantUsername, avatar: room.participantAvatar },
           examStatus: room.examStatus,
           activeTabs: room.activeTabs,
         })
@@ -145,8 +148,10 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
             if (room.participantId) {
               room.organizerId = room.participantId
               room.organizerUsername = room.participantUsername as string
+              room.organizerAvatar = room.participantAvatar
               room.participantId = null
               room.participantUsername = null
+              room.participantAvatar = null
               room.participantReady = false
               delete room.examStatus[userId]
               delete room.activeTabs[userId]
@@ -159,6 +164,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
           } else if (room.participantId === userId) {
             room.participantId = null
             room.participantUsername = null
+            room.participantAvatar = null
             room.participantReady = false
             delete room.examStatus[userId]
             delete room.activeTabs[userId]
@@ -277,8 +283,10 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
       name,
       organizerId: userId,
       organizerUsername: username,
+      organizerAvatar: avatar,
       participantId: null,
       participantUsername: null,
+      participantAvatar: null,
       participantReady: false,
       difficulties: difficulties && difficulties.length > 0 ? difficulties : ["EASY", "MEDIUM", "HARD"],
       numberOfQuestions,
@@ -314,6 +322,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
 
     room.participantId = userId
     room.participantUsername = username
+    room.participantAvatar = avatar
     room.participantReady = false
     room.examStatus[userId] = {}
     room.scores[userId] = 0
@@ -348,6 +357,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
       userToRoom.delete(room.participantId)
       room.participantId = null
       room.participantUsername = null
+      room.participantAvatar = null
       room.participantReady = false
       delete room.examStatus[room.participantId as string]
       delete room.activeTabs[room.participantId as string]
@@ -365,24 +375,27 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
           if (room.participantId) {
             room.organizerId = room.participantId
             room.organizerUsername = room.participantUsername as string
+            room.organizerAvatar = room.participantAvatar
             room.participantId = null
             room.participantUsername = null
+            room.participantAvatar = null
             room.participantReady = false
             delete room.examStatus[userId]
             delete room.activeTabs[userId]
             delete room.scores[userId]
-            io.to(`room_${codeRoom}`).emit("arena:room_updated", room)
+            socket.to(`room_${codeRoom}`).emit("arena:room_updated", room)
           } else {
             friendlyRooms.delete(codeRoom)
           }
         } else if (room.participantId === userId) {
           room.participantId = null
           room.participantUsername = null
+          room.participantAvatar = null
           room.participantReady = false
           delete room.examStatus[userId]
           delete room.activeTabs[userId]
           delete room.scores[userId]
-          io.to(`room_${codeRoom}`).emit("arena:room_updated", room)
+          socket.to(`room_${codeRoom}`).emit("arena:room_updated", room)
         }
         userToRoom.delete(userId)
       }
@@ -462,8 +475,8 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
           roomCode: code,
           problems: room.problems,
           endTime: room.endTime,
-          player1: { id: room.organizerId, username: room.organizerUsername },
-          player2: { id: room.participantId, username: room.participantUsername },
+          player1: { id: room.organizerId, username: room.organizerUsername, avatar: room.organizerAvatar },
+          player2: { id: room.participantId, username: room.participantUsername, avatar: room.participantAvatar },
           examStatus: room.examStatus,
           activeTabs: room.activeTabs,
         })
