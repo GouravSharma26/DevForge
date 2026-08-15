@@ -31,7 +31,13 @@ export const UserController = {
     if (email) data.email = email
     if (bio !== undefined) data.bio = bio
     if (targetRole !== undefined) data.targetRole = targetRole
-    if (avatar !== undefined) data.avatar = avatar
+    if (avatar !== undefined) {
+      // 2MB actual file size limit. Base64 inflates size by ~1.37x.
+      if (typeof avatar === 'string' && avatar.length > 2 * 1024 * 1024 * 1.37) {
+        return reply.status(400).send({ success: false, error: "Avatar image is too large (max 2MB)" })
+      }
+      data.avatar = avatar
+    }
 
     const user = await prisma.user.update({
       where: { id },
