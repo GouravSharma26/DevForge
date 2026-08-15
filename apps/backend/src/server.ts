@@ -26,7 +26,21 @@ import { adminRoutes } from "./routes/admin.routes"
 const app = Fastify({ logger: true })
 
 export const io = new Server(app.server, {
-  cors: { origin: process.env.FRONTEND_URL || "http://localhost:3000" },
+  cors: { 
+    origin: (origin, cb) => {
+      if (
+        !origin ||
+        origin === process.env.FRONTEND_URL ||
+        origin?.endsWith(".vercel.app") ||
+        origin === "http://localhost:3000"
+      ) {
+        cb(null, true)
+      } else {
+        cb(new Error("Not allowed by CORS"), false)
+      }
+    },
+    credentials: true
+  },
 })
 
 async function start() {
