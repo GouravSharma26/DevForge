@@ -14,6 +14,7 @@ temp_landing.html
 apps/backend/scripts/
 docs/
 ui-prototype/
+.agents
 
 # Global OS & Misc
 .DS_Store

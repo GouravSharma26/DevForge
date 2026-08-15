@@ -7,6 +7,8 @@ import { api } from "@/lib/api"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { User, Lock, Mail, ArrowRight } from "lucide-react"
 
+const DELETE_CONFIRM_TEXT = "delete my account"
+
 export default function SettingsPage() {
   const { data: user, isLoading } = useMe()
   const token = useAuthStore(s => s.token)
@@ -245,17 +247,17 @@ export default function SettingsPage() {
                 <div className="p-6 rounded-xl border border-red-500/20 bg-red-500/5">
                   {editingField === "delete" ? (
                     <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
-                      <p className="text-sm text-red-400">Are you absolutely sure? This action cannot be undone. Type <span className="font-mono font-bold text-white">delete my account</span> to confirm.</p>
+                      <p className="text-sm text-red-400">Are you absolutely sure? This action cannot be undone. Type <span className="font-mono font-bold text-white">{DELETE_CONFIRM_TEXT}</span> to confirm.</p>
                       <input 
                         value={deleteConfirm} 
                         onChange={e => setDeleteConfirm(e.target.value)}
-                        placeholder="delete my account"
+                        placeholder={DELETE_CONFIRM_TEXT}
                         className="bg-card border border-red-500/30 rounded-md px-3 py-2 text-sm outline-none w-full max-w-sm focus:border-red-500 transition-colors block" 
                       />
                       <div className="flex gap-2">
                         <button 
                           onClick={() => deleteMutation.mutate()} 
-                          disabled={deleteConfirm !== "delete my account" || deleteMutation.isPending}
+                          disabled={deleteConfirm !== DELETE_CONFIRM_TEXT || deleteMutation.isPending}
                           className="px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-red-500/30 disabled:cursor-not-allowed rounded-md text-xs font-bold transition-colors"
                         >
                           {deleteMutation.isPending ? "Deleting..." : "Permanently Delete"}

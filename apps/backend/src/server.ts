@@ -19,6 +19,7 @@ import { newsRoutes } from "./routes/news.routes"
 import { arenaRoutes } from "./routes/arena.routes"
 import { scheduleNewsJob } from "./workers/news.worker"
 import { registerArenaHandlers } from "./sockets/arena.socket"
+import { registerInterviewHandlers } from "./sockets/interview.socket"
 import { resumeRoutes } from "./routes/resume.routes"
 import { adminRoutes } from "./routes/admin.routes"
 
@@ -112,6 +113,7 @@ async function start() {
   io.on("connection", (socket) => {
     app.log.info(`Socket connected: ${socket.id} (user: ${socket.data.userId})`)
     registerArenaHandlers(io, socket)
+    registerInterviewHandlers(io, socket)
   })
 
   const PORT = Number(process.env.PORT) || 5000

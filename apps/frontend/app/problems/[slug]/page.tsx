@@ -27,7 +27,7 @@ export default function ProblemPage() {
   const submit = useSubmit()
 
   const [language, setLanguage] = useState<"javascript" | "python">("javascript")
-  const [code, setCode]         = useState("")
+  const [codeDrafts, setCodeDrafts] = useState<{ javascript?: string; python?: string }>({})
   const [results, setResults]   = useState<any[] | null>(null)
   const [allPassed, setAllPassed] = useState<boolean | null>(null)
   const [activeTab, setActiveTab] = useState<"description" | "results">("description")
@@ -38,12 +38,17 @@ export default function ProblemPage() {
 
   useEffect(() => {
     if (problem) {
-      setCode((problem.starterCode as any)[language] || "")
+      setCodeDrafts({
+        javascript: (problem.starterCode as any).javascript || "",
+        python: (problem.starterCode as any).python || "",
+      })
       setResults(null)
       setAllPassed(null)
       setActiveTab("description")
     }
-  }, [problem, language])
+  }, [problem])
+
+  const code = codeDrafts[language] || ""
 
   async function handleSubmit() {
     if (!problem) return
@@ -501,7 +506,7 @@ export default function ProblemPage() {
               height="100%"
               language={language === "javascript" ? "javascript" : "python"}
               value={code}
-              onChange={(val) => setCode(val || "")}
+              onChange={(val) => setCodeDrafts(prev => ({ ...prev, [language]: val || "" }))}
               theme="vs-dark"
               options={{
                 fontSize: 13,
