@@ -7,6 +7,11 @@ import { useAuthStore } from "@/store/auth.store"
 
 const mono = "JetBrains Mono, monospace"
 
+const FRIENDLY_ERRORS: Record<string, string> = {
+  "User already exists": "An account with this email or username already exists",
+  "Invalid credentials": "Incorrect email or password",
+}
+
 export default function LoginPage() {
   const router = useRouter()
   const setAuth = useAuthStore((s) => s.setAuth)
@@ -44,25 +49,23 @@ async function handleSubmit() {
     router.push("/dashboard")
   } catch (err: any) {
     const raw = err?.response?.data?.error
+    let extractedMessage = "Something went wrong. Try again."
 
-    // If it's a Zod array, extract the first message
     if (typeof raw === "string") {
+      extractedMessage = raw
       try {
         const parsed = JSON.parse(raw)
-        if (Array.isArray(parsed) && parsed[0]?.message) {
-          setError(parsed[0].message)
-          return
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]?.message) {
+          extractedMessage = parsed[0].message
         }
-      } catch {}
+      } catch {
+        // Not a JSON string, retain the raw string
+      }
+    } else if (typeof raw === "object" && raw?.message) {
+        extractedMessage = raw.message;
     }
 
-    // Common backend errors → friendly messages
-    const friendly: Record<string, string> = {
-      "User already exists": "An account with this email or username already exists",
-      "Invalid credentials": "Incorrect email or password",
-    }
-
-    setError(friendly[raw] || raw || "Something went wrong. Try again.")
+    setError(FRIENDLY_ERRORS[extractedMessage] || extractedMessage)
   } finally {
     setLoading(false)
   }

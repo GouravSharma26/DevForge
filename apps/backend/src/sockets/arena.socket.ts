@@ -610,6 +610,11 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
       language: string
     }) => {
       try {
+        const matchMem = activeMatches.get(matchId)
+        if (!matchMem || (matchMem.player1Id !== userId && matchMem.player2?.id !== userId)) {
+          return socket.emit("arena:error", { message: "Unauthorized submission" })
+        }
+
         socket.to(matchId).emit("arena:opponent_submitted")
         const result = await submitSolution(userId, problemId, code, language)
 
@@ -644,10 +649,15 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
   )
 
     socket.on("arena:leave", async ({ matchId }: { matchId: string }) => {
+      const matchMem = activeMatches.get(matchId)
+      if (!matchMem || (matchMem.player1Id !== userId && matchMem.player2?.id !== userId)) {
+        return socket.emit("arena:error", { message: "Unauthorized leave" })
+      }
+
       socket.leave(matchId)
       cancelBotBattle(matchId)
       matchPlayers.delete(matchId)
-      const match = activeMatches.get(matchId)
+      const match = matchMem
       if (match) {
         if (match.status === "WAITING") {
           cancelMatch(matchId)
