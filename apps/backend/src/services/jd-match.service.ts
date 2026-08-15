@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client"
 import { redactPII } from "../utils/redact"
 import { getResumeById } from "./resume.service"
 import { consumeAiRequest } from "../utils/ai-rate-limit"
+import crypto from "crypto"
 
 const prisma = new PrismaClient()
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
@@ -12,7 +13,8 @@ async function executeJDMatchCore(
   userId: string,
   resumeId: string,
   geminiParts: any[],
-  fallbackJdText: string = ""
+  fallbackJdText: string = "",
+  jdHash: string | null = null
 ) {
   await consumeAiRequest(userId, prisma)
 
@@ -59,6 +61,7 @@ async function executeJDMatchCore(
     companyName: parsed.companyName || "Unknown Company",
     jobTitle: parsed.jobTitle || "Untitled Role",
     jdText: finalJdText,
+    jdHash,
     matchScore: parsed.matchScore || 0,
     matchedKeywords: parsed.matchedKeywords || [],
     missingKeywords: parsed.missingKeywords || [],
@@ -71,6 +74,13 @@ async function executeJDMatchCore(
 }
 
 export async function matchJD(userId: string, resumeId: string, rawJdText: string) {
+  const jdHash = crypto.createHash("sha256").update(rawJdText).digest("hex")
+  const cached = await prisma.jDMatch.findFirst({ where: { userId, resumeId, jdHash } })
+  if (cached) {
+    console.log(`✅ matchJD cache hit for user ${userId}`)
+    return cached
+  }
+
   const resume = await getResumeById(resumeId, userId)
   if (!resume) throw new Error("Resume not found or unauthorized")
 
@@ -112,10 +122,17 @@ IMPORTANT:
 - The keywords arrays should ONLY contain short, 1-3 word skill or technology names (e.g. "React", "Node.js", "Project Management"). Do NOT include full sentences or phrases like "5 years of experience".
 - For cultureFlags, look for burnout signals ("wear many hats", "fast-paced"), unrealistic expectations ("rockstar", "ninja", "unicorn"), toxic management ("thick skin", "we are a family"), or vague compensation. Leave array empty if none found.
 `
-  return executeJDMatchCore(userId, resumeId, [{ text: prompt }], redactedJd)
+  return executeJDMatchCore(userId, resumeId, [{ text: prompt }], redactedJd, jdHash)
 }
 
 export async function matchJDPdf(userId: string, resumeId: string, fileBuffer: Buffer) {
+  const jdHash = crypto.createHash("sha256").update(fileBuffer).digest("hex")
+  const cached = await prisma.jDMatch.findFirst({ where: { userId, resumeId, jdHash } })
+  if (cached) {
+    console.log(`✅ matchJDPdf cache hit for user ${userId}`)
+    return cached
+  }
+
   const resume = await getResumeById(resumeId, userId)
   if (!resume) throw new Error("Resume not found or unauthorized")
 
@@ -159,7 +176,7 @@ IMPORTANT:
     { text: prompt }
   ]
 
-  return executeJDMatchCore(userId, resumeId, parts, "")
+  return executeJDMatchCore(userId, resumeId, parts, "", jdHash)
 }
 
 export async function getJDMatchesForResume(userId: string, resumeId: string) {

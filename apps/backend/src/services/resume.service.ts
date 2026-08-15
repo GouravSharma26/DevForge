@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai"
 import { PrismaClient } from "@prisma/client"
 import { redactPII } from "../utils/redact"
 import { consumeAiRequest } from "../utils/ai-rate-limit"
+import crypto from "crypto"
 const pdfParse = require("pdf-parse")
 
 const prisma = new PrismaClient()
@@ -12,6 +13,13 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
 // ─── Resume Analysis (Native PDF Parsing) ─────────────────────────────────────
 
 export async function analyzeResume(userId: string, pdfBuffer: Buffer, profileName: string = "PDF Upload", skipAI: boolean = false) {
+  const contentHash = crypto.createHash("sha256").update(pdfBuffer).digest("hex")
+  const cached = await prisma.resume.findFirst({ where: { userId, contentHash } })
+  if (cached) {
+    console.log(`✅ analyzeResume cache hit for user ${userId}`)
+    return { resume: cached, raw: { scores: { overall: cached.score, skills: cached.skillsScore, projects: cached.projectsScore, writing: cached.writingScore, ats: cached.atsScore }, skills: cached.skills, experienceLevel: cached.experienceLevel, targetRole: cached.targetRole, suggestions: cached.suggestions, gaps: cached.gaps } }
+  }
+
   if (!skipAI) {
     await consumeAiRequest(userId, prisma)
   }
@@ -126,12 +134,12 @@ Scoring criteria:
     console.warn("⚠️ analyzeResume: originalText was missing or empty in Gemini's response. Falling back to placeholder.")
   }
 
-  // CHANGED: from upsert to create
   const resume = await prisma.resume.create({
     data: {
       userId,
       profileName, // Added profile name
       originalText: finalOriginalText, 
+      contentHash,
       skills: parsed.skills || [],
       experienceLevel: parsed.experienceLevel || "JUNIOR",
       targetRole: parsed.targetRole || null,
@@ -305,6 +313,13 @@ export async function forkResume(sourceId: string, userId: string, newProfileNam
 // ─── Builder/Text Analysis ──────────────────────────────────────────────────
 
 export async function analyzeResumeFromText(userId: string, resumeText: string, profileName: string = "Builder Draft") {
+  const contentHash = crypto.createHash("sha256").update(resumeText).digest("hex")
+  const cached = await prisma.resume.findFirst({ where: { userId, contentHash } })
+  if (cached) {
+    console.log(`✅ analyzeResumeFromText cache hit for user ${userId}`)
+    return cached
+  }
+
   await consumeAiRequest(userId, prisma)
   
   const prompt = `
@@ -403,6 +418,7 @@ Return ONLY valid JSON in this exact format (no markdown, no backticks):
       userId,
       profileName, // Added profile name
       originalText: finalOriginalText,
+      contentHash,
       skills: parsed.skills || [],
       experienceLevel: parsed.experienceLevel || "JUNIOR",
       targetRole: parsed.targetRole || null,
