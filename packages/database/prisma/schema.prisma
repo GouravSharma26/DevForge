@@ -170,6 +170,7 @@ model Resume {
   userId          String      
   profileName     String      @default("Default")
   originalText    String      
+  contentHash     String?
   skills          String[]
   experienceLevel String      @default("JUNIOR")
   targetRole      String?
@@ -196,6 +197,7 @@ model JDMatch {
   companyName     String   @default("Unknown Company")
   jobTitle        String   @default("Untitled Role")
   jdText          String
+  jdHash          String?
   matchScore      Int
   matchedKeywords String[]
   missingKeywords String[]
