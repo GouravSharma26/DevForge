@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest } from "fastify"
 import { authenticate } from "../plugins/authenticate"
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@devforge/database"
 import {
   analyzeResume,
   analyzeExistingResumeText,
@@ -31,7 +31,6 @@ import {
   getJDMatchesForResume,
 } from "../services/jd-match.service"
 
-const prisma = new PrismaClient()
 
 export async function resumeRoutes(app: FastifyInstance) {
 

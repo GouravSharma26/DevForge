@@ -5,33 +5,22 @@ const connection = {
   url: process.env.REDIS_URL!,
 }
 
+let parsedUrl: URL | undefined;
+try {
+  if (process.env.REDIS_URL) {
+    parsedUrl = new URL(process.env.REDIS_URL.replace("rediss://", "https://").replace("redis://", "http://"))
+  }
+} catch {
+  // Ignore
+}
+
 // Use URL-based connection to avoid ioredis version conflicts
 const redisConnection = {
-  host: (() => {
-    try {
-      const url = new URL(process.env.REDIS_URL!.replace("rediss://", "https://").replace("redis://", "http://"))
-      return url.hostname
-    } catch { return "localhost" }
-  })(),
-  port: (() => {
-    try {
-      const url = new URL(process.env.REDIS_URL!.replace("rediss://", "https://").replace("redis://", "http://"))
-      return parseInt(url.port) || 6379
-    } catch { return 6379 }
-  })(),
-  username: (() => {
-    try {
-      const url = new URL(process.env.REDIS_URL!.replace("rediss://", "https://").replace("redis://", "http://"))
-      return url.username || undefined
-    } catch { return undefined }
-  })(),
-  password: (() => {
-    try {
-      const url = new URL(process.env.REDIS_URL!.replace("rediss://", "https://").replace("redis://", "http://"))
-      return url.password || undefined
-    } catch { return undefined }
-  })(),
-  tls: process.env.REDIS_URL?.startsWith("rediss://") ? { rejectUnauthorized: false } : undefined,
+  host: parsedUrl?.hostname || "localhost",
+  port: parseInt(parsedUrl?.port || "6379") || 6379,
+  username: parsedUrl?.username || undefined,
+  password: parsedUrl?.password || undefined,
+  tls: process.env.REDIS_URL?.startsWith("rediss://") ? {} : undefined,
   family: 4, // Force IPv4 to prevent ETIMEDOUT on Upstash
   maxRetriesPerRequest: null, // Required by BullMQ
 }

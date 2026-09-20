@@ -1,6 +1,5 @@
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@devforge/database"
 
-const prisma = new PrismaClient()
 
 const NEWS_API_KEY = process.env.NEWS_API_KEY!
 const BASE_URL = "https://newsapi.org/v2"
