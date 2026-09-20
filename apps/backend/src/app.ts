@@ -5,7 +5,7 @@ import jwt from "@fastify/jwt"
 import rateLimit from "@fastify/rate-limit"
 import multipart from "@fastify/multipart"
 import { Server } from "socket.io"
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@devforge/database"
 import "dotenv/config"
 
 import { authRoutes } from "./routes/auth.routes"
