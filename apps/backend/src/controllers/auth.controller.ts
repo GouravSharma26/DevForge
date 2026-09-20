@@ -29,7 +29,14 @@ export const AuthController = {
     })
 
     const token = await reply.jwtSign({ id: user.id }, { expiresIn: "1h" })
-    return reply.status(201).send({ success: true, data: { token, user } })
+    reply.setCookie("access_token", token, {
+      path: "/",
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 3600,
+    })
+    return reply.status(201).send({ success: true, data: { user } })
   },
 
   async login(req: FastifyRequest, reply: FastifyReply) {
@@ -48,6 +55,18 @@ export const AuthController = {
 
     const { password: _, ...safeUser } = user
     const token = await reply.jwtSign({ id: user.id }, { expiresIn: "1h" })
-    return reply.send({ success: true, data: { token, user: safeUser } })
+    reply.setCookie("access_token", token, {
+      path: "/",
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 3600,
+    })
+    return reply.send({ success: true, data: { user: safeUser } })
+  },
+
+  async logout(req: FastifyRequest, reply: FastifyReply) {
+    reply.clearCookie("access_token", { path: "/", sameSite: "none", secure: true })
+    return reply.send({ success: true })
   },
 }

@@ -592,6 +592,10 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
   // ── STANDARD IN-GAME EVENTS ──────────────────────────────────────────────────────────────
   
   socket.on("arena:code_change", ({ matchId, code }: { matchId: string; code: string }) => {
+    const matchMem = activeMatches.get(matchId)
+    if (!matchMem || (matchMem.player1Id !== userId && matchMem.player2?.id !== userId)) {
+      return socket.emit("arena:error", { message: "Unauthorized code change" })
+    }
     socket.to(matchId).emit("arena:opponent_code", { code })
   })
 

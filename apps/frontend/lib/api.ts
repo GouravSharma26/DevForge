@@ -6,12 +6,7 @@ export const api = axios.create({
   withCredentials: true,
 })
 
-api.interceptors.request.use((config) => {
-  const token =
-    useAuthStore.getState().token || localStorage.getItem("access_token")
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
+// Removed manual auth header interceptor since we use httpOnly cookies now
 
 api.interceptors.response.use(
   (res) => res,
@@ -21,8 +16,7 @@ api.interceptors.response.use(
       err?.config?.url?.includes("/auth/register")
 
     if (err.response?.status === 401 && !isAuthRoute) {
-      localStorage.removeItem("access_token")
-      useAuthStore.setState({ token: null, user: null })
+      useAuthStore.setState({ user: null })
       window.location.href = "/login"
     }
     

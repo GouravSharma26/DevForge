@@ -91,7 +91,7 @@ export function useArena() {
 
     const socket = io(
       process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000",
-      { auth: { token } }
+      { withCredentials: true }
     )
 
     socketRef.current = socket

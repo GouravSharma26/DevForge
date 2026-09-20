@@ -25,17 +25,24 @@ export const useAuthStore = create<AuthStore>((set) => ({
   hydrated: false,
 
   hydrate: () => {
-    const token = localStorage.getItem("access_token")
-    set({ token, hydrated: true })
+    // Assuming backend sets a cookie, we just consider it hydrated. 
+    // In a real app we might fetch /api/auth/me to get the user.
+    // For now we just mark hydrated.
+    set({ hydrated: true })
   },
 
-  setAuth: (user, token) => {
-    localStorage.setItem("access_token", token)
-    set({ user, token })
+  setAuth: (user) => {
+    set({ user })
   },
 
-  logout: () => {
-    localStorage.removeItem("access_token")
-    set({ user: null, token: null })
+  logout: async () => {
+    try {
+      // We must await an import to avoid circular dependency if we imported api at the top
+      const { api } = await import("@/lib/api")
+      await api.post("/auth/logout")
+    } catch {
+      // Ignore errors if already logged out
+    }
+    set({ user: null })
   },
 }))

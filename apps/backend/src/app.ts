@@ -3,6 +3,8 @@ import cors from "@fastify/cors"
 import helmet from "@fastify/helmet"
 import jwt from "@fastify/jwt"
 import rateLimit from "@fastify/rate-limit"
+import fastifyCookie from "@fastify/cookie"
+import * as cookie from "cookie"
 import multipart from "@fastify/multipart"
 import { Server } from "socket.io"
 import { prisma } from "@devforge/database"
@@ -38,6 +40,10 @@ export function buildApp() {
     await instance.register(cors, {
       origin: checkCorsOrigin,
       credentials: true,
+    })
+    await instance.register(fastifyCookie, {
+      secret: process.env.COOKIE_SECRET || "my-cookie-secret", // for signed cookies
+      hook: "onRequest",
     })
     await instance.register(jwt, { secret: process.env.JWT_SECRET || "supersecret" })
     await instance.register(rateLimit, { max: 100, timeWindow: "1 minute" })
@@ -79,7 +85,13 @@ export function buildApp() {
 
   // WebSocket Authentication Middleware
   io.use(async (socket, next) => {
-    const token = socket.handshake.auth?.token
+    let token = socket.handshake.auth?.token
+    
+    if (!token && socket.handshake.headers.cookie) {
+      const cookies = cookie.parse(socket.handshake.headers.cookie)
+      token = cookies.access_token
+    }
+
     if (!token) return next(new Error("Unauthorized"))
     try {
       const decoded = app.jwt.verify(token) as { id: string }

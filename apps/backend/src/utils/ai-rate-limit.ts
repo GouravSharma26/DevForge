@@ -15,7 +15,7 @@ export class AiRateLimitError extends Error {
 export async function consumeAiRequest(userId: string, prisma: PrismaClient) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { role: true, aiRequestCount: true, lastAiRequestAt: true },
+    select: { role: true },
   })
 
   if (!user) {
@@ -27,30 +27,27 @@ export async function consumeAiRequest(userId: string, prisma: PrismaClient) {
     return true
   }
 
-  const now = new Date()
-  let newCount = user.aiRequestCount
-  
-  // Reset if last request was more than 24 hours ago
-  if (user.lastAiRequestAt) {
-    const hoursSinceLastRequest = (now.getTime() - user.lastAiRequestAt.getTime()) / (1000 * 60 * 60)
-    if (hoursSinceLastRequest >= 24) {
-      newCount = 0
-    }
-  }
+  // Atomic update using raw SQL
+  const result = await prisma.$executeRaw`
+    UPDATE "User"
+    SET 
+      "aiRequestCount" = CASE 
+        WHEN "lastAiRequestAt" IS NULL THEN 1
+        WHEN "lastAiRequestAt" < NOW() - INTERVAL '24 hours' THEN 1 
+        ELSE "aiRequestCount" + 1 
+      END,
+      "lastAiRequestAt" = NOW()
+    WHERE "id" = ${userId}
+      AND (
+        "lastAiRequestAt" IS NULL
+        OR "lastAiRequestAt" < NOW() - INTERVAL '24 hours' 
+        OR "aiRequestCount" < 3
+      )
+  `
 
-  // Enforce strict limit of 3
-  if (newCount >= 3) {
+  if (result === 0) {
     throw new AiRateLimitError()
   }
-
-  // Increment and update timestamp
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      aiRequestCount: newCount + 1,
-      lastAiRequestAt: now,
-    },
-  })
 
   return true
 }
