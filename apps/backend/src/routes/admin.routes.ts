@@ -1,7 +1,6 @@
 import { FastifyInstance } from "fastify"
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@devforge/database"
 
-const prisma = new PrismaClient()
 
 export async function adminRoutes(fastify: FastifyInstance) {
   // Middleware to verify admin

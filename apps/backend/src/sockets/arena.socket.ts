@@ -10,10 +10,9 @@ import {
   cancelMatch,
 } from "../services/arena.service"
 import { submitSolution } from "../services/problems.service"
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@devforge/database"
 import { calculateBotSolveTime, startBotBattle, cancelBotBattle } from "../services/arena-bot.service"
 
-const prisma = new PrismaClient()
 
 // In-memory map: userId → socketId
 const userSockets = new Map<string, string>()

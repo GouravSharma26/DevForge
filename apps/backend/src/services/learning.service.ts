@@ -1,5 +1,4 @@
-import { PrismaClient } from "@prisma/client"
-const prisma = new PrismaClient()
+import { prisma } from "@devforge/database"
 
 export async function getAllPaths(userId: string) {
   const paths = await prisma.learningPath.findMany({

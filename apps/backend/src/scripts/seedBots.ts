@@ -1,7 +1,6 @@
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@devforge/database"
 import bcrypt from "bcrypt"
 
-const prisma = new PrismaClient()
 
 async function main() {
   console.log("Seeding bots and admin...")

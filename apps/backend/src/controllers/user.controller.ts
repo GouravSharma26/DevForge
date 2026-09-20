@@ -1,8 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify"
 import bcrypt from "bcrypt"
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@devforge/database"
 
-const prisma = new PrismaClient()
 
 export const UserController = {
   async getMe(req: FastifyRequest, reply: FastifyReply) {

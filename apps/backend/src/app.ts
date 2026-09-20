@@ -18,8 +18,7 @@ import { resumeRoutes } from "./routes/resume.routes"
 import { adminRoutes } from "./routes/admin.routes"
 import { registerArenaHandlers } from "./sockets/arena.socket"
 import { registerInterviewHandlers } from "./sockets/interview.socket"
-
-const prisma = new PrismaClient()
+import { checkCorsOrigin } from "./utils/cors"
 
 export function buildApp() {
   const app = Fastify({ logger: true })
@@ -27,18 +26,7 @@ export function buildApp() {
   // Initialize Socket.io early so it can be passed or accessed if needed
   const io = new Server(app.server, {
     cors: { 
-      origin: (origin, cb) => {
-        if (
-          !origin ||
-          origin === process.env.FRONTEND_URL ||
-          origin?.endsWith(".vercel.app") ||
-          origin === "http://localhost:3000"
-        ) {
-          cb(null, true)
-        } else {
-          cb(new Error("Not allowed by CORS"), false)
-        }
-      },
+      origin: checkCorsOrigin,
       credentials: true
     },
   })
@@ -48,18 +36,7 @@ export function buildApp() {
   app.register(async (instance) => {
     await instance.register(helmet)
     await instance.register(cors, {
-      origin: (origin, cb) => {
-        if (
-          !origin ||
-          origin === process.env.FRONTEND_URL ||
-          origin.endsWith(".vercel.app") ||
-          origin === "http://localhost:3000"
-        ) {
-          cb(null, true)
-        } else {
-          cb(new Error("Not allowed by CORS"), false)
-        }
-      },
+      origin: checkCorsOrigin,
       credentials: true,
     })
     await instance.register(jwt, { secret: process.env.JWT_SECRET || "supersecret" })

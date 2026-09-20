@@ -1,7 +1,6 @@
 import { Server } from "socket.io"
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@devforge/database"
 
-const prisma = new PrismaClient()
 import { completeMatch } from "./arena.service"
 
 // In-memory map: matchId -> NodeJS.Timeout
