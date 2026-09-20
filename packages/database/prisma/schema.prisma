@@ -75,6 +75,7 @@ model Topic {
   id             String       @id @default(cuid())
   title          String
   description    String?
+  videoUrl       String?
   order          Int
   estimatedMins  Int          @default(30)
   pathId         String

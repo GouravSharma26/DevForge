@@ -13,7 +13,6 @@ const LEVEL_STYLE: Record<string, { color: string; bg: string; border: string }>
 
 export default function PathsPage() {
   const router = useRouter()
-  const [showModal, setShowModal] = useState(false)
   const token = useAuthStore((s) => s.token)
   const hydrated = useAuthStore((s) => s.hydrated)
   const { data: paths, isLoading } = usePaths()
@@ -50,82 +49,62 @@ export default function PathsPage() {
             {paths.map((path: any) => {
               const lvl = LEVEL_STYLE[path.level] || LEVEL_STYLE.BEGINNER
               return (
-                <div
-                  key={path.id}
-                  style={{
-                    background: "var(--glass-bg)", border: "1px solid var(--border-subtle)",
-                    borderRadius: 20, padding: 24,
-                    transition: "all 0.2s", display: "flex", flexDirection: "column", gap: 16,
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.border = "1px solid rgba(234,88,12,0.5)"
-                    ;(e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 32px rgba(234,88,12,0.12)"
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.border = "1px solid var(--border-subtle)"
-                    ;(e.currentTarget as HTMLDivElement).style.boxShadow = "none"
-                  }}
-                >
-                  {/* Header */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                    <span style={{ fontSize: 32 }}>{path.icon}</span>
-                    <span style={{
-                      fontSize: 10, padding: "3px 10px", borderRadius: 99,
-                      color: lvl.color, background: lvl.bg, border: `1px solid ${lvl.border}`,
-                      fontFamily: "JetBrains Mono, monospace",
+                  <div
+                    key={path.id}
+                    className="group relative bg-black/40 backdrop-blur-xl border border-white/5 rounded-3xl p-6 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(234,88,12,0.15)] hover:border-[#ea580c]/30 flex flex-col gap-5 overflow-hidden"
+                  >
+                    {/* Background Glow */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#ea580c]/0 to-[#ea580c]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                    
+                    {/* Header */}
+                  <div className="flex justify-between items-start relative z-10">
+                    <span className="text-4xl drop-shadow-[0_0_15px_rgba(234,88,12,0.5)] group-hover:scale-110 transition-transform duration-500">{path.icon}</span>
+                    <span className="text-[10px] px-3 py-1 rounded-full font-mono font-bold tracking-wider" style={{
+                      color: lvl.color, background: lvl.bg, border: `1px solid ${lvl.border}`
                     }}>
                       {path.level}
                     </span>
                   </div>
 
                   {/* Info */}
-                  <div>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" }}>
+                  <div className="relative z-10 flex-1">
+                    <h3 className="text-base font-bold text-white font-mono group-hover:text-[#ea580c] transition-colors">
                       {path.title}
                     </h3>
-                    <p style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 6, lineHeight: 1.6, fontFamily: "JetBrains Mono, monospace" }}>
+                    <p className="text-xs text-[var(--text-secondary)] mt-2 font-mono leading-relaxed line-clamp-3">
                       {path.description}
                     </p>
                   </div>
 
                   {/* Progress */}
-                  {path.isEnrolled ? (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, fontFamily: "JetBrains Mono, monospace" }}>
-                        <span style={{ color: "var(--text-muted)" }}>{path.completedTopics} / {path.totalTopics} topics</span>
-                        <span style={{ color: "#ea580c" }}>{path.progressPercent}%</span>
+                  <div className="relative z-10">
+                    {path.isEnrolled ? (
+                      <div className="flex flex-col gap-2">
+                        <div className="flex justify-between text-xs font-mono">
+                          <span className="text-[var(--text-muted)]">{path.completedTopics} / {path.totalTopics} topics</span>
+                          <span className="text-[#ea580c] font-bold">{path.progressPercent}%</span>
+                        </div>
+                        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-[#ea580c] to-[#d97706]"
+                            style={{ width: `${path.progressPercent}%` }} />
+                        </div>
                       </div>
-                      <div style={{ height: 4, background: "rgba(255,255,255,0.1)", borderRadius: 99, overflow: "hidden" }}>
-                        <div style={{
-                          height: "100%", borderRadius: 99, transition: "width 0.5s",
-                          background: "linear-gradient(90deg, #ea580c, #d97706)",
-                          width: `${path.progressPercent}%`,
-                        }} />
-                      </div>
-                    </div>
-                  ) : (
-                    <p style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" }}>
-                      {path.totalTopics} topics
-                    </p>
-                  )}
+                    ) : (
+                      <p className="text-xs text-[var(--text-muted)] font-mono">
+                        {path.totalTopics} topics
+                      </p>
+                    )}
+                  </div>
 
                   <button
-                    onClick={() => path.isEnrolled ? setShowModal(true) : enroll.mutate(path.id)}
-                    style={{
-                      padding: "10px 0", borderRadius: 12, fontSize: 13,
-                      fontFamily: "JetBrains Mono, monospace", cursor: "pointer",
-                      fontWeight: 600, transition: "all 0.2s",
-                      background: path.isEnrolled ? "linear-gradient(135deg, #ea580c, #d97706)" : "var(--glass-bg)",
-                      border: path.isEnrolled ? "none" : "1px solid var(--border-subtle)",
-                      color: path.isEnrolled ? "var(--text-primary)" : "var(--text-muted)",
-                      boxShadow: path.isEnrolled ? "0 4px 16px rgba(234,88,12,0.3)" : "none",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (path.isEnrolled) (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 24px rgba(234,88,12,0.5)"
-                    }}
-                    onMouseLeave={(e) => {
-                      if (path.isEnrolled) (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 16px rgba(234,88,12,0.3)"
-                    }}
+                    onClick={() => path.isEnrolled ? router.push(`/paths/${path.id}`) : enroll.mutate(path.id)}
+                    className={`
+                      relative z-10 w-full py-3 rounded-xl text-sm font-bold font-mono transition-all duration-300
+                      ${path.isEnrolled 
+                        ? 'bg-gradient-to-r from-[#ea580c] to-[#d97706] text-black shadow-[0_5px_15px_rgba(234,88,12,0.3)] hover:shadow-[0_8px_25px_rgba(234,88,12,0.5)] hover:scale-[1.02]' 
+                        : 'bg-white/5 border border-white/10 text-[var(--text-muted)] hover:text-white hover:bg-white/10 hover:border-white/20'
+                      }
+                    `}
                   >
                     {path.isEnrolled ? "Continue →" : "Enroll"}
                   </button>
@@ -135,48 +114,6 @@ export default function PathsPage() {
           </div>
         )}
       </div>
-
-      {/* Coming Soon Modal */}
-      {showModal && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 100,
-          background: "rgba(23, 18, 16, 0.8)", backdropFilter: "blur(4px)",
-          display: "flex", alignItems: "center", justifyContent: "center", padding: 24
-        }}>
-          <div className="bg-base">
-            <div style={{
-              width: 48, height: 48, borderRadius: "50%", background: "rgba(234,88,12,0.1)",
-              color: "#ea580c", display: "flex", alignItems: "center", justifyContent: "center",
-              margin: "0 auto 20px", fontSize: 24, border: "1px solid rgba(234,88,12,0.2)"
-            }}>
-              🚧
-            </div>
-            <h3 style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace", marginBottom: 8 }}>
-              Coming Soon
-            </h3>
-            <p style={{ fontSize: 13, color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace", lineHeight: 1.5, marginBottom: 24 }}>
-              The interactive curriculum for this path is currently being forged. Check back in a few days!
-            </p>
-            <button
-              onClick={() => setShowModal(false)}
-              style={{
-                width: "100%", padding: "10px 0", borderRadius: 12, fontSize: 13,
-                fontFamily: "JetBrains Mono, monospace", cursor: "pointer", fontWeight: 600,
-                background: "var(--glass-bg)", border: "1px solid var(--border-subtle)",
-                color: "var(--text-primary)", transition: "all 0.2s"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(var(--glass-bg-rgb),0.1)"
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "var(--glass-bg)"
-              }}
-            >
-              Got it
-            </button>
-          </div>
-        </div>
-      )}
     </main>
   )
 }
