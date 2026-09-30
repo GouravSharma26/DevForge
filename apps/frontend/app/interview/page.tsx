@@ -148,7 +148,10 @@ export default function InterviewHubPage() {
                 </p>
               </div>
               <button
-                onClick={() => setShowModal(true)}
+                onClick={() => {
+                  if (!selectedResumeId) return alert("Please select a resume first")
+                  router.push("/interview/agent?resumeId=" + selectedResumeId)
+                }}
                 className="w-full py-2.5 rounded-[10px] font-bold text-[13px] transition-all border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text-primary)] hover:border-[#10b981] hover:text-[#10b981]"
               >
                 Start AI Agent
