@@ -7,17 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  USER
-  ADMIN
-}
-
-enum ExperienceLevel {
-  BEGINNER
-  MID
-  SENIOR
-}
-
 model User {
   id              String          @id @default(cuid())
   username        String          @unique
@@ -27,23 +16,23 @@ model User {
   bio             String?
   targetRole      String?
   experienceLevel ExperienceLevel @default(BEGINNER)
-  role            Role            @default(USER)
   xp              Int             @default(0)
   streak          Int             @default(0)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
+  role            Role            @default(USER)
   aiRequestCount  Int             @default(0)
   lastAiRequestAt DateTime?
   enrollments     Enrollment[]
-  progress        UserProgress[]
-  submissions     Submission[]
+  interviews      Interview[]
+  jdMatches       JDMatch[]
   matchesAsP1     Match[]         @relation("player1")
   matchesAsP2     Match[]         @relation("player2")
   matchesWon      Match[]         @relation("winner")
   resume          Resume[]
-  interviews      Interview[]
-  jdMatches       JDMatch[]
   resumeBuilder   ResumeBuilder?
+  submissions     Submission[]
+  progress        UserProgress[]
 }
 
 model Article {
@@ -59,27 +48,28 @@ model Article {
 }
 
 model LearningPath {
-  id          String       @id @default(cuid())
+  id          String          @id @default(cuid())
   title       String
   description String
-  icon        String       @default("📚")
+  icon        String          @default("📚")
   level       ExperienceLevel @default(BEGINNER)
-  totalTopics Int          @default(0)
-  order       Int          @default(0)
-  createdAt   DateTime     @default(now())
-  topics      Topic[]
+  totalTopics Int             @default(0)
+  order       Int             @default(0)
+  createdAt   DateTime        @default(now())
   enrollments Enrollment[]
+  topics      Topic[]
 }
 
 model Topic {
-  id             String       @id @default(cuid())
-  title          String
-  description    String?
-  order          Int
-  estimatedMins  Int          @default(30)
-  pathId         String
-  path           LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
-  progress       UserProgress[]
+  id            String         @id @default(cuid())
+  title         String
+  description   String?
+  order         Int
+  estimatedMins Int            @default(30)
+  pathId        String
+  videoUrl      String?
+  path          LearningPath   @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  progress      UserProgress[]
 }
 
 model Enrollment {
@@ -87,28 +77,22 @@ model Enrollment {
   userId    String
   pathId    String
   createdAt DateTime     @default(now())
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   path      LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, pathId])
 }
 
 model UserProgress {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   userId      String
   topicId     String
-  completed   Boolean  @default(false)
+  completed   Boolean   @default(false)
   completedAt DateTime?
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topic       Topic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, topicId])
-}
-
-enum Difficulty {
-  EASY
-  MEDIUM
-  HARD
 }
 
 model Problem {
@@ -120,12 +104,12 @@ model Problem {
   category    String
   examples    Json
   constraints String[]
-  starterCode Json         // { javascript: "...", python: "..." }
-  testCases   Json         // [{ input: "...", expected: "..." }]
+  starterCode Json
+  testCases   Json
   order       Int          @default(0)
   createdAt   DateTime     @default(now())
-  submissions Submission[]
   matches     Match[]
+  submissions Submission[]
 }
 
 model Submission {
@@ -134,18 +118,12 @@ model Submission {
   problemId String
   code      String
   language  String
-  status    String   // "accepted", "wrong_answer", "runtime_error"
-  runtime   Int?     // ms
-  memory    Int?     // KB
+  status    String
+  runtime   Int?
+  memory    Int?
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
-}
-
-enum MatchStatus {
-  WAITING
-  ACTIVE
-  COMPLETED
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Match {
@@ -158,19 +136,17 @@ model Match {
   startedAt  DateTime?
   endedAt    DateTime?
   createdAt  DateTime    @default(now())
-  problem    Problem     @relation(fields: [problemId], references: [id])
+  isFriendly Boolean     @default(false)
   player1    User        @relation("player1", fields: [player1Id], references: [id])
   player2    User?       @relation("player2", fields: [player2Id], references: [id])
+  problem    Problem     @relation(fields: [problemId], references: [id])
   winner     User?       @relation("winner", fields: [winnerId], references: [id])
-  isFriendly Boolean     @default(false)
 }
 
 model Resume {
   id              String      @id @default(cuid())
-  userId          String      
-  profileName     String      @default("Default")
-  originalText    String      
-  contentHash     String?
+  userId          String
+  originalText    String
   skills          String[]
   experienceLevel String      @default("JUNIOR")
   targetRole      String?
@@ -183,9 +159,11 @@ model Resume {
   gaps            String[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
-  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profileName     String      @default("Default")
+  contentHash     String?
   interviews      Interview[]
   jdMatches       JDMatch[]
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -197,14 +175,14 @@ model JDMatch {
   companyName     String   @default("Unknown Company")
   jobTitle        String   @default("Untitled Role")
   jdText          String
-  jdHash          String?
   matchScore      Int
   matchedKeywords String[]
   missingKeywords String[]
-  cultureFlags    Json     @default("[]")
   createdAt       DateTime @default(now())
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cultureFlags    Json     @default("[]")
+  jdHash          String?
   resume          Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model ResumeBuilder {
@@ -218,15 +196,15 @@ model ResumeBuilder {
 }
 
 model Interview {
-  id        String            @id @default(cuid())
+  id        String          @id @default(cuid())
   userId    String
   resumeId  String
-  status    InterviewStatus   @default(IN_PROGRESS)
+  status    InterviewStatus @default(IN_PROGRESS)
   score     Int?
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
-  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  resume    Resume            @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  resume    Resume          @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   questions Question[]
 }
 
@@ -239,39 +217,53 @@ model Question {
   userAnswer     String?
   feedback       String?
   score          Int?
-  
-  // -- NEW FIELDS FOR GRANDMASTER --
-  isGrandmaster  Boolean   @default(false)
-  language       String?
   buggyCode      String?
   expectedOutput String?
+  isGrandmaster  Boolean   @default(false)
+  language       String?
   pistonOutput   String?
   runAttempts    Int       @default(0)
+  interview      Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+}
 
-  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+model SystemConfig {
+  id               String   @id @default("global")
+  botEnabled       Boolean  @default(true)
+  botQueueWaitTime Int      @default(10)
+  baseTimeEasy     Int      @default(120)
+  baseTimeMedium   Int      @default(300)
+  baseTimeHard     Int      @default(600)
+  multBeginner     Float    @default(1.8)
+  multIntermediate Float    @default(1.0)
+  multGrandmaster  Float    @default(0.4)
+  variancePercent  Float    @default(0.20)
+  updatedAt        DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ExperienceLevel {
+  BEGINNER
+  MID
+  SENIOR
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum MatchStatus {
+  WAITING
+  ACTIVE
+  COMPLETED
 }
 
 enum InterviewStatus {
   IN_PROGRESS
   COMPLETED
 }
-
-model SystemConfig {
-  id               String   @id @default("global") 
-  botEnabled       Boolean  @default(true)
-  botQueueWaitTime Int      @default(10) 
-  
-  // Base Problem Times
-  baseTimeEasy     Int      @default(120)
-  baseTimeMedium   Int      @default(300)
-  baseTimeHard     Int      @default(600)
-  
-  // Bot Skill Multipliers
-  multBeginner     Float    @default(1.8)
-  multIntermediate Float    @default(1.0)
-  multGrandmaster  Float    @default(0.4)
-  
-  variancePercent  Float    @default(0.20)
-  updatedAt        DateTime @updatedAt
-}
-
