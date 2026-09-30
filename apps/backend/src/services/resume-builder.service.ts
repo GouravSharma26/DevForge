@@ -2,9 +2,16 @@ import { prisma } from "@devforge/database"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { consumeAiRequest } from "../utils/ai-rate-limit"
 
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
+function getModel(systemInstruction: string) {
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
+  return genAI.getGenerativeModel({ 
+    model: "gemini-2.5-flash",
+    systemInstruction,
+    generationConfig: {
+      responseMimeType: "application/json"
+    }
+  })
+}
 
 export async function saveResumeBuilder(userId: string, sections: any[], template: string) {
   return prisma.resumeBuilder.upsert({
@@ -39,9 +46,10 @@ export async function generateResumeWithAI(userId: string, sections: any[], resu
     ? `Original Resume Text from PDF:\n${resume.originalText}\n\nAdditional Info:\nSkills: ${(Array.isArray(resume.skills) ? resume.skills : []).join(", ")}\nExperience Level: ${resume.experienceLevel || "Mid"}\nTarget Role: ${resume.targetRole || "Software Developer"}`
     : "Software Developer with experience in web development"
 
-  const prompt = `
-You are an expert resume parser and writer. Your job is to extract the candidate's information from the provided context and format it perfectly into the JSON structure provided.
+  const systemInstruction = "You are an expert resume parser and writer. Your job is to extract the candidate's information from the provided context and format it perfectly into the JSON structure provided."
+  const model = getModel(systemInstruction)
 
+  const prompt = `
 Candidate context:
 ${context}
 
@@ -55,12 +63,11 @@ Instructions:
 4. For bullet points, format the extracted text to use strong action verbs and professional phrasing while maintaining accuracy.
 5. Keep existing non-empty content as-is.
 
-Return ONLY valid JSON with the exact same structure as the input sections array.
-Do not change section types or IDs. Do not include markdown code block formatting (\`\`\`json).
+Return ONLY the JSON array with the exact same structure as the input sections array. Do not change section types or IDs.
 `
 
   let result;
-  let retries = 5;
+  let retries = 3;
   let delay = 5000;
 
   while (retries > 0) {
@@ -77,7 +84,7 @@ Do not change section types or IDs. Do not include markdown code block formattin
         retries--;
         delay *= 2;
       } else {
-        console.warn("⚠️ Rate limit exhausted! Switching to Regex Fallback in aiFill...")
+        console.warn("⚠️ Rate limit exhausted! Switching to Fallback in aiFill...")
         break;
       }
     }
@@ -116,14 +123,6 @@ Do not change section types or IDs. Do not include markdown code block formattin
     })
   }
 
-  // @ts-ignore
   const text = result.response.text().trim()
-
-  try {
-    return JSON.parse(text)
-  } catch {
-    const match = text.match(/\[[\s\S]*\]/)
-    if (!match) throw new Error("Failed to parse AI response")
-    return JSON.parse(match[0])
-  }
+  return JSON.parse(text)
 }

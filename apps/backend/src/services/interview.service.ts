@@ -1,9 +1,18 @@
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import { GoogleGenerativeAI, SchemaType, Schema } from "@google/generative-ai"
 import { prisma } from "@devforge/database"
 import { consumeAiRequest } from "../utils/ai-rate-limit"
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
+function getModel(systemInstruction: string, schema: Schema) {
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
+  return genAI.getGenerativeModel({ 
+    model: "gemini-2.5-flash",
+    systemInstruction,
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: schema
+    }
+  })
+}
 
 // ─── Generate Questions ───────────────────────────────────────────────────────
 
@@ -14,9 +23,40 @@ export async function generateInterview(userId: string, resumeId: string) {
 
   const primaryLanguage = resume.skills[0] || "JavaScript"
 
-  const prompt = `
-You are a senior technical interviewer. Based on this candidate's resume data, generate exactly 9 interview questions (3 per round) PLUS 1 Grandmaster debug challenge.
+  const systemInstruction = "You are a senior technical interviewer. Generate exactly 9 interview questions (3 per round) PLUS 1 Grandmaster debug challenge."
+  
+  const schema: Schema = {
+    type: SchemaType.OBJECT,
+    properties: {
+      questions: {
+        type: SchemaType.ARRAY,
+        items: {
+          type: SchemaType.OBJECT,
+          properties: {
+            round: { type: SchemaType.NUMBER },
+            question: { type: SchemaType.STRING, description: "technical question based on their listed skills" },
+            context: { type: SchemaType.STRING, description: "why you're asking this based on their resume" }
+          },
+          required: ["round", "question", "context"]
+        }
+      },
+      grandmaster: {
+        type: SchemaType.OBJECT,
+        properties: {
+          scenario: { type: SchemaType.STRING, description: "Explanation of what the buggy code is supposed to do" },
+          language: { type: SchemaType.STRING },
+          buggyCode: { type: SchemaType.STRING, description: "The buggy code that prints output to stdout" },
+          expectedOutput: { type: SchemaType.STRING, description: "The exact stdout expected if fixed" }
+        },
+        required: ["scenario", "language", "buggyCode", "expectedOutput"]
+      }
+    },
+    required: ["questions"]
+  }
 
+  const model = getModel(systemInstruction, schema)
+
+  const prompt = `
 CANDIDATE DATA:
 - Skills: ${resume.skills.join(", ")}
 - Experience Level: ${resume.experienceLevel}
@@ -24,31 +64,14 @@ CANDIDATE DATA:
 - Skill Gaps: ${resume.gaps.join(", ")}
 - Primary Language: ${primaryLanguage}
 
-Return ONLY valid JSON (no markdown):
-{
-  "questions": [
-    {
-      "round": 1,
-      "question": "technical question based on their listed skills",
-      "context": "why you're asking this based on their resume"
-    }
-  ],
-  "grandmaster": {
-    "scenario": "Explanation of what the buggy code is supposed to do",
-    "language": "${primaryLanguage}",
-    "buggyCode": "function solve() { ... } console.log(solve());",
-    "expectedOutput": "The exact stdout expected if fixed"
-  }
-}
-
 Round 1 (Technical): Questions about technologies they listed
 Round 2 (Projects): Questions about their actual project experience
 Round 3 (Gaps): Questions about skills missing from their resume for their target role
-Grandmaster: A concise, self-contained debug challenge with a logical bug (no syntax errors) that prints output to stdout.
+Grandmaster: A concise, self-contained debug challenge with a logical bug (no syntax errors) that prints output to stdout in ${primaryLanguage}.
 `
 
   let result;
-  let retries = 3;
+  let retries = 2; // Reduced retries due to schema
   let delay = 2000;
 
   while (retries > 0) {
@@ -67,17 +90,8 @@ Grandmaster: A concise, self-contained debug challenge with a logical bug (no sy
     }
   }
 
-  // @ts-ignore - result is guaranteed to be defined unless an error was thrown
-  const text = result.response.text().trim()
-
-  let parsed
-  try {
-    parsed = JSON.parse(text)
-  } catch {
-    const match = text.match(/\{[\s\S]*\}/)
-    if (!match) throw new Error("Failed to parse questions")
-    parsed = JSON.parse(match[0])
-  }
+  const text = result!.response.text().trim()
+  const parsed = JSON.parse(text)
 
   const questionsData = parsed.questions.map((q: any) => ({
     round: q.round,
@@ -226,8 +240,26 @@ export async function completeInterview(interviewId: string) {
   const ungraded = standardQuestions.filter(q => q.userAnswer && q.score === null)
 
   if (ungraded.length > 0) {
+    const systemInstruction = "You are a senior technical interviewer. Evaluate the candidate's answers to the questions. Be constructive and specific."
+    
+    const schema: Schema = {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          questionId: { type: SchemaType.STRING, description: "the ID of the question" },
+          score: { type: SchemaType.NUMBER, description: "0-100" },
+          feedback: { type: SchemaType.STRING, description: "2-3 sentences of specific, constructive feedback" },
+          strengths: { type: SchemaType.STRING, description: "what they did well" },
+          improvements: { type: SchemaType.STRING, description: "what they could improve" }
+        },
+        required: ["questionId", "score", "feedback", "strengths", "improvements"]
+      }
+    }
+
+    const model = getModel(systemInstruction, schema)
+    
     const prompt = `
-You are a senior technical interviewer. Evaluate the candidate's answers to the following questions.
 Candidate's skills: ${interview.resume?.skills?.join(", ") || "General IT"}
 
 Questions and Answers:
@@ -236,21 +268,9 @@ ID: ${q.id}
 Question: ${q.question}
 Answer: ${q.userAnswer}
 `).join("\n")}
-
-Return ONLY a valid JSON array of objects, one for each question evaluated.
-Format exactly like this:
-[
-  {
-    "questionId": "the ID provided above",
-    "score": <number 0-100>,
-    "feedback": "2-3 sentences of specific, constructive feedback",
-    "strengths": "what they did well",
-    "improvements": "what they could improve"
-  }
-]
 `
     let result;
-    let retries = 2; // initial + 2 retries
+    let retries = 1; // Reduced retries
     let delay = 2000;
     let success = false;
     let parsedArray: any[] = [];
@@ -259,15 +279,7 @@ Format exactly like this:
       try {
         result = await model.generateContent(prompt)
         const text = result.response.text().trim()
-        
-        let jsonStr = text;
-        const match = text.match(/\[[\s\S]*\]/)
-        if (match) {
-          jsonStr = match[0]
-        }
-        
-        parsedArray = JSON.parse(jsonStr)
-        if (!Array.isArray(parsedArray)) throw new Error("Result is not an array")
+        parsedArray = JSON.parse(text)
         success = true;
       } catch (error: any) {
         if (retries > 0) {
