@@ -1,5 +1,4 @@
 import { prisma } from "@devforge/database"
-import { runInSandbox } from "../utils/sandbox"
 
 
 export async function getProblems(
@@ -50,39 +49,73 @@ export async function submitSolution(
   const problem = await prisma.problem.findUnique({ where: { id: problemId } })
   if (!problem) throw new Error("Problem not found")
 
+  const { executeCode } = await import("./piston.service")
   const testCases = problem.testCases as { input: string; expected: string }[]
-  const results = []
   let allPassed = true
+  const results = new Array(testCases.length)
 
-  for (const testCase of testCases) {
-    const wrappedCode = buildCode(code, language, testCase.input, problem.slug)
+  // Bounded concurrency execution against Piston (limit: 5)
+  const CONCURRENCY_LIMIT = 5;
+  let activePromises = 0;
+  let queueIndex = 0;
 
-    const { stdout, stderr, timedOut } = await runInSandbox(wrappedCode, language)
+  const runTestCase = async (index: number) => {
+    const testCase = testCases[index];
+    const wrappedCode = buildCode(code, language, testCase.input, problem.slug);
+    
+    try {
+      const pistonRes = await executeCode(language, wrappedCode);
+      const { stdout, stderr, signal } = pistonRes.run;
+      const timedOut = signal === "SIGKILL";
 
-    if (timedOut) {
-      allPassed = false
-      results.push({
+      if (timedOut) {
+        allPassed = false;
+        results[index] = {
+          input: testCase.input,
+          expected: testCase.expected,
+          output: "Time Limit Exceeded",
+          passed: false,
+          stderr: null,
+        };
+        return;
+      }
+
+      const output = (stdout || stderr).trim();
+      const passed = output === testCase.expected.trim();
+      if (!passed) allPassed = false;
+
+      results[index] = {
         input: testCase.input,
         expected: testCase.expected,
-        output: "Time Limit Exceeded",
+        output,
+        passed,
+        stderr: stderr || null,
+      };
+    } catch (e: any) {
+      allPassed = false;
+      results[index] = {
+        input: testCase.input,
+        expected: testCase.expected,
+        output: "Execution Error",
         passed: false,
-        stderr: null,
-      })
-      continue
+        stderr: e.message,
+      };
     }
+  };
 
-    const output = stdout || stderr
-    const passed = output === testCase.expected
-    if (!passed) allPassed = false
-
-    results.push({
-      input: testCase.input,
-      expected: testCase.expected,
-      output,
-      passed,
-      stderr: stderr || null,
-    })
+  const workers = [];
+  for (let i = 0; i < CONCURRENCY_LIMIT; i++) {
+    workers.push(
+      (async () => {
+        while (queueIndex < testCases.length) {
+          const currentIndex = queueIndex++;
+          await runTestCase(currentIndex);
+        }
+      })()
+    );
   }
+
+  await Promise.all(workers);
 
   const submission = await prisma.submission.create({
     data: {

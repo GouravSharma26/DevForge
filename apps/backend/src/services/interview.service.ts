@@ -157,18 +157,20 @@ export async function submitAnswer(
 
   // GRANDMASTER PATH
   if (question.isGrandmaster) {
-    const { runInSandbox } = await import("../utils/sandbox")
+    const { executeCode } = await import("./piston.service")
     const { evaluateGrandmasterSubmission } = await import("./grandmaster.service")
     
-    const sandboxRes = await runInSandbox(userAnswer, question.language || "javascript")
+    const pistonRes = await executeCode(question.language || "javascript", userAnswer)
+    const stdout = pistonRes.run.stdout
+    const stderr = pistonRes.run.stderr
     
     const evalResult = await evaluateGrandmasterSubmission(
       question.interview.userId,
       question.question, // The scenario
       question.expectedOutput || "", 
       userAnswer, 
-      sandboxRes.stdout, 
-      sandboxRes.stderr
+      stdout, 
+      stderr
     )
 
     return prisma.question.update({
@@ -177,7 +179,7 @@ export async function submitAnswer(
         userAnswer,
         feedback: evalResult.feedback,
         score: evalResult.score,
-        pistonOutput: sandboxRes.stdout + (sandboxRes.stderr ? `\nError: ${sandboxRes.stderr}` : ""),
+        pistonOutput: stdout + (stderr ? `\nError: ${stderr}` : ""),
       },
     })
   }
@@ -205,20 +207,22 @@ export async function runGrandmasterCode(questionId: string, code: string) {
   if (!question.isGrandmaster) throw new Error("Question is not a Grandmaster challenge")
   if (question.runAttempts >= 4) throw new Error("Maximum run attempts reached")
 
-  const { runInSandbox } = await import("../utils/sandbox")
-  const sandboxRes = await runInSandbox(code, question.language || "javascript")
+  const { executeCode } = await import("./piston.service")
+  const pistonRes = await executeCode(question.language || "javascript", code)
+  const stdout = pistonRes.run.stdout
+  const stderr = pistonRes.run.stderr
 
   const updated = await prisma.question.update({
     where: { id: questionId },
     data: {
       runAttempts: { increment: 1 },
-      pistonOutput: sandboxRes.stdout + (sandboxRes.stderr ? `\nError: ${sandboxRes.stderr}` : ""),
+      pistonOutput: stdout + (stderr ? `\nError: ${stderr}` : ""),
     },
   })
 
   return {
-    stdout: sandboxRes.stdout,
-    stderr: sandboxRes.stderr,
+    stdout: stdout,
+    stderr: stderr,
     runAttempts: updated.runAttempts,
   }
 }

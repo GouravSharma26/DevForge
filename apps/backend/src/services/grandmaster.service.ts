@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI, SchemaType, Schema } from "@google/generative-ai"
 import { prisma } from "@devforge/database"
-import { runInSandbox } from "../utils/sandbox"
+import { executeCode } from "./piston.service"
 import { consumeAiRequest } from "../utils/ai-rate-limit"
 import crypto from "crypto"
 
@@ -66,10 +66,10 @@ export async function generateGrandmasterChallenge(interviewId: string, primaryL
       const parsed = JSON.parse(result.response.text())
 
       // PRE-CHECK
-      const sandboxRes = await runInSandbox(parsed.buggyCode, parsed.language)
+      const sandboxRes = await executeCode(parsed.language, parsed.buggyCode)
       
-      if (sandboxRes.stderr && !sandboxRes.stdout) {
-        console.warn("Sandbox pre-check failed (syntax/compile error). Retrying generation...", sandboxRes.stderr)
+      if (sandboxRes.run.stderr && !sandboxRes.run.stdout) {
+        console.warn("Sandbox pre-check failed (syntax/compile error). Retrying generation...", sandboxRes.run.stderr)
         continue;
       }
 
