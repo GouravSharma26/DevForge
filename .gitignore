@@ -5,8 +5,8 @@ dist/
 .next/
 .turbo/
 *.log
-
 # Local test scripts and scratch files
+piston_data/
 test_*.ts
 test.sh
 test-e2e.js
