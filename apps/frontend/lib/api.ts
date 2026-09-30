@@ -1,5 +1,6 @@
 import axios from "axios"
 import { useAuthStore } from "@/store/auth.store"
+import { toast } from "sonner"
 
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
@@ -21,7 +22,7 @@ api.interceptors.response.use(
     }
     
     if (err.response?.status === 429) {
-      alert("Credits exhausted. Credits restores after 24hrs.")
+      toast.error("Credits exhausted. Credits restores after 24hrs.")
     }
 
     return Promise.reject(err)
