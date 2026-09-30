@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": ["DATABASE_URL", "JWT_SECRET", "COOKIE_SECRET", "GEMINI_API_KEY"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -11,6 +12,7 @@
     },
     "test": {
       "dependsOn": ["^build"],
+      "env": ["DATABASE_URL"],
       "cache": false
     },
     "dev": {
