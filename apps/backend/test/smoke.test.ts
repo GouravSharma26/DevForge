@@ -33,6 +33,7 @@ describe("Backend Smoke Tests", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/auth/register",
+      headers: { origin: "http://localhost:3000" },
       payload: { username: "test" }, // missing email, password
     })
 
@@ -43,6 +44,7 @@ describe("Backend Smoke Tests", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      headers: { origin: "http://localhost:3000" },
       payload: { email: "test@example.com" }, // missing password
     })
 

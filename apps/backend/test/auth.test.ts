@@ -30,6 +30,7 @@ describe("Auth & WebSockets", () => {
     const res = await app.inject({
       method: "POST",
       url: "/api/auth/register",
+      headers: { origin: "http://localhost:3000" },
       payload: { username, email, password }
     })
     
@@ -53,6 +54,7 @@ describe("Auth & WebSockets", () => {
     const loginRes = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      headers: { origin: "http://localhost:3000" },
       payload: { email: testUser.email, password: testUser.password }
     })
     
@@ -81,6 +83,7 @@ describe("Auth & WebSockets", () => {
     const loginRes = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      headers: { origin: "http://localhost:3000" },
       payload: { email: testUser.email, password: testUser.password }
     })
     const accessToken = loginRes.cookies.find(c => c.name === "access_token")!.value

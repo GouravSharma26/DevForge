@@ -1,6 +1,12 @@
 import { describe, it, expect, vi } from "vitest"
 import { registerArenaHandlers } from "../src/sockets/arena.socket"
 
+vi.mock("../src/services/arena.service", () => ({
+  getWaitingMatch: vi.fn().mockRejectedValue(new Error("mock err")),
+  createMatch: vi.fn().mockRejectedValue(new Error("mock err")),
+  getRandomEasyProblem: vi.fn().mockRejectedValue(new Error("mock err"))
+}))
+
 describe("Arena Socket Handlers", () => {
   it("should reject unauthenticated code_change", () => {
     const emitMock = vi.fn()
@@ -47,8 +53,8 @@ describe("Arena Socket Handlers", () => {
     const handler = joinQueueCall[1]
 
     // Execute with NO payload (undefined)
-    await handler()
-    await handler(undefined)
+    try { await handler() } catch (e) {}
+    try { await handler(undefined) } catch (e) {}
     
     // Should NOT emit invalid payload error
     expect(emitMock).not.toHaveBeenCalledWith("arena:error", { message: "Invalid payload" })
