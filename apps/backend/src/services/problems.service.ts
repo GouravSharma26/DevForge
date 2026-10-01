@@ -37,7 +37,10 @@ export async function getProblems(
 }
 
 export async function getProblemBySlug(slug: string) {
-  return prisma.problem.findUnique({ where: { slug } })
+  return prisma.problem.findUnique({
+    where: { slug },
+    select: { id: true, title: true, slug: true, description: true, category: true, difficulty: true, examples: true, constraints: true, starterCode: true }
+  })
 }
 
 export async function submitSolution(
@@ -62,6 +65,9 @@ export async function submitSolution(
   const runTestCase = async (index: number) => {
     const testCase = testCases[index];
     const wrappedCode = buildCode(code, language, testCase.input, problem.slug);
+    const examples = problem.examples as { input: string }[];
+    const isExample = examples.some((ex: any) => ex.input === testCase.input);
+    const expectedOutput = isExample ? testCase.expected : undefined;
     
     try {
       const pistonRes = await executeCode(language, wrappedCode);
@@ -72,7 +78,7 @@ export async function submitSolution(
         allPassed = false;
         results[index] = {
           input: testCase.input,
-          expected: testCase.expected,
+          expected: expectedOutput,
           output: "Time Limit Exceeded",
           passed: false,
           stderr: null,
@@ -86,7 +92,7 @@ export async function submitSolution(
 
       results[index] = {
         input: testCase.input,
-        expected: testCase.expected,
+        expected: expectedOutput,
         output,
         passed,
         stderr: stderr || null,
@@ -95,7 +101,7 @@ export async function submitSolution(
       allPassed = false;
       results[index] = {
         input: testCase.input,
-        expected: testCase.expected,
+        expected: expectedOutput,
         output: "Execution Error",
         passed: false,
         stderr: e.message,

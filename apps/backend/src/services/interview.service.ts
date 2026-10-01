@@ -17,9 +17,9 @@ function getModel(systemInstruction: string, schema: Schema) {
 // ─── Generate Questions ───────────────────────────────────────────────────────
 
 export async function generateInterview(userId: string, resumeId: string) {
+  const resume = await prisma.resume.findFirst({ where: { id: resumeId, userId } })
+  if (!resume) throw new Error("Resume not found or access denied")
   await consumeAiRequest(userId, prisma)
-  const resume = await prisma.resume.findUnique({ where: { id: resumeId } })
-  if (!resume) throw new Error("Resume not found")
 
   const primaryLanguage = resume.skills[0] || "JavaScript"
 

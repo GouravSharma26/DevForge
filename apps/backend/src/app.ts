@@ -40,6 +40,7 @@ export function buildApp() {
       origin: checkCorsOrigin,
       credentials: true
     },
+    allowRequest: (req, cb) => checkCorsOrigin(req.headers.origin, (_e, ok) => cb(null, ok))
   })
 
   app.decorate("io", io)
@@ -62,6 +63,28 @@ export function buildApp() {
     })
     await instance.register(rateLimit, { max: 100, timeWindow: "1 minute" })
     await instance.register(multipart, { limits: { fileSize: 5 * 1024 * 1024 } })
+
+    // Global CSRF Protection
+    instance.addHook("onRequest", async (req, reply) => {
+      const method = req.method.toUpperCase()
+      if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+        const origin = req.headers.origin
+        if (!origin) {
+          reply.status(403).send({ success: false, error: "Missing Origin header for CSRF protection" })
+          return reply
+        }
+        
+        await new Promise<void>((resolve, reject) => {
+          checkCorsOrigin(origin, (err, allow) => {
+            if (err || !allow) reject(new Error("Origin not allowed"))
+            else resolve()
+          })
+        }).catch(() => {
+          reply.status(403).send({ success: false, error: "Invalid Origin for CSRF protection" })
+          return reply
+        })
+      }
+    })
 
     // REST Routes
     await instance.register(authRoutes, { prefix: "/api/auth" })
