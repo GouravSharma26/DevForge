@@ -29,8 +29,8 @@ jobs:
 
     env:
       DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/devforge_test?schema=public"
-      JWT_SECRET: "ci-test-jwt-secret"
-      COOKIE_SECRET: "ci-test-cookie-secret"
+      JWT_SECRET: "ci-test-jwt-secret-very-long-32-chars-plus"
+      COOKIE_SECRET: "ci-test-cookie-secret-very-long-32-chars-plus"
       GEMINI_API_KEY: "ci-test-gemini-key"
 
     steps:

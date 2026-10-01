@@ -22,6 +22,12 @@ import { registerArenaHandlers } from "./sockets/arena.socket"
 import { registerInterviewHandlers } from "./sockets/interview.socket"
 import { checkCorsOrigin } from "./utils/cors"
 
+const requireEnv = (k: string) => { 
+  const v = process.env[k]; 
+  if (!v || v.length < 32) throw new Error(`${k} missing/weak`); 
+  return v; 
+}
+
 export function buildApp() {
   const app = Fastify({ logger: true })
 
@@ -35,17 +41,22 @@ export function buildApp() {
 
   app.decorate("io", io)
 
+  app.register(fastifyCookie, {
+    secret: requireEnv("COOKIE_SECRET"), // for signed cookies
+    hook: "onRequest",
+  })
+  
+  app.register(jwt, { 
+    secret: requireEnv("JWT_SECRET"),
+    cookie: { cookieName: "access_token", signed: false },
+  })
+
   app.register(async (instance) => {
     await instance.register(helmet)
     await instance.register(cors, {
       origin: checkCorsOrigin,
       credentials: true,
     })
-    await instance.register(fastifyCookie, {
-      secret: process.env.COOKIE_SECRET || "my-cookie-secret", // for signed cookies
-      hook: "onRequest",
-    })
-    await instance.register(jwt, { secret: process.env.JWT_SECRET || "supersecret" })
     await instance.register(rateLimit, { max: 100, timeWindow: "1 minute" })
     await instance.register(multipart, { limits: { fileSize: 5 * 1024 * 1024 } })
 
