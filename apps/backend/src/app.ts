@@ -24,7 +24,7 @@ import { checkCorsOrigin } from "./utils/cors"
 
 const requireEnv = (k: string) => { 
   const v = process.env[k]; 
-  if (!v || v.length < 32) throw new Error(`${k} missing/weak`); 
+  if (!v || v.length < 32 || v.includes("your-secret-here")) throw new Error(`${k} missing/weak`); 
   return v; 
 }
 
