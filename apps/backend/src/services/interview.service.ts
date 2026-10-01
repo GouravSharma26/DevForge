@@ -368,8 +368,6 @@ export async function getInterview(interviewId: string, userId: string) {
           feedback: true,
           pistonOutput: true,
           runAttempts: true,
-          createdAt: true,
-          updatedAt: true,
           interviewId: true
         }
       },

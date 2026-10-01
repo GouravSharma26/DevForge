@@ -58,7 +58,7 @@ function generateRoomCode() {
 }
 
 
-function on<T>(socket: Socket, ev: string, schema: z.ZodType<T>, fn: (p: T) => Promise<void> | void) {
+function on<T>(socket: Socket, ev: string, schema: z.ZodType<T>, fn: (p: T) => Promise<any> | any) {
   socket.on(ev, async (raw: unknown) => {
     const p = schema.safeParse(raw)
     if (!p.success) {
