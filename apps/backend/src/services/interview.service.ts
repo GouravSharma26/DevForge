@@ -145,15 +145,16 @@ export async function appendGrandmasterChallenge(interviewId: string, userId: st
 // ─── Submit Answer ────────────────────────────────────────────────────────────
 
 export async function submitAnswer(
+  interviewId: string,
+  userId: string,
   questionId: string,
-  userAnswer: string,
-  resumeSkills: string[]
+  userAnswer: string
 ) {
-  const question = await prisma.question.findUnique({
-    where: { id: questionId },
+  const question = await prisma.question.findFirst({
+    where: { id: questionId, interviewId, interview: { userId } },
     include: { interview: true }
   })
-  if (!question) throw new Error("Question not found")
+  if (!question) throw Object.assign(new Error("Not found"), { statusCode: 404 })
 
   // GRANDMASTER PATH
   if (question.isGrandmaster) {
@@ -165,7 +166,7 @@ export async function submitAnswer(
     const stderr = pistonRes.run.stderr
     
     const evalResult = await evaluateGrandmasterSubmission(
-      question.interview.userId,
+      userId,
       question.question, // The scenario
       question.expectedOutput || "", 
       userAnswer, 
@@ -199,23 +200,25 @@ export async function submitAnswer(
 
 // ─── Run Grandmaster Code (No Evaluation) ─────────────────────────────────────
 
-export async function runGrandmasterCode(questionId: string, code: string) {
+export async function runGrandmasterCode(interviewId: string, userId: string, questionId: string, code: string) {
+  const { count } = await prisma.question.updateMany({
+    where: { id: questionId, interviewId, isGrandmaster: true, runAttempts: { lt: 4 }, interview: { userId } },
+    data: { runAttempts: { increment: 1 } },
+  })
+  if (count === 0) throw Object.assign(new Error("Not found or limit reached"), { statusCode: 429 })
+
   const question = await prisma.question.findUnique({
     where: { id: questionId },
   })
-  if (!question) throw new Error("Question not found")
-  if (!question.isGrandmaster) throw new Error("Question is not a Grandmaster challenge")
-  if (question.runAttempts >= 4) throw new Error("Maximum run attempts reached")
 
   const { executeCode } = await import("./piston.service")
-  const pistonRes = await executeCode(question.language || "javascript", code)
+  const pistonRes = await executeCode(question!.language || "javascript", code)
   const stdout = pistonRes.run.stdout
   const stderr = pistonRes.run.stderr
 
   const updated = await prisma.question.update({
     where: { id: questionId },
     data: {
-      runAttempts: { increment: 1 },
       pistonOutput: stdout + (stderr ? `\nError: ${stderr}` : ""),
     },
   })
@@ -229,12 +232,12 @@ export async function runGrandmasterCode(questionId: string, code: string) {
 
 // ─── Complete Interview ───────────────────────────────────────────────────────
 
-export async function completeInterview(interviewId: string) {
-  const interview = await prisma.interview.findUnique({
-    where: { id: interviewId },
+export async function completeInterview(interviewId: string, userId: string) {
+  const interview = await prisma.interview.findFirst({
+    where: { id: interviewId, userId },
     include: { questions: true, resume: true },
   })
-  if (!interview) throw new Error("Interview not found")
+  if (!interview) throw Object.assign(new Error("Interview not found"), { statusCode: 404 })
   
   await consumeAiRequest(interview.userId, prisma)
 
@@ -346,12 +349,31 @@ Answer: ${q.userAnswer}
   })
 }
 
-export async function getInterview(interviewId: string) {
-  return prisma.interview.findUnique({
-    where: { id: interviewId },
+export async function getInterview(interviewId: string, userId: string) {
+  return prisma.interview.findFirst({
+    where: { id: interviewId, userId },
     include: {
-      questions: { orderBy: { round: "asc" } },
-      resume: true,
+      questions: {
+        orderBy: { round: "asc" },
+        select: {
+          id: true,
+          round: true,
+          question: true,
+          context: true,
+          isGrandmaster: true,
+          language: true,
+          buggyCode: true,
+          userAnswer: true,
+          score: true,
+          feedback: true,
+          pistonOutput: true,
+          runAttempts: true,
+          createdAt: true,
+          updatedAt: true,
+          interviewId: true
+        }
+      },
+      resume: { select: { id: true, profileName: true, targetRole: true, skills: true } },
     },
   })
 }

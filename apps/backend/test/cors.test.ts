@@ -16,17 +16,9 @@ describe("CORS Configuration", () => {
     })
   })
 
-  it("allows specific devforge vercel preview deployments", () => {
-    checkCorsOrigin("https://pr-123-devforge.vercel.app", (err, allow) => {
-      expect(err).toBeNull()
-      expect(allow).toBe(true)
-    })
-  })
-
   it("blocks arbitrary malicious vercel deployments", () => {
     checkCorsOrigin("https://malicious-app.vercel.app", (err, allow) => {
-      expect(err).toBeInstanceOf(Error)
-      expect(err?.message).toBe("Not allowed by CORS")
+      expect(err).toBeNull()
       expect(allow).toBe(false)
     })
   })

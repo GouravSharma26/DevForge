@@ -391,7 +391,8 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
     "/interview/:id",
     { preHandler: [authenticate] },
     async (req: FastifyRequest<{ Params: { id: string } }>, reply) => {
-      const interview = await getInterview(req.params.id)
+      const { id: userId } = req.user as { id: string }
+      const interview = await getInterview(req.params.id, userId)
       if (!interview) return reply.status(404).send({ success: false, error: "Interview not found" })
       return reply.send({ success: true, data: interview })
     }
@@ -405,11 +406,10 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
       req: FastifyRequest<{ Params: { id: string }; Body: { questionId: string; answer: string } }>,
       reply
     ) => {
+      const { id: userId } = req.user as { id: string }
       const { questionId, answer } = req.body
-      const interview = await getInterview(req.params.id)
-      if (!interview) return reply.status(404).send({ success: false, error: "Interview not found" })
       try {
-        const result = await submitAnswer(questionId, answer, interview.resume.skills)
+        const result = await submitAnswer(req.params.id, userId, questionId, answer)
         return reply.send({ success: true, data: result })
       } catch (err: any) {
         console.error("[Submit Answer Error]:", err)
@@ -424,8 +424,9 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
     "/interview/:id/complete",
     { preHandler: [authenticate] },
     async (req: FastifyRequest<{ Params: { id: string } }>, reply) => {
+      const { id: userId } = req.user as { id: string }
       try {
-        const interview = await completeInterview(req.params.id)
+        const interview = await completeInterview(req.params.id, userId)
         return reply.send({ success: true, data: interview })
       } catch (err: any) {
         const status = err.statusCode || 500
@@ -441,9 +442,8 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
     async (req: FastifyRequest<{ Params: { id: string } }>, reply) => {
       const { id: userId } = req.user as { id: string }
       try {
-        const interview = await getInterview(req.params.id)
+        const interview = await getInterview(req.params.id, userId)
         if (!interview) return reply.status(404).send({ success: false, error: "Interview not found" })
-        if (interview.userId !== userId) return reply.status(403).send({ success: false, error: "Unauthorized" })
         if (interview.status !== "COMPLETED") return reply.status(400).send({ success: false, error: "Interview must be completed before starting the Grandmaster challenge" })
         
         const updated = await appendGrandmasterChallenge(req.params.id, userId)
@@ -461,11 +461,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
     async (req: FastifyRequest<{ Params: { id: string; questionId: string }, Body: { code: string } }>, reply) => {
       const { id: userId } = req.user as { id: string }
       try {
-        const interview = await getInterview(req.params.id)
-        if (!interview) return reply.status(404).send({ success: false, error: "Interview not found" })
-        if (interview.userId !== userId) return reply.status(403).send({ success: false, error: "Unauthorized" })
-        
-        const result = await runGrandmasterCode(req.params.questionId, req.body.code)
+        const result = await runGrandmasterCode(req.params.id, userId, req.params.questionId, req.body.code)
         return reply.send({ success: true, data: result })
       } catch (err: any) {
         const status = err.statusCode || 500

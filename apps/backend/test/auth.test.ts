@@ -102,4 +102,39 @@ describe("Auth & WebSockets", () => {
       })
     })
   })
+
+  it("should reject REST request with no cookie", async () => {
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/user/me"
+    })
+    expect(res.statusCode).toBe(401)
+  })
+
+  it("should reject REST request with tampered cookie", async () => {
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/user/me",
+      headers: {
+        cookie: "access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.tampered.token"
+      }
+    })
+    expect(res.statusCode).toBe(401)
+  })
+
+  it("should reject WebSocket connection with no cookie", async () => {
+    return new Promise<void>((resolve) => {
+      const socket = Client(`http://localhost:${port}`)
+      
+      socket.on("connect", () => {
+        socket.disconnect()
+        throw new Error("Should not have connected without a cookie")
+      })
+
+      socket.on("connect_error", (err) => {
+        expect(err.message).toBe("Unauthorized")
+        resolve()
+      })
+    })
+  })
 })

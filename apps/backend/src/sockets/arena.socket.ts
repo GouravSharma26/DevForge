@@ -1,3 +1,4 @@
+import { z } from "zod"
 import { Server, Socket } from "socket.io"
 import {
   getWaitingMatch,
@@ -54,6 +55,23 @@ const userToRoom = new Map<string, string>() // userId -> code
 
 function generateRoomCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase()
+}
+
+
+function on<T>(socket: Socket, ev: string, schema: z.ZodType<T>, fn: (p: T) => Promise<void> | void) {
+  socket.on(ev, async (raw: unknown) => {
+    const p = schema.safeParse(raw)
+    if (!p.success) {
+      console.warn(`[Arena Socket] Invalid payload for ${ev}:`, p.error.format())
+      return socket.emit("arena:error", { message: "Invalid payload" })
+    }
+    try {
+      await fn(p.data)
+    } catch (e: any) {
+      console.error(`[Arena Socket] Error in ${ev}:`, e)
+      socket.emit("arena:error", { message: e.message || "Internal error" })
+    }
+  })
 }
 
 export function registerArenaHandlers(io: Server, socket: Socket) {
@@ -181,7 +199,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
   console.log(`🎮 Arena: ${userId} connected (${socket.id})`)
 
   // ── QUICK MATCH (Ranked) ──────────────────────────────────────────────────────────────
-  socket.on("arena:join_queue", async () => {
+  on(socket, "arena:join_queue", z.object({}), async () => {
     try {
       // Serialize matchmaking to prevent DB race conditions
       while (quickMatchLock) {
@@ -269,7 +287,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
 
   // ── FRIENDLY MATCHES (Custom Rooms / Exam Mode) ──────────────────────────────────────────
   
-  socket.on("arena:create_room", ({ name, numberOfQuestions, timeLimitMinutes, difficulties }: { name: string, numberOfQuestions: number, timeLimitMinutes: number, difficulties: string[] }) => {
+  on(socket, "arena:create_room", z.object({ name: z.string(), numberOfQuestions: z.number(), timeLimitMinutes: z.number(), difficulties: z.array(z.string()) }), async ({ name, numberOfQuestions, timeLimitMinutes, difficulties }) => {
     const existingCode = userToRoom.get(userId)
     if (existingCode) {
       friendlyRooms.delete(existingCode)
@@ -307,7 +325,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     console.log(`🏠 Friendly Room created: ${code} by ${userId}`)
   })
 
-  socket.on("arena:join_room", ({ code }: { code: string }) => {
+  on(socket, "arena:join_room", z.object({ code: z.string() }), async ({ code }) => {
     const room = friendlyRooms.get(code.toUpperCase())
     if (!room) {
       return socket.emit("arena:error", { message: "Room not found or expired" })
@@ -332,7 +350,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     io.to(`room_${code}`).emit("arena:room_updated", room)
   })
 
-  socket.on("arena:toggle_ready", () => {
+  on(socket, "arena:toggle_ready", z.object({}), async () => {
     const code = userToRoom.get(userId)
     if (!code) return
     const room = friendlyRooms.get(code)
@@ -342,7 +360,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     }
   })
 
-  socket.on("arena:kick_player", () => {
+  on(socket, "arena:kick_player", z.object({}), async () => {
     const code = userToRoom.get(userId)
     if (!code) return
     const room = friendlyRooms.get(code)
@@ -365,7 +383,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     }
   })
 
-  socket.on("arena:leave_room", () => {
+  on(socket, "arena:leave_room", z.object({}), async () => {
     const codeRoom = userToRoom.get(userId)
     if (codeRoom) {
       const room = friendlyRooms.get(codeRoom)
@@ -402,7 +420,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     socket.leave(`room_${codeRoom}`)
   })
 
-  socket.on("arena:update_room_settings", ({ numberOfQuestions, timeLimitMinutes, difficulties }) => {
+  on(socket, "arena:update_room_settings", z.object({ numberOfQuestions: z.number(), timeLimitMinutes: z.number(), difficulties: z.array(z.string()) }), async ({ numberOfQuestions, timeLimitMinutes, difficulties }) => {
     const code = userToRoom.get(userId)
     if (!code) return
     const room = friendlyRooms.get(code)
@@ -415,7 +433,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     }
   })
 
-  socket.on("arena:play_again", () => {
+  on(socket, "arena:play_again", z.object({}), async () => {
     const code = userToRoom.get(userId)
     console.log(`play_again triggered for user ${userId}. code=${code}`)
     if (!code) return
@@ -444,7 +462,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     }
   })
 
-  socket.on("arena:start_room", async () => {
+  on(socket, "arena:start_room", z.object({}), async () => {
     const code = userToRoom.get(userId)
     if (!code) return
     const room = friendlyRooms.get(code)
@@ -521,7 +539,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
 
   // ── EXAM SUBMISSION & INTERACTION ────────────────────────────────────────────────────────
   
-  socket.on("arena:exam_switch_tab", ({ problemId }: { problemId: string }) => {
+  on(socket, "arena:exam_switch_tab", z.object({ problemId: z.string() }), async ({ problemId }) => {
     const codeRoom = userToRoom.get(userId)
     if (!codeRoom) return
     const room = friendlyRooms.get(codeRoom)
@@ -531,7 +549,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     io.to(`room_${codeRoom}`).emit("arena:exam_tabs_updated", { activeTabs: room.activeTabs })
   })
 
-  socket.on("arena:exam_forfeit", () => {
+  on(socket, "arena:exam_forfeit", z.object({}), async () => {
     const codeRoom = userToRoom.get(userId)
     if (!codeRoom) return
     const room = friendlyRooms.get(codeRoom)
@@ -542,11 +560,12 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     endExam(codeRoom, `${username} forfeited the match!`)
   })
 
-  socket.on("arena:submit_exam_code", async ({ problemId, code: sourceCode, language }: { problemId: string, code: string, language: string }) => {
+  on(socket, "arena:submit_exam_code", z.object({ problemId: z.string(), code: z.string(), language: z.string() }), async ({ problemId, code: sourceCode, language }) => {
     const codeRoom = userToRoom.get(userId)
     if (!codeRoom) return
     const room = friendlyRooms.get(codeRoom)
     if (!room) return
+    if (!room.problems.some((p: any) => p.id === problemId)) return socket.emit("arena:error", { message: "Invalid problem ID" })
     
     // Check if already passed
     if (room.examStatus[userId] && room.examStatus[userId][problemId] === "PASSED") {
@@ -591,7 +610,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
 
   // ── STANDARD IN-GAME EVENTS ──────────────────────────────────────────────────────────────
   
-  socket.on("arena:code_change", ({ matchId, code }: { matchId: string; code: string }) => {
+  on(socket, "arena:code_change", z.object({ matchId: z.string(), code: z.string() }), async ({ matchId, code }) => {
     const matchMem = activeMatches.get(matchId)
     if (!matchMem || (matchMem.player1Id !== userId && matchMem.player2?.id !== userId)) {
       return socket.emit("arena:error", { message: "Unauthorized code change" })
@@ -599,59 +618,47 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     socket.to(matchId).emit("arena:opponent_code", { code })
   })
 
-  socket.on(
-    "arena:submit",
-    async ({
-      matchId,
-      problemId,
-      code,
-      language,
-    }: {
-      matchId: string
-      problemId: string
-      code: string
-      language: string
-    }) => {
-      try {
-        const matchMem = activeMatches.get(matchId)
-        if (!matchMem || (matchMem.player1Id !== userId && matchMem.player2?.id !== userId)) {
-          return socket.emit("arena:error", { message: "Unauthorized submission" })
-        }
-
-        socket.to(matchId).emit("arena:opponent_submitted")
-        const result = await submitSolution(userId, problemId, code, language)
-
-        if (result.allPassed) {
-          const match = await completeMatch(matchId, userId)
-
-          io.to(matchId).emit("arena:match_over", {
-            winnerId: userId,
-            winnerUsername:
-              match.player1Id === userId
-                ? match.player1.username
-                : match.player2?.username,
-            results: result.results,
-            isFriendly: match.isFriendly,
-          })
-
-          console.log(`🏆 Match ${matchId} won by ${userId}`)
-          cancelBotBattle(matchId)
-          matchPlayers.delete(matchId)
-          activeMatches.delete(matchId)
-        } else {
-          socket.emit("arena:submit_result", {
-            passed: false,
-            results: result.results,
-          })
-        }
-      } catch (err) {
-        console.error("arena:submit error", err)
-        socket.emit("arena:error", { message: "Submission failed" })
-      }
+  on(socket, "arena:submit", z.object({ matchId: z.string(), problemId: z.string(), code: z.string(), language: z.string() }), async ({ matchId, problemId, code, language }) => {
+    const matchMem = activeMatches.get(matchId)
+    if (!matchMem || (matchMem.player1Id !== userId && matchMem.player2?.id !== userId)) {
+      return socket.emit("arena:error", { message: "Unauthorized submission" })
     }
-  )
+    if (matchMem.problemId !== problemId) {
+      return socket.emit("arena:error", { message: "Invalid problem ID for this match" })
+    }
+    if (matchMem.status !== "ACTIVE") {
+      return socket.emit("arena:error", { message: "Match is not active" })
+    }
 
-    socket.on("arena:leave", async ({ matchId }: { matchId: string }) => {
+    socket.to(matchId).emit("arena:opponent_submitted")
+    const result = await submitSolution(userId, problemId, code, language)
+
+    if (result.allPassed) {
+      const match = await completeMatch(matchId, userId)
+
+      io.to(matchId).emit("arena:match_over", {
+        winnerId: userId,
+        winnerUsername:
+          match.player1Id === userId
+            ? match.player1.username
+            : match.player2?.username,
+        results: result.results,
+        isFriendly: match.isFriendly,
+      })
+
+      console.log(`🏆 Match ${matchId} won by ${userId}`)
+      cancelBotBattle(matchId)
+      matchPlayers.delete(matchId)
+      activeMatches.delete(matchId)
+    } else {
+      socket.emit("arena:submit_result", {
+        passed: false,
+        results: result.results,
+      })
+    }
+  })
+
+    on(socket, "arena:leave", z.object({ matchId: z.string() }), async ({ matchId }) => {
       const matchMem = activeMatches.get(matchId)
       if (!matchMem || (matchMem.player1Id !== userId && matchMem.player2?.id !== userId)) {
         return socket.emit("arena:error", { message: "Unauthorized leave" })

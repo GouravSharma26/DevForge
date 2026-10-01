@@ -31,22 +31,27 @@ export async function createMatch(player1Id: string, problemId: string, isFriend
   return prisma.match.create({
     data: { player1Id, problemId, status: "WAITING", isFriendly },
     include: {
-      problem: true,
+      problem: { select: { id: true, title: true, slug: true, description: true, category: true, difficulty: true, examples: true, constraints: true, starterCode: true } },
       player1: { select: { id: true, username: true, xp: true, avatar: true } },
     },
   })
 }
 
 export async function joinMatch(matchId: string, player2Id: string) {
-  return prisma.match.update({
-    where: { id: matchId },
+  const { count } = await prisma.match.updateMany({
+    where: { id: matchId, status: "WAITING" },
     data: {
       player2Id,
       status: "ACTIVE",
       startedAt: new Date(),
     },
+  })
+  if (count === 0) throw new Error("Match no longer waiting")
+
+  return prisma.match.findUniqueOrThrow({
+    where: { id: matchId },
     include: {
-      problem: true,
+      problem: { select: { id: true, title: true, slug: true, description: true, category: true, difficulty: true, examples: true, constraints: true, starterCode: true } },
       player1: { select: { id: true, username: true, xp: true, avatar: true } },
       player2: { select: { id: true, username: true, xp: true, avatar: true } },
     },
@@ -54,9 +59,14 @@ export async function joinMatch(matchId: string, player2Id: string) {
 }
 
 export async function completeMatch(matchId: string, winnerId: string) {
-  const match = await prisma.match.update({
-    where: { id: matchId },
+  const { count } = await prisma.match.updateMany({
+    where: { id: matchId, status: "ACTIVE" },
     data: { winnerId, status: "COMPLETED", endedAt: new Date() },
+  })
+  if (count === 0) throw new Error("Match already completed or not active")
+
+  const match = await prisma.match.findUniqueOrThrow({
+    where: { id: matchId },
     include: {
       player1: { select: { id: true, username: true } },
       player2: { select: { id: true, username: true } },
@@ -88,7 +98,7 @@ export async function getMatchById(matchId: string) {
   return prisma.match.findUnique({
     where: { id: matchId },
     include: {
-      problem: true,
+      problem: { select: { id: true, title: true, slug: true, description: true, category: true, difficulty: true, examples: true, constraints: true, starterCode: true } },
       player1: { select: { id: true, username: true, xp: true, avatar: true } },
       player2: { select: { id: true, username: true, xp: true, avatar: true } },
       winner: { select: { id: true, username: true } },
@@ -125,4 +135,4 @@ export async function cancelMatch(matchId: string) {
   } catch (err) {
     console.error("Failed to cancel match:", err)
   }
-}
+}
