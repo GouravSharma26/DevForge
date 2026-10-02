@@ -36,12 +36,31 @@ export default function DashboardPage() {
 
   if (isDataLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="flex flex-col items-center gap-4 opacity-50">
-          <div className="w-8 h-8 border-2 border-[var(--color-accent)] border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-[12px] font-mono text-[var(--color-muted)] tracking-widest uppercase">Igniting Forge...</div>
+      <main className="relative z-10 px-10 pt-8 pb-16 max-w-[1180px] w-full font-sans">
+        {/* Header Skeleton */}
+        <div className="flex justify-between items-center mb-8 animate-pulse">
+          <div className="flex flex-col gap-3">
+            <div className="h-9 w-72 bg-[var(--color-border)] rounded-md opacity-20"></div>
+            <div className="h-4 w-96 bg-[var(--color-border)] rounded-md opacity-20"></div>
+          </div>
+          <div className="flex gap-3">
+            <div className="h-10 w-24 bg-[var(--color-border)] rounded-md opacity-20"></div>
+            <div className="h-10 w-32 bg-[var(--color-border)] rounded-md opacity-20"></div>
+          </div>
         </div>
-      </div>
+
+        {/* Core Diagnostics Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-[440px_1fr] gap-5 mb-5">
+          <div className="glass-panel rounded-2xl p-6 h-[260px] animate-pulse bg-[var(--bg-surface)] border-none"></div>
+          <div className="glass-panel rounded-2xl p-6 h-[260px] animate-pulse bg-[var(--bg-surface)] border-none"></div>
+        </div>
+
+        {/* Bottom Section Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_400px] gap-5">
+          <div className="glass-panel rounded-2xl p-6 h-[220px] animate-pulse bg-[var(--bg-surface)] border-none"></div>
+          <div className="glass-panel rounded-2xl p-6 h-[220px] animate-pulse bg-[var(--bg-surface)] border-none"></div>
+        </div>
+      </main>
     )
   }
 
@@ -126,7 +145,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-[440px_1fr] gap-5 mb-5 fade-up" style={{ animationDelay: '0.2s' }}>
           
           {/* Readiness Index */}
-          <div className="glass-panel rounded-xl p-6 relative flex flex-col">
+          <div className="glass-panel rounded-2xl p-6 relative flex flex-col hover:shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition-shadow duration-500">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <div className="text-[10px] text-[var(--color-success)] uppercase tracking-widest font-bold mb-1">Diagnostic Telemetry</div>
@@ -193,7 +212,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Next Up in the Forge */}
-          <div className="glass-panel rounded-xl p-6">
+          <div className="glass-panel rounded-2xl p-6 hover:shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition-shadow duration-500">
             <div className="flex justify-between items-baseline mb-5">
               <div>
                 <div className="text-[10px] text-[var(--color-warning)] uppercase tracking-widest font-bold mb-1">Priority Protocol</div>
@@ -205,8 +224,8 @@ export default function DashboardPage() {
             <div className="flex flex-col gap-2.5">
               
               {activeInterviews.slice(0, 2).map((intv: any) => (
-                <div key={intv.id} className={`flex items-start gap-4 p-4 rounded-lg border ${intv.type === 'AI_AGENT' ? 'border-[var(--color-accent)] bg-[rgba(255,107,0,0.05)] glow-active' : 'border-[var(--color-border)] bg-[var(--bg-card)] hover:border-[var(--color-warning)]'} transition-all`}>
-                  <div className="mt-0.5">
+                <div key={intv.id} className={`group flex items-start gap-4 p-4 rounded-xl border ${intv.type === 'AI_AGENT' ? 'border-[var(--color-accent)] bg-[rgba(255,107,0,0.05)] glow-active' : 'border-[var(--color-border)] bg-[var(--bg-card)] hover:border-[var(--color-warning)]'} transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer`} onClick={() => router.push(intv.type === 'AI_AGENT' ? `/interview/agent` : `/interview`)}>
+                  <div className="mt-0.5 transition-transform group-hover:scale-110 duration-300">
                     {intv.type === 'AI_AGENT' ? <Mic size={16} className="text-[var(--color-accent)]" /> : <Crown size={16} className="text-[var(--color-warning)]" />}
                   </div>
                   <div className="flex-1">
@@ -224,7 +243,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     {intv.type === 'AI_AGENT' && <span className="text-[9px] text-[var(--color-accent)] font-bold uppercase tracking-wider">Recommended Now</span>}
-                    <button onClick={() => router.push(intv.type === 'AI_AGENT' ? `/interview/agent` : `/interview`)} className={`px-3 py-1.5 rounded text-[11px] font-bold ${intv.type === 'AI_AGENT' ? 'bg-[var(--color-accent)] text-[#0c0d0e] shadow-[0_0_10px_rgba(255,107,0,0.3)] hover:opacity-90' : 'border border-[var(--color-border)] hover:border-[var(--color-text-primary)]'}`}>
+                    <button className={`px-3 py-1.5 rounded text-[11px] font-bold transition-all duration-300 ${intv.type === 'AI_AGENT' ? 'bg-[var(--color-accent)] text-[#0c0d0e] shadow-[0_0_10px_rgba(255,107,0,0.3)] hover:opacity-90 group-hover:shadow-[0_0_20px_rgba(255,107,0,0.5)]' : 'border border-[var(--color-border)] hover:border-[var(--color-text-primary)] group-hover:bg-[var(--bg-surface)]'}`}>
                       {intv.type === 'AI_AGENT' ? 'Start Mock →' : 'Resume →'}
                     </button>
                   </div>
@@ -244,8 +263,8 @@ export default function DashboardPage() {
                 </div>
               ) : recommendedProblems?.length > 0 ? (
                 recommendedProblems.slice(0, 2).map((prob: any) => (
-                  <div key={prob.id} className="flex items-start gap-4 p-4 rounded-lg border border-[var(--color-border)] bg-[var(--bg-card)] hover:border-[var(--color-success)] transition-all">
-                    <div className="mt-0.5"><Puzzle size={16} className="text-[var(--color-success)]" /></div>
+                  <div key={prob.id} className="group flex items-start gap-4 p-4 rounded-xl border border-[var(--color-border)] bg-[var(--bg-card)] hover:border-[var(--color-success)] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer" onClick={() => router.push(`/problems/${prob.slug}`)}>
+                    <div className="mt-0.5 transition-transform group-hover:scale-110 duration-300"><Puzzle size={16} className="text-[var(--color-success)]" /></div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <div className="text-[14px] font-bold text-[var(--color-text-primary)]">{prob.title}</div>
@@ -254,7 +273,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="text-[12px] text-[var(--color-muted)]">Algorithmic priority targeted for your upcoming interviews</div>
                     </div>
-                    <button onClick={() => router.push(`/problems/${prob.slug}`)} className="px-3 py-1.5 border border-[var(--color-border)] rounded text-[11px] font-bold hover:border-[var(--color-text-primary)]">
+                    <button className="px-3 py-1.5 border border-[var(--color-border)] rounded text-[11px] font-bold transition-all duration-300 group-hover:border-[var(--color-text-primary)] group-hover:bg-[var(--bg-surface)]">
                       Solve →
                     </button>
                   </div>
@@ -268,52 +287,52 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-[1fr_400px] gap-5 fade-up" style={{ animationDelay: '0.3s' }}>
           
           {/* Quick Launch Arena */}
-          <div className="glass-panel rounded-xl p-6">
+          <div className="glass-panel rounded-2xl p-6 hover:shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition-shadow duration-500">
             <div className="flex justify-between items-center mb-5">
               <h3 className="text-[14px] font-display font-bold uppercase tracking-wider text-[var(--color-text-primary)]">Quick Launch Arena</h3>
               <span className="text-[11px] text-[var(--color-success)] font-bold">5 modules active</span>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-              <div className="p-4 border border-[var(--color-border)] bg-[var(--bg-card)] rounded-lg flex flex-col justify-between hover:border-[var(--color-accent)] transition-colors group cursor-pointer" onClick={() => router.push('/arena')}>
+              <div className="p-4 border border-[var(--color-border)] bg-[var(--bg-card)] rounded-xl flex flex-col justify-between hover:border-[var(--color-accent)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(255,107,0,0.15)] group cursor-pointer" onClick={() => router.push('/arena')}>
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Zap size={14} className="text-[var(--color-accent)]" />
+                    <Zap size={14} className="text-[var(--color-accent)] transition-transform group-hover:scale-110 duration-300" />
                     <span className="text-[13px] font-bold">PvP Arena</span>
                   </div>
                   <div className="text-[11px] text-[var(--color-muted)] mb-3">Live 1v1 Ranked Duel</div>
                 </div>
                 <div className="flex justify-between items-center text-[11px]">
                   <span className="text-[var(--color-success)] font-bold">Queue: ~4s</span>
-                  <span className="font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)]">Match →</span>
+                  <span className="font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors">Match →</span>
                 </div>
               </div>
               
-              <div className="p-4 border border-[var(--color-border)] bg-[var(--bg-card)] rounded-lg flex flex-col justify-between hover:border-[var(--color-accent)] transition-colors group cursor-pointer" onClick={() => router.push('/resume')}>
+              <div className="p-4 border border-[var(--color-border)] bg-[var(--bg-card)] rounded-xl flex flex-col justify-between hover:border-[var(--color-accent)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(255,107,0,0.15)] group cursor-pointer" onClick={() => router.push('/resume')}>
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <FileText size={14} className="text-[var(--color-warning)]" />
+                    <FileText size={14} className="text-[var(--color-warning)] transition-transform group-hover:scale-110 duration-300" />
                     <span className="text-[13px] font-bold">ATS Matcher</span>
                   </div>
                   <div className="text-[11px] text-[var(--color-muted)] mb-3">{activeResumesCount} PROFILE TUNED</div>
                 </div>
                 <div className="flex justify-between items-center text-[11px]">
                   <span className="font-bold text-[var(--color-warning)]">{avgResumeScore}/100 Score</span>
-                  <span className="font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)]">Edit →</span>
+                  <span className="font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors">Edit →</span>
                 </div>
               </div>
               
-              <div className="p-4 border border-[var(--color-border)] bg-[var(--bg-card)] rounded-lg flex flex-col justify-between hover:border-[var(--color-accent)] transition-colors group cursor-pointer" onClick={() => router.push('/interview')}>
+              <div className="p-4 border border-[var(--color-border)] bg-[var(--bg-card)] rounded-xl flex flex-col justify-between hover:border-[var(--color-accent)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(255,107,0,0.15)] group cursor-pointer" onClick={() => router.push('/interview')}>
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Crown size={14} className="text-[var(--color-violet)]" />
+                    <Crown size={14} className="text-[var(--color-violet)] transition-transform group-hover:scale-110 duration-300" />
                     <span className="text-[13px] font-bold">Grandmaster</span>
                   </div>
                   <div className="text-[11px] text-[var(--color-muted)] mb-3">Sandbox Debugging</div>
                 </div>
                 <div className="flex justify-between items-center text-[11px]">
                   <span className="text-[var(--color-muted)]">Custom Testcases</span>
-                  <span className="font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)]">Launch →</span>
+                  <span className="font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors">Launch →</span>
                 </div>
               </div>
             </div>
@@ -332,7 +351,7 @@ export default function DashboardPage() {
           </div>
           
           {/* Forge Live Feed (Log) */}
-          <div className="glass-panel rounded-xl p-6 flex flex-col max-h-[290px]">
+          <div className="glass-panel rounded-2xl p-6 flex flex-col max-h-[290px] hover:shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition-shadow duration-500">
             <div className="flex justify-between items-center mb-5 shrink-0">
               <h3 className="text-[14px] font-display font-bold uppercase tracking-wider text-[var(--color-text-primary)]">Forge Live Feed</h3>
               <span className="text-[11px] text-[var(--color-muted)]">Recent Activity</span>
