@@ -7,6 +7,7 @@ import { useAuthStore } from "@/store/auth.store"
 import { useResumes, useInterviews } from "@/hooks/useResume"
 import { useMatchHistory } from "@/hooks/useArena"
 import { useMe } from "@/hooks/useUser"
+import { useRecommendedProblems } from "@/hooks/useProblems"
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -20,6 +21,7 @@ export default function DashboardPage() {
   const { data: resumes, isLoading: resumesLoading } = useResumes()
   const { data: interviews, isLoading: interviewsLoading } = useInterviews()
   const { data: matches, isLoading: matchesLoading } = useMatchHistory()
+  const { data: recommendedProblems, isLoading: recommendedLoading } = useRecommendedProblems()
 
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
@@ -45,6 +47,10 @@ export default function DashboardPage() {
   const lastInterviewScore = completedInterviews.length > 0 ? completedInterviews[0].score : 0
   const activeResumesCount = resumes?.length || 0
   const interviewsCount = interviews?.length || 0
+  
+  const avgResumeScore = resumes && resumes.length > 0 
+    ? Math.round(resumes.reduce((acc: number, r: any) => acc + (r.atsScore || r.score || 0), 0) / resumes.length)
+    : 0
   
   const formatDate = (dateString: string) => {
     const d = new Date(dateString)
@@ -142,17 +148,42 @@ export default function DashboardPage() {
                 <button className="text-[11px] text-[var(--color-accent)] font-bold">Start →</button>
               </div>
 
-              {/* Explicitly flagged as missing backend endpoint */}
-              <div className="flex items-center gap-3 p-3 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-card)] opacity-70">
-                <div className="w-[30px] h-[30px] rounded-lg bg-[var(--color-surface-theme)] border border-[var(--color-border)] flex items-center justify-center shrink-0">
-                  <Puzzle size={14} className="text-[var(--color-accent)]" />
+              {/* Dynamic Recommended Problems */}
+              {recommendedLoading ? (
+                <div className="flex items-center gap-3 p-3 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-card)] opacity-70">
+                  <div className="w-[30px] h-[30px] rounded-lg bg-[var(--color-surface-theme)] border border-[var(--color-border)] flex items-center justify-center shrink-0">
+                    <Puzzle size={14} className="text-[var(--color-accent)] animate-pulse" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-[12.5px] font-semibold mb-0.5 text-[var(--color-text-primary)]">Loading Recommendations...</div>
+                    <div className="text-[11px] text-[var(--color-muted)]">Fetching from your forge history</div>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <div className="text-[12.5px] font-semibold mb-0.5 text-[var(--color-text-primary)]">Recommended DSA problems</div>
-                  <div className="text-[11px] text-[var(--color-muted)]">Feature unavailable: Recommendation engine endpoint missing</div>
+              ) : recommendedProblems?.length > 0 ? (
+                recommendedProblems.map((prob: any) => (
+                  <div key={prob.id} className="flex items-center gap-3 p-3 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-accent)] transition-all cursor-pointer" onClick={() => router.push(`/problems/${prob.slug}`)}>
+                    <div className="w-[30px] h-[30px] rounded-lg bg-[var(--color-surface-theme)] border border-[var(--color-border)] flex items-center justify-center shrink-0">
+                      <Puzzle size={14} className="text-[var(--color-accent)]" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-[12.5px] font-semibold mb-0.5 text-[var(--color-text-primary)]">{prob.title}</div>
+                      <div className="text-[11px] text-[var(--color-muted)]">Recommended DSA Problem • {prob.difficulty}</div>
+                    </div>
+                    <div className="text-[11px] text-[var(--color-accent)] font-bold">Solve →</div>
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center gap-3 p-3 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-card)] opacity-70">
+                  <div className="w-[30px] h-[30px] rounded-lg bg-[var(--color-surface-theme)] border border-[var(--color-border)] flex items-center justify-center shrink-0">
+                    <Crown size={14} className="text-[var(--color-accent)]" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-[12.5px] font-semibold mb-0.5 text-[var(--color-text-primary)]">All Recommended Problems Solved!</div>
+                    <div className="text-[11px] text-[var(--color-muted)]">You're a true Grandmaster.</div>
+                  </div>
+                  <div className="text-[11px] text-[var(--color-muted)]">Completed</div>
                 </div>
-                <div className="text-[11px] text-[var(--color-muted)]">Pending</div>
-              </div>
+              )}
 
             </div>
           </div>
@@ -208,10 +239,10 @@ export default function DashboardPage() {
               <div className="glass-panel rounded-[14px] p-4">
                 <div className="text-[10.5px] text-[var(--color-muted)] uppercase tracking-[0.05em] mb-2.5">Resume match</div>
                 <div className="h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden mb-2.5">
-                  <div className="h-full bg-[var(--color-accent)] rounded-full" style={{ width: '0%' }}></div>
+                  <div className="h-full bg-[var(--color-accent)] rounded-full transition-all duration-1000" style={{ width: `${avgResumeScore}%` }}></div>
                 </div>
-                <div className="text-[20px] font-extrabold text-[var(--color-muted)]">N/A <span className="text-[11px] font-medium opacity-70">/ 100</span></div>
-                <div className="text-[9px] text-[var(--color-muted)] mt-1 leading-tight">Global score API missing</div>
+                <div className="text-[20px] font-extrabold text-[var(--color-text-primary)]">{avgResumeScore || 'N/A'} <span className="text-[11px] font-medium opacity-70">/ 100</span></div>
+                <div className="text-[9px] text-[var(--color-muted)] mt-1 leading-tight">Avg across {activeResumesCount} profile{activeResumesCount !== 1 ? 's' : ''}</div>
               </div>
               
               <div className="glass-panel rounded-[14px] p-4">

@@ -13,6 +13,16 @@ export function useProblems(difficulty?: string, page = 1) {
   })
 }
 
+export function useRecommendedProblems() {
+  return useQuery({
+    queryKey: ["problems", "recommended"],
+    queryFn: async () => {
+      const res = await api.get('/problems/recommended')
+      return res.data.data
+    },
+  })
+}
+
 export function useProblem(slug: string) {
   return useQuery({
     queryKey: ["problems", slug],

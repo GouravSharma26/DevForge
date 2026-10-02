@@ -2,7 +2,8 @@
 import { useState } from "react"
 
 import { useMe, useUpdateMe } from "@/hooks/useUser"
-import { useResumes, useDeleteResume, useUploadResume } from "@/hooks/useResume"
+import { useResumes, useDeleteResume, useUploadResume, useInterviews } from "@/hooks/useResume"
+import { useMatchHistory } from "@/hooks/useArena"
 import { useRouter } from "next/navigation"
 import { Flame, Trophy, Star, Edit3, Mail, Target, Clock, Shield, FileText, Plus, Trash2, ArrowRight } from "lucide-react"
 import { calculateRank } from "@/lib/rank"
@@ -11,6 +12,8 @@ export default function ProfilePage() {
   const router = useRouter()
   const { data: user, isLoading } = useMe()
   const { data: resumes = [], isLoading: resumesLoading } = useResumes()
+  const { data: interviews } = useInterviews()
+  const { data: matches } = useMatchHistory()
   const deleteResume = useDeleteResume()
   const uploadResume = useUploadResume()
 
@@ -185,12 +188,64 @@ export default function ProfilePage() {
             <span className="w-1.5 h-6 rounded-full bg-accent"></span>
             Recent Activity
           </h2>
-          <div className="py-12 flex flex-col items-center justify-center text-center border-2 border-dashed border-border rounded-2xl">
-            <div className="w-16 h-16 rounded-full bg-card flex items-center justify-center mb-4">
-              <Shield size={24} className="text-muted" />
-            </div>
-            <p className="text-muted font-medium">No recent activity</p>
-            <p className="text-muted text-sm mt-1">Start practicing or building your resume to see activity here.</p>
+          <div className="flex flex-col">
+            {(() => {
+              const completedInterviews = interviews?.filter((i: any) => i.status === "COMPLETED") || []
+              const completedMatches = matches || []
+              const forgeLogActivities = [
+                ...completedInterviews.map((i: any) => ({ ...i, type: 'INTERVIEW', date: new Date(i.createdAt) })),
+                ...completedMatches.map((m: any) => ({ ...m, type: 'MATCH', date: new Date(m.endedAt || m.createdAt) }))
+              ].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 10)
+
+              if (forgeLogActivities.length === 0) {
+                return (
+                  <div className="py-12 flex flex-col items-center justify-center text-center border-2 border-dashed border-border rounded-2xl">
+                    <div className="w-16 h-16 rounded-full bg-card flex items-center justify-center mb-4">
+                      <Shield size={24} className="text-muted" />
+                    </div>
+                    <p className="text-muted font-medium">No recent activity</p>
+                    <p className="text-muted text-sm mt-1">Start practicing or building your resume to see activity here.</p>
+                  </div>
+                )
+              }
+
+              return forgeLogActivities.map((activity: any) => {
+                if (activity.type === 'INTERVIEW') {
+                  return (
+                    <div key={`int-${activity.id}`} className="flex gap-4 py-4 border-b border-border last:border-0 hover:bg-card/30 px-4 -mx-4 rounded-xl transition-colors">
+                      <div className={`w-2.5 h-2.5 rounded-full mt-2 shrink-0 ${activity.score > 80 ? 'bg-[#10b981]' : activity.score > 60 ? 'bg-[#eab308]' : 'bg-[#ef4444]'}`}></div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <div className="font-bold text-primary">Mock Interview Protocol Graded — {activity.score}/100</div>
+                          <span className="text-xs text-muted font-mono">{activity.date.toLocaleDateString()}</span>
+                        </div>
+                        <div className="text-muted text-sm mt-1">{activity.jobTitle || 'General Software Engineer'} • AI Agent Session</div>
+                      </div>
+                    </div>
+                  )
+                } else if (activity.type === 'MATCH') {
+                  const isWinner = activity.winnerId === user?.id
+                  const opponent = activity.player1Id === user?.id ? activity.player2 : activity.player1
+                  return (
+                    <div key={`match-${activity.id}`} className="flex gap-4 py-4 border-b border-border last:border-0 hover:bg-card/30 px-4 -mx-4 rounded-xl transition-colors">
+                      <div className={`w-2.5 h-2.5 rounded-full mt-2 shrink-0 ${isWinner ? 'bg-highlight' : 'bg-red-500'}`}></div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <div className="font-bold text-primary">
+                            {isWinner ? "🏆 Won" : "💀 Lost"} PvP Battle vs {opponent?.username || "Unknown"}
+                          </div>
+                          <span className="text-xs text-muted font-mono">{activity.date.toLocaleDateString()}</span>
+                        </div>
+                        <div className="text-muted text-sm mt-1">
+                          {activity.problem?.title || "Problem"} {isWinner ? "• +100 XP" : ""}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }
+                return null
+              })
+            })()}
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest } from "fastify"
 import { authenticate } from "../plugins/authenticate"
-import { getProblems, getProblemBySlug, submitSolution } from "../services/problems.service"
+import { getProblems, getProblemBySlug, submitSolution, getRecommendedProblems } from "../services/problems.service"
 
 export async function problemRoutes(app: FastifyInstance) {
   // GET /api/problems
@@ -16,6 +16,21 @@ export async function problemRoutes(app: FastifyInstance) {
       const { difficulty, category, page = "1" } = req.query
       const result = await getProblems(difficulty, category, Number(page))
       return reply.send({ success: true, data: result })
+    }
+  )
+
+  // GET /api/problems/recommended
+  app.get(
+    "/recommended",
+    { preHandler: [authenticate] },
+    async (req, reply) => {
+      const { id: userId } = req.user as { id: string }
+      try {
+        const result = await getRecommendedProblems(userId)
+        return reply.send({ success: true, data: result })
+      } catch (err: any) {
+        return reply.status(500).send({ success: false, error: err.message })
+      }
     }
   )
 

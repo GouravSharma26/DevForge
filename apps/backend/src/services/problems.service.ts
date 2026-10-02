@@ -36,6 +36,49 @@ export async function getProblems(
   }
 }
 
+export async function getRecommendedProblems(userId: string) {
+  // Get all problems the user has solved
+  const solved = await prisma.submission.findMany({
+    where: { userId, status: "accepted" },
+    select: { problemId: true },
+  })
+  
+  const solvedIds = solved.map(s => s.problemId)
+  
+  // Find up to 3 problems they haven't solved yet
+  const recommendations = await prisma.problem.findMany({
+    where: {
+      id: { notIn: solvedIds }
+    },
+    take: 3,
+    orderBy: { order: "asc" },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      difficulty: true,
+      category: true,
+    }
+  })
+  
+  // If they somehow solved everything, just return the first 3 problems
+  if (recommendations.length === 0) {
+    return prisma.problem.findMany({
+      take: 3,
+      orderBy: { order: "asc" },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        difficulty: true,
+        category: true,
+      }
+    })
+  }
+  
+  return recommendations
+}
+
 export async function getProblemBySlug(slug: string) {
   return prisma.problem.findUnique({
     where: { slug },
