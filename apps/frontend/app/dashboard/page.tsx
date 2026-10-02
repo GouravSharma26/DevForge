@@ -176,7 +176,7 @@ export default function DashboardPage() {
                     {readinessScore}%
                   </div>
                   <div className="text-[9px] text-[var(--color-muted)] font-bold uppercase tracking-wide leading-tight mt-1">
-                    L6 Benchmark<br/>Tier 2 Target
+                    {user?.experienceLevel === 'SENIOR' ? 'L5/L6' : user?.experienceLevel === 'MID' ? 'L4' : 'L3'} Benchmark<br/>Tier {readinessScore >= 80 ? '1' : readinessScore >= 50 ? '2' : '3'} Target
                   </div>
                 </div>
               </div>
@@ -202,10 +202,10 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex justify-between items-center pt-4 border-t border-[var(--color-border)]">
-              <div className="text-[11px] text-[var(--color-muted)]">
-                Benchmark: <span className="text-[var(--color-text-primary)]">Meta / Google L5</span>
+              <div className="text-[11px] text-[var(--color-muted)] truncate max-w-[200px]">
+                Target: <span className="text-[var(--color-text-primary)]">{targetRole}</span>
               </div>
-              <button className="text-[11px] font-bold text-[var(--color-accent)] hover:text-[var(--color-highlight)]">
+              <button onClick={() => router.push('/interview/agent')} className="text-[11px] font-bold text-[var(--color-accent)] hover:text-[var(--color-highlight)] transition-colors">
                 Run Full Diagnostic →
               </button>
             </div>
