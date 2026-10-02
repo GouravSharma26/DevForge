@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useResumes, useInterviews, useStartInterview, useDeleteInterview, useUploadResume, useRenameInterview } from "@/hooks/useResume"
-import { Plus, ChevronDown, Bot, Code2, Trash2, Edit2, Download } from "lucide-react"
+import { Plus, ChevronDown, Bot, Code2, Trash2, Edit2, Download, Clock } from "lucide-react"
 import { useAuthStore } from "@/store/auth.store"
 import type { Interview, Resume } from "@devforge/shared-types"
 
@@ -194,23 +194,28 @@ export default function InterviewHubPage() {
               <div
                 key={interview.id}
                 onClick={() => router.push(`/resume/interview/${interview.id}`)}
-                className="glass-panel rounded-[16px] p-5 cursor-pointer flex flex-col justify-between transition-all hover:border-[var(--color-accent)] hover:-translate-y-1 group"
+                className="glass-panel rounded-[16px] p-5 cursor-pointer flex flex-col justify-between transition-all duration-300 hover:border-[var(--color-accent)] hover:-translate-y-1.5 hover:shadow-[0_8px_30px_rgba(234,88,12,0.12)] group bg-gradient-to-br from-[var(--color-surface-theme)] to-transparent relative overflow-hidden"
               >
-                <div className="flex justify-between items-start mb-4 gap-2">
+                {/* Subtle gradient orb in background */}
+                <div className="absolute -right-10 -top-10 w-32 h-32 bg-[var(--color-accent)] opacity-0 group-hover:opacity-10 blur-3xl transition-opacity duration-500 rounded-full pointer-events-none" />
+
+                <div className="flex justify-between items-start mb-4 gap-2 relative z-10">
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-[15px] font-bold text-[var(--color-text-primary)] m-0 mb-2 line-clamp-1">
+                    <h3 className="text-[15px] font-extrabold text-[var(--color-text-primary)] m-0 mb-2 line-clamp-1 group-hover:text-[var(--color-accent)] transition-colors">
                       {interview.title || interview.resume?.profileName || "Untitled Interview"}
                     </h3>
                     <div className="flex flex-wrap gap-2 items-center mt-1">
-                      <span className="text-[10px] px-2 py-1 rounded-[6px] bg-[var(--color-surface-theme)] text-[var(--color-text-secondary)] border border-[var(--color-border)] inline-block whitespace-nowrap truncate max-w-[120px]" title={interview.resume?.targetRole || "General Target"}>
+                      <span className="text-[10px] px-2 py-1 rounded-[6px] bg-[var(--color-surface-theme)] text-[var(--color-text-secondary)] border border-[var(--color-border)] inline-block whitespace-nowrap truncate max-w-[120px] shadow-sm" title={interview.resume?.targetRole || "General Target"}>
                         {interview.resume?.targetRole || "General Target"}
                       </span>
                       {interview.type === "AI_AGENT" ? (
-                        <span className="text-[10px] px-2 py-1 rounded-[6px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 inline-block whitespace-nowrap">
+                        <span className="text-[10px] px-2 py-1 rounded-[6px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 inline-flex items-center gap-1.5 whitespace-nowrap shadow-sm font-semibold">
+                          <Bot size={10} />
                           1-on-1 AI
                         </span>
                       ) : (
-                        <span className="text-[10px] px-2 py-1 rounded-[6px] bg-blue-500/10 text-blue-500 border border-blue-500/20 inline-block whitespace-nowrap">
+                        <span className="text-[10px] px-2 py-1 rounded-[6px] bg-blue-500/10 text-blue-500 border border-blue-500/20 inline-flex items-center gap-1.5 whitespace-nowrap shadow-sm font-semibold">
+                          <Code2 size={10} />
                           Standard Mock
                         </span>
                       )}
@@ -218,54 +223,61 @@ export default function InterviewHubPage() {
                   </div>
                   <div className="flex flex-wrap items-center gap-1.5 shrink-0 justify-end">
                     {interview.status === "COMPLETED" && interview.score != null ? (
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-extrabold text-[11px] border border-[var(--color-border)] bg-[var(--color-card)] ${interview.score >= 80 ? 'text-[#10b981]' : interview.score >= 60 ? 'text-[#eab308]' : 'text-[#ef4444]'}`}>
+                      <div 
+                        title={`Score: ${interview.score}/100`}
+                        className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-[12px] border border-[var(--color-border)] bg-[var(--color-card)] shadow-sm ${interview.score >= 80 ? 'text-[#10b981] border-[#10b981]/30 shadow-[#10b981]/20' : interview.score >= 60 ? 'text-[#eab308] border-[#eab308]/30 shadow-[#eab308]/20' : 'text-[#ef4444] border-[#ef4444]/30 shadow-[#ef4444]/20'}`}
+                      >
                         {interview.score}
                       </div>
                     ) : (
-                      <span className="text-[9px] px-2 py-1 rounded-[6px] bg-[#eab30815] text-[#eab308] border border-[#eab30830] whitespace-nowrap">
-                        IN PROGRESS
-                      </span>
+                      <div title="In Progress" className="w-9 h-9 rounded-full flex items-center justify-center border border-[#eab30840] bg-[#eab30815] text-[#eab308] shadow-[0_0_10px_rgba(234,179,8,0.2)]">
+                        <Clock size={16} className="animate-[spin_4s_linear_infinite]" />
+                      </div>
                     )}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        const newTitle = prompt("Enter new title:", interview.title || interview.resume?.profileName)
-                        if (newTitle) renameInterview.mutate({ id: interview.id, title: newTitle })
-                      }}
-                      disabled={renameInterview.isPending}
-                      className="text-[var(--color-text-primary)] opacity-40 hover:opacity-100 transition-opacity p-1.5"
-                      title="Rename Interview"
-                    >
-                      <Edit2 size={14} />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDownload(interview)
-                      }}
-                      className="text-[var(--color-text-primary)] opacity-40 hover:opacity-100 transition-opacity p-1.5"
-                      title="Download Report"
-                    >
-                      <Download size={14} />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        if (confirm("Delete this interview?")) deleteInterview.mutate(interview.id)
-                      }}
-                      disabled={deleteInterview.isPending}
-                      className="text-[#ef4444] opacity-40 hover:opacity-100 transition-opacity p-1.5"
-                      title="Delete Interview"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    
+                    <div className="flex items-center gap-1 ml-1 bg-[var(--color-surface-theme)] rounded-lg p-0.5 border border-transparent group-hover:border-[var(--color-border)] transition-all">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          const newTitle = prompt("Enter new title:", interview.title || interview.resume?.profileName)
+                          if (newTitle) renameInterview.mutate({ id: interview.id, title: newTitle })
+                        }}
+                        disabled={renameInterview.isPending}
+                        className="text-[var(--color-text-secondary)] opacity-0 group-hover:opacity-100 hover:text-[var(--color-accent)] hover:bg-[var(--color-card)] rounded-md transition-all p-1.5"
+                        title="Rename Interview"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDownload(interview)
+                        }}
+                        className="text-[var(--color-text-secondary)] opacity-0 group-hover:opacity-100 hover:text-blue-400 hover:bg-[var(--color-card)] rounded-md transition-all p-1.5"
+                        title="Download Report"
+                      >
+                        <Download size={14} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (confirm("Delete this interview?")) deleteInterview.mutate(interview.id)
+                        }}
+                        disabled={deleteInterview.isPending}
+                        className="text-[var(--color-text-secondary)] opacity-0 group-hover:opacity-100 hover:text-[#ef4444] hover:bg-[#ef4444]/10 rounded-md transition-all p-1.5"
+                        title="Delete Interview"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="flex justify-between items-center mt-2">
-                  <p className="text-[11px] text-[var(--color-muted)] m-0">
-                    {new Date(interview.createdAt).toLocaleDateString()}
+                <div className="flex justify-between items-center mt-3 pt-3 border-t border-[var(--color-border)]/50 relative z-10">
+                  <p className="text-[11px] text-[var(--color-muted)] font-medium m-0 flex items-center gap-1.5">
+                    <Clock size={12} className="opacity-50" />
+                    {new Date(interview.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                   </p>
-                  <span className="text-[11px] text-[var(--color-muted)] font-medium">
+                  <span className="text-[11px] text-[var(--color-text-secondary)] font-semibold bg-[var(--color-surface-theme)] px-2 py-0.5 rounded-full border border-[var(--color-border)]">
                     {(interview.questions || []).filter((q: any) => q.score != null).length} / {(interview.questions || []).length} Ans
                   </span>
                 </div>
