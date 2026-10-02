@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@450;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@450;600;700&family=Space+Grotesk:wght@600;700&display=swap');
 @import "tailwindcss";
 @config "../tailwind.config.mjs";
 
@@ -17,20 +17,24 @@
 }
 @layer base {
   :root, .ember {
-    /* EMBER GLASS THEME (Default) */
-    --bg-base: #171210;
-    --bg-surface: #1c1614;
-    --bg-card: rgba(255, 237, 213, 0.05);
-    --text-primary: #fdf6f0;
-    --text-secondary: #d4a373;
+    /* STITCH DESIGN SYSTEM (Ember Forge) */
+    --bg-base: #0c0d0e;
+    --bg-surface: #131417;
+    --bg-card: rgba(26, 28, 35, 0.85); /* #1a1c23 semi-transparent */
+    --text-primary: #e3e2e6;
+    --text-secondary: #e2bfb0;
     --text-muted: #8a7a6a;
-    --accent-primary: #ea580c;
-    --accent-light: #f59e0b;
-    --border-subtle: rgba(255, 180, 120, 0.14);
-    --border-subtle-rgb: 255 180 120;
-    --glass-bg: rgba(255, 237, 213, 0.05);
-    --glass-bg-rgb: 255 237 213;
-    --glass-border: rgba(255, 180, 120, 0.14);
+    --accent-primary: #ff6b00;
+    --accent-light: #ffb95f;
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-subtle-rgb: 255 255 255;
+    --glass-bg: rgba(19, 20, 23, 0.85);
+    --glass-bg-rgb: 19 20 23;
+    --glass-border: rgba(255, 255, 255, 0.06);
+    
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-violet: #8b5cf6;
   }
 
   .light {
@@ -81,15 +85,18 @@ body {
 
 .glass-panel {
     background: var(--glass-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
 }
 .glow-active {
-    box-shadow: 0 0 15px rgba(234, 88, 12, 0.2);
+    box-shadow: 0 0 24px -4px rgba(255, 107, 0, 0.2);
 }
 .text-glow {
-    text-shadow: 0 0 10px rgba(234, 88, 12, 0.3);
+    text-shadow: 0 0 16px rgba(255, 107, 0, 0.4);
+}
+.font-display {
+    font-family: 'Space Grotesk', sans-serif;
 }
 
 /* ── Scrollbar ── */

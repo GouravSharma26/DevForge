@@ -85,227 +85,264 @@ export default function DashboardPage() {
       
       <main className="relative z-10 px-10 pt-8 pb-16 max-w-[1180px] font-mono text-[var(--color-text-primary)]">
         
-        <div className="flex justify-between items-start mb-7 fade-up" style={{ animationDelay: '0.1s' }}>
+        {/* TOP NAVBAR / HEADER */}
+        <div className="flex justify-between items-center mb-8 fade-up" style={{ animationDelay: '0.1s' }}>
           <div>
-            <h1 className="text-[22px] font-extrabold tracking-[-0.01em] mb-1 text-[var(--color-text-primary)]">Welcome back, {user?.username || "Developer"}</h1>
-            <p className="text-[13px] text-[var(--color-muted)]">Your forge has been idle for 2 days — the readiness score is still holding.</p>
+            <div className="flex items-center gap-4 mb-2">
+              <h1 className="text-[32px] font-display font-bold tracking-[-0.01em] text-[var(--color-text-primary)]">
+                Welcome back, <span className="text-[var(--color-accent)]">{user?.username || "Developer"}</span> ⚔️
+              </h1>
+            </div>
+            <p className="text-[13px] text-[var(--color-muted)] font-mono">
+              Forge status: <span className="text-[var(--color-success)] font-semibold">Primed & Ready</span> — 2 critical interview recommendations pending for target:
+            </p>
           </div>
-          <div className="flex gap-2">
-            <div className="flex items-center gap-2 glass-panel px-3.5 py-2 rounded-[10px] text-[12px]">
-              <span className="font-bold text-[var(--color-text-primary)]">{user?.xp || 0}</span> <span className="text-[var(--color-muted)]">XP</span>
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col items-end mr-4">
+              <div className="text-[14px] font-display font-bold">Senior Frontend</div>
+              <div className="text-[14px] font-display font-bold text-[var(--color-text-secondary)]">Architect</div>
             </div>
-            <div className="flex items-center gap-2 glass-panel px-3.5 py-2 rounded-[10px] text-[12px] text-[var(--color-text-primary)]">
-              <Flame size={14} className="text-[var(--color-accent)]" /> {user?.streak || 0}-day streak
-            </div>
-          </div>
-        </div>
-
-        {/* ── Signature element: Forge Heat Gauge ── */}
-        <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-0 glass-panel rounded-[18px] overflow-hidden mb-6 fade-up" style={{ animationDelay: '0.2s' }}>
-          <div className="p-7.5 flex flex-col items-center justify-center border-r border-[var(--color-border)] relative p-8">
-            <div className="text-[11px] text-[var(--color-muted)] uppercase tracking-[0.06em] mb-3.5">Interview Readiness</div>
-            <div className="relative w-[168px] h-[168px]">
-              <svg width="168" height="168" viewBox="0 0 168 168">
-                <circle cx="84" cy="84" r="72" fill="none" stroke="var(--color-border)" strokeWidth="10"/>
-                <circle cx="84" cy="84" r="72" fill="none" stroke="url(#gaugeGrad)" strokeWidth="10"
-                  strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={dashOffset}
-                  transform="rotate(-90 84 84)"
-                  style={{ transition: 'stroke-dashoffset 1s ease-out' }}/>
-                <defs>
-                  <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="var(--color-accent)"/>
-                    <stop offset="100%" stopColor="var(--color-highlight)"/>
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <div className="text-[34px] font-extrabold text-[var(--color-accent)] text-glow leading-none">
-                  {readinessScore}%
-                </div>
-                <div className="text-[10.5px] text-[var(--color-muted)] mt-1">
-                  {readinessScore > 80 ? "Hot enough to interview" : "Requires practice"}
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-1.5 mt-4.5">
-              <div className="text-[9.5px] px-2 py-0.5 rounded-full border border-[var(--color-accent)] text-[var(--color-highlight)]">↑ Based on {completedInterviews.length} sessions</div>
-            </div>
-          </div>
-
-          <div className="p-6 md:p-[26px_30px]">
-            <div className="flex justify-between items-baseline mb-4.5">
-              <h2 className="text-[15px] font-bold text-[var(--color-text-primary)]">Next up in the forge</h2>
-              <a href="/paths" className="text-[11.5px] text-[var(--color-accent)] hover:underline">View full plan →</a>
-            </div>
-            <div className="flex flex-col gap-2">
-              
-              <div className="flex items-center gap-3 p-3 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-accent)] transition-all cursor-pointer" onClick={() => router.push('/interview')}>
-                <div className="w-[30px] h-[30px] rounded-lg bg-[var(--color-surface-theme)] border border-[var(--color-border)] flex items-center justify-center shrink-0">
-                  <Crown size={14} className="text-[var(--color-accent)]" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-[12.5px] font-semibold mb-0.5 text-[var(--color-text-primary)]">Finish Grandmaster: Off-by-one hunt</div>
-                  <div className="text-[11px] text-[var(--color-muted)]">2 of 4 run attempts used — pick it back up</div>
-                </div>
-                <button className="text-[11px] text-[var(--color-accent)] font-bold">Resume →</button>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-accent)] transition-all cursor-pointer" onClick={() => router.push('/interview')}>
-                <div className="w-[30px] h-[30px] rounded-lg bg-[var(--color-surface-theme)] border border-[var(--color-border)] flex items-center justify-center shrink-0">
-                  <Mic size={14} className="text-[var(--color-accent)]" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-[12.5px] font-semibold mb-0.5 text-[var(--color-text-primary)]">Round 3 mock interview — Senior Frontend</div>
-                  <div className="text-[11px] text-[var(--color-muted)]">Generated from your latest resume match</div>
-                </div>
-                <button className="text-[11px] text-[var(--color-accent)] font-bold">Start →</button>
-              </div>
-
-              {/* Dynamic Recommended Problems */}
-              {recommendedLoading ? (
-                <div className="flex items-center gap-3 p-3 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-card)] opacity-70">
-                  <div className="w-[30px] h-[30px] rounded-lg bg-[var(--color-surface-theme)] border border-[var(--color-border)] flex items-center justify-center shrink-0">
-                    <Puzzle size={14} className="text-[var(--color-accent)] animate-pulse" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-[12.5px] font-semibold mb-0.5 text-[var(--color-text-primary)]">Loading Recommendations...</div>
-                    <div className="text-[11px] text-[var(--color-muted)]">Fetching from your forge history</div>
-                  </div>
-                </div>
-              ) : recommendedProblems?.length > 0 ? (
-                recommendedProblems.map((prob: any) => (
-                  <div key={prob.id} className="flex items-center gap-3 p-3 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-accent)] transition-all cursor-pointer" onClick={() => router.push(`/problems/${prob.slug}`)}>
-                    <div className="w-[30px] h-[30px] rounded-lg bg-[var(--color-surface-theme)] border border-[var(--color-border)] flex items-center justify-center shrink-0">
-                      <Puzzle size={14} className="text-[var(--color-accent)]" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-[12.5px] font-semibold mb-0.5 text-[var(--color-text-primary)]">{prob.title}</div>
-                      <div className="text-[11px] text-[var(--color-muted)]">Recommended DSA Problem • {prob.difficulty}</div>
-                    </div>
-                    <div className="text-[11px] text-[var(--color-accent)] font-bold">Solve →</div>
-                  </div>
-                ))
-              ) : (
-                <div className="flex items-center gap-3 p-3 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-card)] opacity-70">
-                  <div className="w-[30px] h-[30px] rounded-lg bg-[var(--color-surface-theme)] border border-[var(--color-border)] flex items-center justify-center shrink-0">
-                    <Crown size={14} className="text-[var(--color-accent)]" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-[12.5px] font-semibold mb-0.5 text-[var(--color-text-primary)]">All Recommended Problems Solved!</div>
-                    <div className="text-[11px] text-[var(--color-muted)]">You're a true Grandmaster.</div>
-                  </div>
-                  <div className="text-[11px] text-[var(--color-muted)]">Completed</div>
-                </div>
-              )}
-
-            </div>
+            <button className="px-4 py-2 bg-[var(--bg-surface)] border border-[var(--color-border)] rounded-md text-[12px] font-bold text-[var(--color-text-primary)] hover:border-[var(--color-text-primary)] transition-colors">
+              Sync Git Solves
+            </button>
+            <button onClick={() => router.push('/arena')} className="px-4 py-2 bg-[var(--color-accent)] text-[#0c0d0e] border border-[var(--color-accent)] rounded-md text-[12px] font-bold hover:shadow-[0_0_16px_rgba(255,107,0,0.4)] transition-all">
+              Enter PvP Matchmaking
+            </button>
           </div>
         </div>
 
-        {/* ── Tools + Forge Log ── */}
-        <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-5">
-          <div className="glass-panel rounded-[16px] p-[22px] fade-up" style={{ animationDelay: '0.3s' }}>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-[13.5px] font-bold text-[var(--color-text-primary)]">Quick launch</h3>
-              <span className="text-[11px] text-[var(--color-muted)]">6 tools</span>
+        {/* ── CORE DIAGNOSTICS & NEXT UP ── */}
+        <div className="grid grid-cols-1 md:grid-cols-[440px_1fr] gap-5 mb-5 fade-up" style={{ animationDelay: '0.2s' }}>
+          
+          {/* Readiness Index */}
+          <div className="glass-panel rounded-xl p-6 relative flex flex-col">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <div className="text-[10px] text-[var(--color-success)] uppercase tracking-widest font-bold mb-1">Diagnostic Telemetry</div>
+                <h2 className="text-[20px] font-display font-bold">Interview Readiness Index</h2>
+              </div>
+              <div className="px-2 py-1 bg-[rgba(16,185,129,0.15)] text-[var(--color-success)] text-[10px] font-bold rounded-sm border border-[rgba(16,185,129,0.3)]">
+                +14% this week
+              </div>
             </div>
             
-            <div className="grid grid-cols-3 gap-2.5">
-              <button onClick={() => router.push('/arena')} className="p-3 border border-[var(--color-border)] bg-[var(--color-card)] rounded-[12px] text-center transition-all hover:border-[var(--color-accent)] hover:-translate-y-0.5 group text-[var(--color-text-primary)]">
-                <div className="flex justify-center mb-2 opacity-60 group-hover:opacity-100 group-hover:text-[var(--color-accent)] transition-all"><Zap size={20} /></div>
-                <div className="text-[11.5px] font-bold mb-0.5">PvP Arena</div>
-                <div className="text-[10px] text-[var(--color-muted)]">Live battles</div>
-              </button>
+            <div className="flex-1 flex items-center justify-between gap-6 mb-6">
+              <div className="relative w-[140px] h-[140px] shrink-0">
+                <svg width="140" height="140" viewBox="0 0 140 140">
+                  <circle cx="70" cy="70" r="60" fill="none" stroke="var(--color-border)" strokeWidth="8"/>
+                  <circle cx="70" cy="70" r="60" fill="none" stroke="url(#gaugeGrad)" strokeWidth="8"
+                    strokeLinecap="round" strokeDasharray={376.99} strokeDashoffset={376.99 - (readinessScore / 100) * 376.99}
+                    transform="rotate(-90 70 70)"
+                    style={{ transition: 'stroke-dashoffset 1s ease-out' }}/>
+                  <defs>
+                    <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="var(--color-accent)"/>
+                      <stop offset="100%" stopColor="var(--color-success)"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                  <div className="text-[28px] font-display font-bold text-[var(--color-text-primary)] leading-none mb-1 text-glow">
+                    {readinessScore}%
+                  </div>
+                  <div className="text-[9px] text-[var(--color-muted)] font-bold uppercase tracking-wide leading-tight mt-1">
+                    L6 Benchmark<br/>Tier 2 Target
+                  </div>
+                </div>
+              </div>
               
-              <button onClick={() => router.push('/resume')} className="p-3 border border-[var(--color-border)] bg-[var(--color-card)] rounded-[12px] text-center transition-all hover:border-[var(--color-accent)] hover:-translate-y-0.5 group text-[var(--color-text-primary)]">
-                <div className="flex justify-center mb-2 opacity-60 group-hover:opacity-100 group-hover:text-[var(--color-accent)] transition-all"><FileText size={20} /></div>
-                <div className="text-[11.5px] font-bold mb-0.5">Resumes</div>
-                <div className="text-[10px] text-[var(--color-muted)]">{resumesLoading ? "..." : activeResumesCount} profiles</div>
-              </button>
-              
-              <button onClick={() => router.push('/interview')} className="p-3 border border-[var(--color-border)] bg-[var(--color-card)] rounded-[12px] text-center transition-all hover:border-[var(--color-accent)] hover:-translate-y-0.5 group text-[var(--color-text-primary)]">
-                <div className="flex justify-center mb-2 opacity-60 group-hover:opacity-100 group-hover:text-[var(--color-accent)] transition-all"><Crown size={20} /></div>
-                <div className="text-[11.5px] font-bold mb-0.5">Grandmaster</div>
-                <div className="text-[10px] text-[var(--color-muted)]">Sandbox mode</div>
-              </button>
-              
-              <button onClick={() => router.push('/problems')} className="p-3 border border-[var(--color-border)] bg-[var(--color-card)] rounded-[12px] text-center transition-all hover:border-[var(--color-accent)] hover:-translate-y-0.5 group text-[var(--color-text-primary)]">
-                <div className="flex justify-center mb-2 opacity-60 group-hover:opacity-100 group-hover:text-[var(--color-accent)] transition-all"><Puzzle size={20} /></div>
-                <div className="text-[11.5px] font-bold mb-0.5">Problems</div>
-                <div className="text-[10px] text-[var(--color-muted)]">DSA Editor</div>
-              </button>
-              
-              <button onClick={() => router.push('/interview')} className="p-3 border border-[var(--color-border)] bg-[var(--color-card)] rounded-[12px] text-center transition-all hover:border-[var(--color-accent)] hover:-translate-y-0.5 group text-[var(--color-text-primary)]">
-                <div className="flex justify-center mb-2 opacity-60 group-hover:opacity-100 group-hover:text-[var(--color-accent)] transition-all"><Mic size={20} /></div>
-                <div className="text-[11.5px] font-bold mb-0.5">Interview</div>
-                <div className="text-[10px] text-[var(--color-muted)]">{interviewsLoading ? "..." : interviewsCount} total</div>
-              </button>
-              
-              <button onClick={() => router.push('/paths')} className="p-3 border border-[var(--color-border)] bg-[var(--color-card)] rounded-[12px] text-center transition-all hover:border-[var(--color-accent)] hover:-translate-y-0.5 group text-[var(--color-text-primary)]">
-                <div className="flex justify-center mb-2 opacity-60 group-hover:opacity-100 group-hover:text-[var(--color-accent)] transition-all"><Route size={20} /></div>
-                <div className="text-[11.5px] font-bold mb-0.5">Paths</div>
-                <div className="text-[10px] text-[var(--color-muted)]">Tracks</div>
-              </button>
+              <div className="flex-1 flex flex-col gap-3.5">
+                <div>
+                  <div className="flex justify-between text-[11px] mb-1.5"><span className="text-[var(--color-text-secondary)]">DSA & Algorithms</span><span className="font-bold">85%</span></div>
+                  <div className="h-1 bg-[var(--bg-base)] rounded-full overflow-hidden"><div className="h-full bg-[var(--color-accent)]" style={{width: '85%'}}></div></div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-[11px] mb-1.5"><span className="text-[var(--color-text-secondary)]">System Architecture</span><span className="font-bold">62%</span></div>
+                  <div className="h-1 bg-[var(--bg-base)] rounded-full overflow-hidden"><div className="h-full bg-[var(--color-warning)]" style={{width: '62%'}}></div></div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-[11px] mb-1.5"><span className="text-[var(--color-text-secondary)]">Behavioral & Leadership</span><span className="font-bold">98%</span></div>
+                  <div className="h-1 bg-[var(--bg-base)] rounded-full overflow-hidden"><div className="h-full bg-[var(--color-success)]" style={{width: '98%'}}></div></div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-[11px] mb-1.5"><span className="text-[var(--color-text-secondary)]">Live Coding Velocity</span><span className="font-bold">74%</span></div>
+                  <div className="h-1 bg-[var(--bg-base)] rounded-full overflow-hidden"><div className="h-full bg-[var(--color-accent)]" style={{width: '74%'}}></div></div>
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mt-5">
-              <div className="glass-panel rounded-[14px] p-4 flex flex-col justify-between hover:border-[var(--color-accent)] transition-all group">
-                <div>
-                  <div className="flex items-center gap-1.5 text-[10.5px] text-[var(--color-muted)] uppercase tracking-[0.05em] mb-2.5">
-                    <FileText size={12} className="text-[var(--color-accent)] opacity-70 group-hover:opacity-100 transition-opacity" /> Resume match
-                  </div>
-                  <div className="h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden mb-2.5">
-                    <div className="h-full bg-[var(--color-accent)] rounded-full transition-all duration-1000" style={{ width: `${avgResumeScore}%` }}></div>
-                  </div>
-                  <div className="text-[20px] font-extrabold text-[var(--color-text-primary)]">{avgResumeScore || 'N/A'} <span className="text-[11px] font-medium opacity-70">/ 100</span></div>
-                </div>
-                <div className="text-[9px] text-[var(--color-muted)] mt-1 leading-tight">Avg across {activeResumesCount} profile{activeResumesCount !== 1 ? 's' : ''}</div>
+            <div className="flex justify-between items-center pt-4 border-t border-[var(--color-border)]">
+              <div className="text-[11px] text-[var(--color-muted)]">
+                Benchmark: <span className="text-[var(--color-text-primary)]">Meta / Google L5</span>
               </div>
-              
-              <div className="glass-panel rounded-[14px] p-4 flex flex-col justify-between hover:border-[var(--color-accent)] transition-all group">
-                <div>
-                  <div className="flex items-center gap-1.5 text-[10.5px] text-[var(--color-muted)] uppercase tracking-[0.05em] mb-2.5">
-                    <Mic size={12} className="text-[var(--color-accent)] opacity-70 group-hover:opacity-100 transition-opacity" /> Last interview
-                  </div>
-                  <div className="h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden mb-2.5">
-                    <div className="h-full bg-[var(--color-accent)] rounded-full transition-all duration-1000" style={{ width: `${lastInterviewScore}%` }}></div>
-                  </div>
-                  <div className="text-[20px] font-extrabold text-[var(--color-text-primary)]">{lastInterviewScore} <span className="text-[11px] text-[var(--color-muted)] font-medium">/ 100</span></div>
-                </div>
-                <div className="text-[9px] text-[var(--color-muted)] mt-1 leading-tight">Mock Protocol Graded</div>
-              </div>
-              
-              <div className="glass-panel rounded-[14px] p-4 flex flex-col justify-between hover:border-[var(--color-accent)] transition-all group">
-                <div>
-                  <div className="flex items-center gap-1.5 text-[10.5px] text-[var(--color-muted)] uppercase tracking-[0.05em] mb-2.5">
-                    <Zap size={12} className="text-[var(--color-accent)] opacity-70 group-hover:opacity-100 transition-opacity" /> Arena Win Rate
-                  </div>
-                  <div className="h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden mb-2.5">
-                    <div className="h-full bg-[var(--color-accent)] rounded-full transition-all duration-1000" style={{ width: `${arenaWinRate}%` }}></div>
-                  </div>
-                  <div className="text-[20px] font-extrabold text-[var(--color-text-primary)]">{arenaWinRate}% <span className="text-[11px] font-medium opacity-70 text-[var(--color-muted)]">W/R</span></div>
-                </div>
-                <div className="text-[10px] text-[var(--color-muted)] leading-tight">Total Matches: {matchesPlayed}</div>
-              </div>
+              <button className="text-[11px] font-bold text-[var(--color-accent)] hover:text-[var(--color-highlight)]">
+                Run Full Diagnostic →
+              </button>
             </div>
           </div>
 
-          <div className="glass-panel rounded-[16px] p-[22px] fade-up" style={{ animationDelay: '0.4s' }}>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-[13.5px] font-bold text-[var(--color-text-primary)]">Forge log</h3>
+          {/* Next Up in the Forge */}
+          <div className="glass-panel rounded-xl p-6">
+            <div className="flex justify-between items-baseline mb-5">
+              <div>
+                <div className="text-[10px] text-[var(--color-warning)] uppercase tracking-widest font-bold mb-1">Priority Protocol</div>
+                <h2 className="text-[20px] font-display font-bold text-[var(--color-text-primary)]">Next up in the Forge</h2>
+              </div>
+              <a href="/paths" className="text-[11.5px] font-bold text-[var(--color-text-primary)] hover:text-[var(--color-accent)]">View Adaptive Plan →</a>
+            </div>
+            
+            <div className="flex flex-col gap-2.5">
+              <div className="flex items-start gap-4 p-4 rounded-lg border border-[var(--color-border)] bg-[var(--bg-card)] hover:border-[var(--color-warning)] transition-all">
+                <div className="mt-0.5"><Crown size={16} className="text-[var(--color-warning)]" /></div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="text-[14px] font-bold text-[var(--color-text-primary)]">Finish Grandmaster: Off-by-one hunt</div>
+                    <span className="text-[9px] px-1.5 py-0.5 border border-[var(--color-warning)] text-[var(--color-warning)] rounded uppercase">Medium</span>
+                    <span className="text-[9px] text-[var(--color-muted)]">+240 XP</span>
+                  </div>
+                  <div className="text-[12px] text-[var(--color-muted)]">2 of 4 run attempts used — memory leak contention bug</div>
+                </div>
+                <button onClick={() => router.push('/interview')} className="px-3 py-1.5 border border-[var(--color-border)] rounded text-[11px] font-bold hover:border-[var(--color-text-primary)]">
+                  Resume →
+                </button>
+              </div>
+
+              <div className="flex items-start gap-4 p-4 rounded-lg border border-[var(--color-accent)] bg-[rgba(255,107,0,0.05)] transition-all glow-active">
+                <div className="mt-0.5"><Mic size={16} className="text-[var(--color-accent)]" /></div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="text-[14px] font-bold text-[var(--color-text-primary)]">Round 3 Mock: Senior Frontend Architecture</div>
+                    <span className="text-[9px] px-1.5 py-0.5 border border-[var(--color-accent)] text-[var(--color-accent)] rounded uppercase bg-[rgba(255,107,0,0.1)]">AI Voice</span>
+                  </div>
+                  <div className="text-[12px] text-[var(--color-text-secondary)]">Simulate Meta E5 round · React Internals & Virtualized Grid</div>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <span className="text-[9px] text-[var(--color-accent)] font-bold uppercase tracking-wider">Recommended Now</span>
+                  <button onClick={() => router.push('/interview')} className="px-3 py-1.5 bg-[var(--color-accent)] text-[#0c0d0e] rounded text-[11px] font-bold shadow-[0_0_10px_rgba(255,107,0,0.3)] hover:opacity-90">
+                    Start Mock →
+                  </button>
+                </div>
+              </div>
+
+              {recommendedLoading ? (
+                <div className="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--bg-card)] opacity-50 flex items-center justify-center">
+                  <div className="text-[12px] font-bold animate-pulse text-[var(--color-accent)]">Analyzing telemetry for recommendations...</div>
+                </div>
+              ) : recommendedProblems?.length > 0 ? (
+                recommendedProblems.slice(0, 2).map((prob: any) => (
+                  <div key={prob.id} className="flex items-start gap-4 p-4 rounded-lg border border-[var(--color-border)] bg-[var(--bg-card)] hover:border-[var(--color-success)] transition-all">
+                    <div className="mt-0.5"><Puzzle size={16} className="text-[var(--color-success)]" /></div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="text-[14px] font-bold text-[var(--color-text-primary)]">{prob.title}</div>
+                        <span className={`text-[9px] px-1.5 py-0.5 border rounded uppercase ${prob.difficulty === 'EASY' ? 'border-[var(--color-success)] text-[var(--color-success)]' : prob.difficulty === 'MEDIUM' ? 'border-[var(--color-warning)] text-[var(--color-warning)]' : 'border-[#ef4444] text-[#ef4444]'}`}>{prob.difficulty}</span>
+                        <span className="text-[9px] text-[var(--color-muted)]">+{prob.difficulty === 'EASY' ? '100' : prob.difficulty === 'MEDIUM' ? '250' : '500'} XP</span>
+                      </div>
+                      <div className="text-[12px] text-[var(--color-muted)]">Algorithmic priority targeted for your upcoming interviews</div>
+                    </div>
+                    <button onClick={() => router.push(`/problems/${prob.slug}`)} className="px-3 py-1.5 border border-[var(--color-border)] rounded text-[11px] font-bold hover:border-[var(--color-text-primary)]">
+                      Solve →
+                    </button>
+                  </div>
+                ))
+              ) : null}
+            </div>
+          </div>
+        </div>
+
+        {/* ── BOTTOM SECTION: TOOLS & LOG ── */}
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_400px] gap-5 fade-up" style={{ animationDelay: '0.3s' }}>
+          
+          {/* Quick Launch Arena */}
+          <div className="glass-panel rounded-xl p-6">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-[14px] font-display font-bold uppercase tracking-wider text-[var(--color-text-primary)]">Quick Launch Arena</h3>
+              <span className="text-[11px] text-[var(--color-success)] font-bold">5 modules active</span>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+              <div className="p-4 border border-[var(--color-border)] bg-[var(--bg-card)] rounded-lg flex flex-col justify-between hover:border-[var(--color-accent)] transition-colors group cursor-pointer" onClick={() => router.push('/arena')}>
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Zap size={14} className="text-[var(--color-accent)]" />
+                    <span className="text-[13px] font-bold">PvP Arena</span>
+                  </div>
+                  <div className="text-[11px] text-[var(--color-muted)] mb-3">Live 1v1 Ranked Duel</div>
+                </div>
+                <div className="flex justify-between items-center text-[11px]">
+                  <span className="text-[var(--color-success)] font-bold">Queue: ~4s</span>
+                  <span className="font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)]">Match →</span>
+                </div>
+              </div>
+              
+              <div className="p-4 border border-[var(--color-border)] bg-[var(--bg-card)] rounded-lg flex flex-col justify-between hover:border-[var(--color-accent)] transition-colors group cursor-pointer" onClick={() => router.push('/resume')}>
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <FileText size={14} className="text-[var(--color-warning)]" />
+                    <span className="text-[13px] font-bold">ATS Matcher</span>
+                  </div>
+                  <div className="text-[11px] text-[var(--color-muted)] mb-3">{activeResumesCount} PROFILE TUNED</div>
+                </div>
+                <div className="flex justify-between items-center text-[11px]">
+                  <span className="font-bold text-[var(--color-warning)]">{avgResumeScore}/100 Score</span>
+                  <span className="font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)]">Edit →</span>
+                </div>
+              </div>
+              
+              <div className="p-4 border border-[var(--color-border)] bg-[var(--bg-card)] rounded-lg flex flex-col justify-between hover:border-[var(--color-accent)] transition-colors group cursor-pointer" onClick={() => router.push('/interview')}>
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Crown size={14} className="text-[var(--color-violet)]" />
+                    <span className="text-[13px] font-bold">Grandmaster</span>
+                  </div>
+                  <div className="text-[11px] text-[var(--color-muted)] mb-3">Sandbox Debugging</div>
+                </div>
+                <div className="flex justify-between items-center text-[11px]">
+                  <span className="text-[var(--color-muted)]">Custom Testcases</span>
+                  <span className="font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)]">Launch →</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom telemetry bar */}
+            <div className="flex items-center justify-between p-3 border-t border-[var(--color-border)] text-[11px]">
+              <div className="flex items-center gap-3">
+                <span className="font-bold uppercase tracking-wider text-[var(--color-muted)]">Overall Velocity</span>
+                <span className="font-bold text-[var(--color-text-primary)]">78% READY</span>
+              </div>
+              <div className="flex-1 max-w-[200px] h-1.5 bg-[var(--bg-base)] rounded-full mx-4 overflow-hidden flex">
+                <div className="h-full bg-[var(--color-success)]" style={{width: '60%'}}></div>
+                <div className="h-full bg-[var(--color-warning)]" style={{width: '20%'}}></div>
+                <div className="h-full bg-[var(--color-accent)]" style={{width: '10%'}}></div>
+              </div>
+              <div className="font-bold text-[var(--color-muted)]">Level 14 Artisan</div>
+            </div>
+          </div>
+          
+          {/* Forge Live Feed (Log) */}
+          <div className="glass-panel rounded-xl p-6 flex flex-col max-h-[290px]">
+            <div className="flex justify-between items-center mb-5 shrink-0">
+              <h3 className="text-[14px] font-display font-bold uppercase tracking-wider text-[var(--color-text-primary)]">Forge Live Feed</h3>
               <span className="text-[11px] text-[var(--color-muted)]">Recent Activity</span>
             </div>
             
-            <div className="flex flex-col max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="flex flex-col overflow-y-auto pr-2 custom-scrollbar gap-3 flex-1">
               {forgeLogActivities.length > 0 ? (
                 forgeLogActivities.map((activity: any) => {
                   if (activity.type === 'INTERVIEW') {
                     return (
-                      <div key={`int-${activity.id}`} className="flex gap-2.5 py-2.5 border-b border-[var(--color-border)] last:border-0 text-[11.5px]">
-                        <div className={`w-1.5 h-1.5 rounded-full mt-[5px] shrink-0 ${activity.score > 80 ? 'bg-[#10b981]' : activity.score > 60 ? 'bg-[#eab308]' : 'bg-[#ef4444]'}`}></div>
-                        <div>
-                          <div className="font-semibold text-[var(--color-text-primary)]">Mock Interview Protocol Graded — {activity.score}/100</div>
-                          <div className="text-[var(--color-muted)] text-[10.5px] mt-0.5">{activity.jobTitle || 'General Software Engineer'} · {formatDate(activity.createdAt)}</div>
+                      <div key={`int-${activity.id}`} className="p-3 border border-[var(--color-border)] bg-[var(--bg-card)] rounded-lg text-[11px] shrink-0">
+                        <div className="flex justify-between items-start mb-1">
+                          <div className="font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
+                            <span className="text-[14px]">🎙️</span> Mock Protocol Graded — {activity.score}/100
+                          </div>
+                          <button className="text-[9px] uppercase font-bold text-[var(--color-muted)] hover:text-[var(--color-text-primary)] border border-[var(--color-border)] px-1.5 py-0.5 rounded">View</button>
+                        </div>
+                        <div className="text-[var(--color-text-secondary)] pl-6">
+                          {activity.jobTitle || 'General Software Engineer'}
+                        </div>
+                        <div className="text-[var(--color-muted)] text-[9px] pl-6 mt-1">
+                          {formatDate(activity.createdAt)}
                         </div>
                       </div>
                     )
@@ -313,15 +350,18 @@ export default function DashboardPage() {
                     const isWinner = activity.winnerId === user?.id
                     const opponent = activity.player1Id === user?.id ? activity.player2 : activity.player1
                     return (
-                      <div key={`match-${activity.id}`} className="flex gap-2.5 py-2.5 border-b border-[var(--color-border)] last:border-0 text-[11.5px]">
-                        <div className={`w-1.5 h-1.5 rounded-full mt-[5px] shrink-0 ${isWinner ? 'bg-[var(--color-highlight)]' : 'bg-[#ef4444]'}`}></div>
-                        <div>
-                          <div className="font-semibold text-[var(--color-text-primary)]">
-                            {isWinner ? "🏆 Won" : "💀 Lost"} PvP Battle vs {opponent?.username || "Unknown"}
+                      <div key={`match-${activity.id}`} className="p-3 border border-[var(--color-border)] bg-[var(--bg-card)] rounded-lg text-[11px] shrink-0">
+                        <div className="flex justify-between items-start mb-1">
+                          <div className="font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
+                            <span className="text-[14px]">{isWinner ? "🏆" : "💀"}</span> {isWinner ? "Victory" : "Defeat"} vs {opponent?.username || "Unknown"}
                           </div>
-                          <div className="text-[var(--color-muted)] text-[10.5px] mt-0.5">
-                            {activity.problem?.title || "Problem"} {isWinner ? "· +100 XP" : ""} · {formatDate(activity.endedAt || activity.createdAt)}
-                          </div>
+                          <button className="text-[9px] uppercase font-bold text-[var(--color-muted)] hover:text-[var(--color-text-primary)] border border-[var(--color-border)] px-1.5 py-0.5 rounded">{isWinner ? "Diff Code" : "Revenge X"}</button>
+                        </div>
+                        <div className="text-[var(--color-text-secondary)] pl-6">
+                          {activity.problem?.title || "Problem"} {isWinner ? "· +100 XP" : ""}
+                        </div>
+                        <div className="text-[var(--color-muted)] text-[9px] pl-6 mt-1">
+                          {formatDate(activity.endedAt || activity.createdAt)}
                         </div>
                       </div>
                     )
@@ -329,14 +369,14 @@ export default function DashboardPage() {
                   return null
                 })
               ) : (
-                <div className="text-[11.5px] text-[var(--color-muted)] italic py-2">
+                <div className="text-[11px] text-[var(--color-muted)] italic p-4 text-center border border-[var(--color-border)] rounded-lg border-dashed">
                   No activity tracked yet.
                 </div>
               )}
             </div>
           </div>
-        </div>
 
+        </div>
       </main>
     </>
   )
