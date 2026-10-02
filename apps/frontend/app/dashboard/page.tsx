@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Flame, Crown, Mic, Puzzle, Zap, FileText, Route } from "lucide-react"
+import { Flame, Crown, Mic, Puzzle, Zap, FileText, Route, Swords } from "lucide-react"
 import { useAuthStore } from "@/store/auth.store"
 import { useResumes, useInterviews } from "@/hooks/useResume"
 import { useMatchHistory } from "@/hooks/useArena"
@@ -94,14 +94,14 @@ export default function DashboardPage() {
     <>
       <div className="fixed inset-0 z-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 800px 500px at 80% -10%, var(--glass-border), transparent 60%)' }} />
       
-      <main className="relative z-10 px-10 pt-8 pb-16 max-w-[1180px] font-mono text-[var(--color-text-primary)]">
+      <main className="relative z-10 px-10 pt-8 pb-16 max-w-[1180px] font-sans text-[var(--color-text-primary)]">
         
         {/* TOP NAVBAR / HEADER */}
         <div className="flex justify-between items-center mb-8 fade-up" style={{ animationDelay: '0.1s' }}>
           <div>
             <div className="flex items-center gap-4 mb-2">
-              <h1 className="text-[32px] font-display font-bold tracking-[-0.01em] text-[var(--color-text-primary)]">
-                Welcome back, <span className="text-[var(--color-accent)]">{user?.username || "Developer"}</span> ⚔️
+              <h1 className="text-[32px] font-display font-bold tracking-[-0.01em] text-[var(--color-text-primary)] flex items-center gap-3">
+                Welcome back, <span className="text-[var(--color-accent)]">{user?.username || "Developer"}</span> <Swords className="text-[var(--color-muted)]" size={28} />
               </h1>
             </div>
             <p className="text-[13px] text-[var(--color-muted)] font-mono">
