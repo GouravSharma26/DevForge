@@ -45,7 +45,7 @@ async function handleSubmit() {
       ? form
       : { email: form.email, password: form.password }
     const res = await api.post(endpoint, payload)
-    setAuth(res.data.data.user, res.data.data.token)
+    setAuth(res.data.data.user)
     router.push("/dashboard")
   } catch (err: any) {
     const raw = err?.response?.data?.error
