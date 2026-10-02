@@ -196,33 +196,33 @@ export default function InterviewHubPage() {
                 onClick={() => router.push(`/resume/interview/${interview.id}`)}
                 className="glass-panel rounded-[16px] p-5 cursor-pointer flex flex-col justify-between transition-all hover:border-[var(--color-accent)] hover:-translate-y-1 group"
               >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-[15px] font-bold text-[var(--color-text-primary)] m-0 mb-1 line-clamp-1">
+                <div className="flex justify-between items-start mb-4 gap-2">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-[15px] font-bold text-[var(--color-text-primary)] m-0 mb-2 line-clamp-1">
                       {interview.title || interview.resume?.profileName || "Untitled Interview"}
                     </h3>
-                    <div className="flex gap-2 items-center">
-                      <span className="text-[10px] px-2 py-1 rounded-[6px] bg-[var(--color-surface-theme)] text-[var(--color-text-secondary)] border border-[var(--color-border)] inline-block">
+                    <div className="flex flex-wrap gap-2 items-center mt-1">
+                      <span className="text-[10px] px-2 py-1 rounded-[6px] bg-[var(--color-surface-theme)] text-[var(--color-text-secondary)] border border-[var(--color-border)] inline-block whitespace-nowrap truncate max-w-[120px]" title={interview.resume?.targetRole || "General Target"}>
                         {interview.resume?.targetRole || "General Target"}
                       </span>
                       {interview.type === "AI_AGENT" ? (
-                        <span className="text-[10px] px-2 py-1 rounded-[6px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 inline-block">
+                        <span className="text-[10px] px-2 py-1 rounded-[6px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 inline-block whitespace-nowrap">
                           1-on-1 AI
                         </span>
                       ) : (
-                        <span className="text-[10px] px-2 py-1 rounded-[6px] bg-blue-500/10 text-blue-500 border border-blue-500/20 inline-block">
+                        <span className="text-[10px] px-2 py-1 rounded-[6px] bg-blue-500/10 text-blue-500 border border-blue-500/20 inline-block whitespace-nowrap">
                           Standard Mock
                         </span>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-1.5 shrink-0 justify-end">
                     {interview.status === "COMPLETED" && interview.score != null ? (
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-[13px] border border-[var(--color-border)] bg-[var(--color-card)] ${interview.score >= 80 ? 'text-[#10b981]' : interview.score >= 60 ? 'text-[#eab308]' : 'text-[#ef4444]'}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-extrabold text-[11px] border border-[var(--color-border)] bg-[var(--color-card)] ${interview.score >= 80 ? 'text-[#10b981]' : interview.score >= 60 ? 'text-[#eab308]' : 'text-[#ef4444]'}`}>
                         {interview.score}
                       </div>
                     ) : (
-                      <span className="text-[10px] px-2 py-1 rounded-[6px] bg-[#eab30815] text-[#eab308] border border-[#eab30830]">
+                      <span className="text-[9px] px-2 py-1 rounded-[6px] bg-[#eab30815] text-[#eab308] border border-[#eab30830] whitespace-nowrap">
                         IN PROGRESS
                       </span>
                     )}
@@ -233,20 +233,20 @@ export default function InterviewHubPage() {
                         if (newTitle) renameInterview.mutate({ id: interview.id, title: newTitle })
                       }}
                       disabled={renameInterview.isPending}
-                      className="text-[var(--color-text-primary)] opacity-40 hover:opacity-100 transition-opacity p-1"
+                      className="text-[var(--color-text-primary)] opacity-40 hover:opacity-100 transition-opacity p-1.5"
                       title="Rename Interview"
                     >
-                      <Edit2 size={16} />
+                      <Edit2 size={14} />
                     </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
                         handleDownload(interview)
                       }}
-                      className="text-[var(--color-text-primary)] opacity-40 hover:opacity-100 transition-opacity p-1"
+                      className="text-[var(--color-text-primary)] opacity-40 hover:opacity-100 transition-opacity p-1.5"
                       title="Download Report"
                     >
-                      <Download size={16} />
+                      <Download size={14} />
                     </button>
                     <button
                       onClick={(e) => {
@@ -254,10 +254,10 @@ export default function InterviewHubPage() {
                         if (confirm("Delete this interview?")) deleteInterview.mutate(interview.id)
                       }}
                       disabled={deleteInterview.isPending}
-                      className="text-[#ef4444] opacity-40 hover:opacity-100 transition-opacity p-1"
+                      className="text-[#ef4444] opacity-40 hover:opacity-100 transition-opacity p-1.5"
                       title="Delete Interview"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={14} />
                     </button>
                   </div>
                 </div>

@@ -115,7 +115,14 @@ Ask technical questions one by one. Wait for the candidate's answer before proce
       ${history.map(h => `${h.role === 'user' ? 'Candidate' : 'Interviewer'}: ${h.content}`).join("\\n\\n")}`
 
       const result = await evalModel.generateContent(prompt)
-      const parsed = JSON.parse(result.response.text())
+      let textResponse = result.response.text()
+      
+      // Cleanup markdown json block if Gemini returns it
+      textResponse = textResponse.replace(/^```json\s*/, "")
+      textResponse = textResponse.replace(/\s*```$/, "")
+      textResponse = textResponse.trim()
+
+      const parsed = JSON.parse(textResponse)
 
       await prisma.interview.update({
         where: { id: interviewId },

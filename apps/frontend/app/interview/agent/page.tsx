@@ -121,6 +121,7 @@ function AIInterviewContent() {
     newSocket.on("interview:error", ({ message }: { message: string }) => {
       toast.error(message)
       setIsTyping(false)
+      setIsEvaluating(false)
     })
 
     return () => {
