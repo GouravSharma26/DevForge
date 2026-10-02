@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "prebuild": "npm run build --workspace=@devforge/database",
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "vitest run",
