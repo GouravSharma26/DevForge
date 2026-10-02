@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { io, Socket } from "socket.io-client"
-import { Bot, Send, User, ChevronLeft, Loader2, StopCircle } from "lucide-react"
+import { Bot, Send, User, ChevronLeft, Loader2, StopCircle, Sparkles } from "lucide-react"
 import { useAuthStore } from "@/store/auth.store"
 import { toast } from "sonner"
 
@@ -29,7 +29,7 @@ function AIInterviewContent() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+  }, [messages, isTyping])
 
   useEffect(() => {
     if (hydrated && !token) {
@@ -43,7 +43,9 @@ function AIInterviewContent() {
       return
     }
 
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:5000"
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || apiUrl.replace("/api", "")
+    
     const newSocket = io(wsUrl, {
       withCredentials: true,
       transports: ["websocket"]
@@ -114,101 +116,140 @@ function AIInterviewContent() {
     }
   }
 
-  if (!hydrated || !token) return <div className="min-h-screen bg-base" />
+  if (!hydrated || !token) return <div className="min-h-screen bg-[#0A0A0A]" />
 
   return (
-    <div className="flex flex-col h-[calc(100vh-56px)] bg-base font-mono relative overflow-hidden">
-      {/* Background FX */}
-      <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 800px 500px at 50% -20%, rgba(16, 185, 129, 0.15), transparent 70%)' }} />
+    <div className="flex flex-col h-[calc(100vh-56px)] bg-[#0A0A0A] font-mono relative overflow-hidden">
+      {/* Background Ambient FX */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-900/20 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-900/10 blur-[120px]" />
+      </div>
 
       {/* Header */}
-      <div className="h-16 border-b border-border bg-surface/50 backdrop-blur-md flex items-center justify-between px-6 z-10 shrink-0">
-        <div className="flex items-center gap-4">
-          <button onClick={() => router.push("/interview")} className="text-muted hover:text-primary transition-colors">
+      <div className="h-16 border-b border-white/5 bg-black/40 backdrop-blur-xl flex items-center justify-between px-6 z-20 shrink-0 shadow-lg">
+        <div className="flex items-center gap-5">
+          <button onClick={() => router.push("/interview")} className="w-8 h-8 flex items-center justify-center rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-all">
             <ChevronLeft size={20} />
           </button>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center border border-emerald-500/30">
-              <Bot size={18} />
+            <div className="relative">
+              <div className="absolute inset-0 bg-emerald-500 blur-md opacity-40 rounded-full animate-pulse" />
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400/20 to-emerald-900/40 text-emerald-400 flex items-center justify-center border border-emerald-500/30 relative z-10 shadow-inner">
+                <Bot size={20} />
+              </div>
             </div>
             <div>
-              <h1 className="text-sm font-bold text-primary">DevForge AI Recruiter</h1>
-              <div className="flex items-center gap-2 text-xs text-emerald-500">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Connected
+              <h1 className="text-sm font-bold text-white tracking-wide flex items-center gap-2">
+                DevForge Recruiter
+                <Sparkles size={14} className="text-emerald-400" />
+              </h1>
+              <div className="flex items-center gap-2 text-[11px] text-emerald-400/80 uppercase tracking-wider font-semibold mt-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                Secure Uplink
               </div>
             </div>
           </div>
         </div>
-        <button onClick={handleEnd} className="flex items-center gap-2 text-xs font-bold text-red-400 hover:text-red-300 transition-colors border border-red-500/30 bg-red-500/10 px-3 py-1.5 rounded-lg">
+        <button onClick={handleEnd} className="flex items-center gap-2 text-xs font-bold text-red-400 hover:text-red-300 transition-all border border-red-500/20 hover:border-red-500/40 bg-red-500/10 hover:bg-red-500/20 px-4 py-2 rounded-xl backdrop-blur-md">
           <StopCircle size={14} />
-          End Interview
+          End Session
         </button>
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto p-6 z-10 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 z-10 space-y-8 scroll-smooth">
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-muted space-y-4 animate-pulse">
-            <Bot size={48} className="text-emerald-500/50" />
-            <p>The AI Recruiter is reviewing your resume...</p>
+          <div className="flex flex-col items-center justify-center h-full text-white/40 space-y-6">
+            <div className="relative">
+              <div className="absolute inset-0 bg-emerald-500 blur-xl opacity-20 rounded-full animate-pulse" />
+              <div className="w-20 h-20 rounded-full bg-black/50 flex items-center justify-center border border-white/10 relative z-10">
+                <Loader2 size={32} className="text-emerald-500 animate-spin" />
+              </div>
+            </div>
+            <div className="text-center space-y-2">
+              <p className="text-emerald-400/80 text-sm tracking-widest uppercase font-semibold animate-pulse">Initializing Agent</p>
+              <p className="text-xs text-white/30">Analyzing resume parameters and computing interview vectors...</p>
+            </div>
           </div>
         )}
 
         {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`flex gap-4 max-w-[80%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
+          <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-4 duration-500`}>
+            <div className={`flex gap-4 max-w-[85%] md:max-w-[75%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
+              
               {/* Avatar */}
               <div className="shrink-0 mt-1">
                 {msg.role === "agent" ? (
-                  <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center border border-emerald-500/30">
-                    <Bot size={18} />
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                    <Bot size={16} />
                   </div>
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-accent/20 text-accent flex items-center justify-center border border-accent/30">
-                    <User size={18} />
+                  <div className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+                    <User size={16} />
                   </div>
                 )}
               </div>
               
               {/* Message Bubble */}
-              <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
+              <div className={`p-5 rounded-2xl text-[13px] md:text-sm leading-relaxed backdrop-blur-md shadow-xl ${
                 msg.role === "user" 
-                  ? "bg-accent text-white rounded-tr-sm" 
-                  : "bg-surface border border-border text-primary rounded-tl-sm shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+                  ? "bg-blue-600/10 border border-blue-500/20 text-blue-50 rounded-tr-sm" 
+                  : "bg-white/5 border border-white/10 text-white/90 rounded-tl-sm"
               }`}>
                 {msg.content.split('\\n').map((line, i) => (
-                  <p key={i} className={i !== 0 ? "mt-2" : ""}>{line}</p>
+                  <p key={i} className={i !== 0 ? "mt-3" : ""}>{line}</p>
                 ))}
                 {msg.isStreaming && (
-                  <span className="inline-block w-2 h-4 bg-emerald-500 animate-pulse ml-1 align-middle"></span>
+                  <span className="inline-block w-2 h-4 bg-emerald-400 animate-pulse ml-1.5 align-middle shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
                 )}
               </div>
             </div>
           </div>
         ))}
-        <div ref={messagesEndRef} />
+        
+        {/* Typing indicator */}
+        {isTyping && messages.length > 0 && (
+          <div className="flex justify-start animate-in fade-in duration-300">
+            <div className="flex gap-4 max-w-[80%] flex-row">
+              <div className="shrink-0 mt-1">
+                <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                  <Bot size={16} />
+                </div>
+              </div>
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 rounded-tl-sm flex items-center gap-1.5 h-[52px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} className="h-4" />
       </div>
 
       {/* Input Area */}
-      <div className="p-6 pt-2 z-10 shrink-0">
-        <form onSubmit={handleSend} className="relative max-w-4xl mx-auto">
-          <input
-            ref={inputRef}
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            disabled={isTyping}
-            placeholder={isTyping ? "AI is typing..." : "Type your answer..."}
-            className="w-full bg-surface border border-border rounded-xl py-4 pl-5 pr-14 text-sm text-primary placeholder-muted outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all disabled:opacity-50 shadow-lg"
-          />
-          <button
-            type="submit"
-            disabled={!input.trim() || isTyping}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-emerald-600 transition-colors"
-          >
-            {isTyping ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} className="ml-0.5" />}
-          </button>
+      <div className="p-4 md:p-6 z-20 shrink-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A] to-transparent pt-10">
+        <form onSubmit={handleSend} className="relative max-w-4xl mx-auto group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/30 to-blue-500/30 rounded-2xl blur opacity-30 group-focus-within:opacity-60 transition duration-500"></div>
+          <div className="relative flex items-center">
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={isTyping}
+              placeholder={isTyping ? "AI is processing..." : "Formulate your response..."}
+              className="w-full bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl py-4 pl-6 pr-16 text-sm text-white placeholder-white/30 outline-none focus:border-emerald-500/50 transition-all disabled:opacity-50 shadow-2xl"
+            />
+            <button
+              type="submit"
+              disabled={!input.trim() || isTyping}
+              className="absolute right-2 w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center disabled:opacity-0 disabled:scale-95 hover:bg-emerald-500 hover:text-white transition-all duration-300 border border-emerald-500/30"
+            >
+              <Send size={18} className="ml-0.5" />
+            </button>
+          </div>
         </form>
       </div>
     </div>
@@ -217,7 +258,7 @@ function AIInterviewContent() {
 
 export default function AIInterviewPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-base flex items-center justify-center"><Loader2 className="animate-spin text-emerald-500" /></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center"><Loader2 className="animate-spin text-emerald-500" /></div>}>
       <AIInterviewContent />
     </Suspense>
   )
