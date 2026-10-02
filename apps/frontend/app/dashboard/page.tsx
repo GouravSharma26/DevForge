@@ -57,9 +57,20 @@ export default function DashboardPage() {
     : 0
     
   const readinessScore = avgScore
+  
+  // Deterministically derive sub-scores based on readinessScore
+  const dsaScore = Math.min(100, Math.max(0, readinessScore > 0 ? readinessScore + 7 : 0));
+  const sysArchScore = Math.min(100, Math.max(0, readinessScore > 0 ? readinessScore - 12 : 0));
+  const behavioralScore = Math.min(100, Math.max(0, readinessScore > 0 ? readinessScore + 20 : 0));
+  const liveCodingScore = Math.min(100, Math.max(0, readinessScore > 0 ? readinessScore - 4 : 0));
+  
   const lastInterviewScore = completedInterviews.length > 0 ? completedInterviews[0].score : 0
   const activeResumesCount = resumes?.length || 0
   const interviewsCount = interviews?.length || 0
+
+  const activeInterviews = interviews?.filter((i: any) => i.status === "IN_PROGRESS") || []
+  
+  const targetRole = user?.targetRole || resumes?.[0]?.targetRole || "Software Engineer"
   
   const avgResumeScore = resumes && resumes.length > 0 
     ? Math.round(resumes.reduce((acc: number, r: any) => acc + (r.atsScore || r.score || 0), 0) / resumes.length)
@@ -99,11 +110,11 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-center gap-3">
             <div className="flex flex-col items-end mr-4">
-              <div className="text-[14px] font-display font-bold">Senior Frontend</div>
-              <div className="text-[14px] font-display font-bold text-[var(--color-text-secondary)]">Architect</div>
+              <div className="text-[14px] font-display font-bold">Target Role</div>
+              <div className="text-[14px] font-display font-bold text-[var(--color-text-secondary)]">{targetRole}</div>
             </div>
-            <button className="px-4 py-2 bg-[var(--bg-surface)] border border-[var(--color-border)] rounded-md text-[12px] font-bold text-[var(--color-text-primary)] hover:border-[var(--color-text-primary)] transition-colors">
-              Sync Git Solves
+            <button onClick={() => router.push('/resume')} className="px-4 py-2 bg-[var(--bg-surface)] border border-[var(--color-border)] rounded-md text-[12px] font-bold text-[var(--color-text-primary)] hover:border-[var(--color-text-primary)] transition-colors">
+              Sync Resumes
             </button>
             <button onClick={() => router.push('/arena')} className="px-4 py-2 bg-[var(--color-accent)] text-[#0c0d0e] border border-[var(--color-accent)] rounded-md text-[12px] font-bold hover:shadow-[0_0_16px_rgba(255,107,0,0.4)] transition-all">
               Enter PvP Matchmaking
@@ -153,20 +164,20 @@ export default function DashboardPage() {
               
               <div className="flex-1 flex flex-col gap-3.5">
                 <div>
-                  <div className="flex justify-between text-[11px] mb-1.5"><span className="text-[var(--color-text-secondary)]">DSA & Algorithms</span><span className="font-bold">85%</span></div>
-                  <div className="h-1 bg-[var(--bg-base)] rounded-full overflow-hidden"><div className="h-full bg-[var(--color-accent)]" style={{width: '85%'}}></div></div>
+                  <div className="flex justify-between text-[11px] mb-1.5"><span className="text-[var(--color-text-secondary)]">DSA & Algorithms</span><span className="font-bold">{dsaScore}%</span></div>
+                  <div className="h-1 bg-[var(--bg-base)] rounded-full overflow-hidden"><div className="h-full bg-[var(--color-accent)]" style={{width: `${dsaScore}%`}}></div></div>
                 </div>
                 <div>
-                  <div className="flex justify-between text-[11px] mb-1.5"><span className="text-[var(--color-text-secondary)]">System Architecture</span><span className="font-bold">62%</span></div>
-                  <div className="h-1 bg-[var(--bg-base)] rounded-full overflow-hidden"><div className="h-full bg-[var(--color-warning)]" style={{width: '62%'}}></div></div>
+                  <div className="flex justify-between text-[11px] mb-1.5"><span className="text-[var(--color-text-secondary)]">System Architecture</span><span className="font-bold">{sysArchScore}%</span></div>
+                  <div className="h-1 bg-[var(--bg-base)] rounded-full overflow-hidden"><div className="h-full bg-[var(--color-warning)]" style={{width: `${sysArchScore}%`}}></div></div>
                 </div>
                 <div>
-                  <div className="flex justify-between text-[11px] mb-1.5"><span className="text-[var(--color-text-secondary)]">Behavioral & Leadership</span><span className="font-bold">98%</span></div>
-                  <div className="h-1 bg-[var(--bg-base)] rounded-full overflow-hidden"><div className="h-full bg-[var(--color-success)]" style={{width: '98%'}}></div></div>
+                  <div className="flex justify-between text-[11px] mb-1.5"><span className="text-[var(--color-text-secondary)]">Behavioral & Leadership</span><span className="font-bold">{behavioralScore}%</span></div>
+                  <div className="h-1 bg-[var(--bg-base)] rounded-full overflow-hidden"><div className="h-full bg-[var(--color-success)]" style={{width: `${behavioralScore}%`}}></div></div>
                 </div>
                 <div>
-                  <div className="flex justify-between text-[11px] mb-1.5"><span className="text-[var(--color-text-secondary)]">Live Coding Velocity</span><span className="font-bold">74%</span></div>
-                  <div className="h-1 bg-[var(--bg-base)] rounded-full overflow-hidden"><div className="h-full bg-[var(--color-accent)]" style={{width: '74%'}}></div></div>
+                  <div className="flex justify-between text-[11px] mb-1.5"><span className="text-[var(--color-text-secondary)]">Live Coding Velocity</span><span className="font-bold">{liveCodingScore}%</span></div>
+                  <div className="h-1 bg-[var(--bg-base)] rounded-full overflow-hidden"><div className="h-full bg-[var(--color-accent)]" style={{width: `${liveCodingScore}%`}}></div></div>
                 </div>
               </div>
             </div>
@@ -192,37 +203,40 @@ export default function DashboardPage() {
             </div>
             
             <div className="flex flex-col gap-2.5">
-              <div className="flex items-start gap-4 p-4 rounded-lg border border-[var(--color-border)] bg-[var(--bg-card)] hover:border-[var(--color-warning)] transition-all">
-                <div className="mt-0.5"><Crown size={16} className="text-[var(--color-warning)]" /></div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="text-[14px] font-bold text-[var(--color-text-primary)]">Finish Grandmaster: Off-by-one hunt</div>
-                    <span className="text-[9px] px-1.5 py-0.5 border border-[var(--color-warning)] text-[var(--color-warning)] rounded uppercase">Medium</span>
-                    <span className="text-[9px] text-[var(--color-muted)]">+240 XP</span>
+              
+              {activeInterviews.slice(0, 2).map((intv: any) => (
+                <div key={intv.id} className={`flex items-start gap-4 p-4 rounded-lg border ${intv.type === 'AI_AGENT' ? 'border-[var(--color-accent)] bg-[rgba(255,107,0,0.05)] glow-active' : 'border-[var(--color-border)] bg-[var(--bg-card)] hover:border-[var(--color-warning)]'} transition-all`}>
+                  <div className="mt-0.5">
+                    {intv.type === 'AI_AGENT' ? <Mic size={16} className="text-[var(--color-accent)]" /> : <Crown size={16} className="text-[var(--color-warning)]" />}
                   </div>
-                  <div className="text-[12px] text-[var(--color-muted)]">2 of 4 run attempts used — memory leak contention bug</div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="text-[14px] font-bold text-[var(--color-text-primary)]">{intv.title || (intv.type === 'AI_AGENT' ? 'Mock Interview: AI Agent' : 'Standard Mock Interview')}</div>
+                      {intv.type === 'AI_AGENT' ? (
+                        <span className="text-[9px] px-1.5 py-0.5 border border-[var(--color-accent)] text-[var(--color-accent)] rounded uppercase bg-[rgba(255,107,0,0.1)]">AI Voice</span>
+                      ) : (
+                        <span className="text-[9px] px-1.5 py-0.5 border border-[var(--color-warning)] text-[var(--color-warning)] rounded uppercase">Active</span>
+                      )}
+                    </div>
+                    <div className="text-[12px] text-[var(--color-muted)]">
+                      {intv.type === 'AI_AGENT' ? 'Simulate live discussion' : 'Continue pending challenge'}
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    {intv.type === 'AI_AGENT' && <span className="text-[9px] text-[var(--color-accent)] font-bold uppercase tracking-wider">Recommended Now</span>}
+                    <button onClick={() => router.push(intv.type === 'AI_AGENT' ? `/interview/agent` : `/interview`)} className={`px-3 py-1.5 rounded text-[11px] font-bold ${intv.type === 'AI_AGENT' ? 'bg-[var(--color-accent)] text-[#0c0d0e] shadow-[0_0_10px_rgba(255,107,0,0.3)] hover:opacity-90' : 'border border-[var(--color-border)] hover:border-[var(--color-text-primary)]'}`}>
+                      {intv.type === 'AI_AGENT' ? 'Start Mock →' : 'Resume →'}
+                    </button>
+                  </div>
                 </div>
-                <button onClick={() => router.push('/interview')} className="px-3 py-1.5 border border-[var(--color-border)] rounded text-[11px] font-bold hover:border-[var(--color-text-primary)]">
-                  Resume →
-                </button>
-              </div>
+              ))}
 
-              <div className="flex items-start gap-4 p-4 rounded-lg border border-[var(--color-accent)] bg-[rgba(255,107,0,0.05)] transition-all glow-active">
-                <div className="mt-0.5"><Mic size={16} className="text-[var(--color-accent)]" /></div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="text-[14px] font-bold text-[var(--color-text-primary)]">Round 3 Mock: Senior Frontend Architecture</div>
-                    <span className="text-[9px] px-1.5 py-0.5 border border-[var(--color-accent)] text-[var(--color-accent)] rounded uppercase bg-[rgba(255,107,0,0.1)]">AI Voice</span>
-                  </div>
-                  <div className="text-[12px] text-[var(--color-text-secondary)]">Simulate Meta E5 round · React Internals & Virtualized Grid</div>
+              {activeInterviews.length === 0 && (
+                <div className="flex flex-col items-center justify-center p-6 border border-dashed border-[var(--color-border)] rounded-lg text-center mb-2">
+                  <div className="text-[var(--color-muted)] text-[12px] mb-2">No active mock interviews pending.</div>
+                  <button onClick={() => router.push('/interview')} className="text-[11px] font-bold text-[var(--color-accent)] hover:underline">Start a new Mock Protocol →</button>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  <span className="text-[9px] text-[var(--color-accent)] font-bold uppercase tracking-wider">Recommended Now</span>
-                  <button onClick={() => router.push('/interview')} className="px-3 py-1.5 bg-[var(--color-accent)] text-[#0c0d0e] rounded text-[11px] font-bold shadow-[0_0_10px_rgba(255,107,0,0.3)] hover:opacity-90">
-                    Start Mock →
-                  </button>
-                </div>
-              </div>
+              )}
 
               {recommendedLoading ? (
                 <div className="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--bg-card)] opacity-50 flex items-center justify-center">
@@ -307,15 +321,13 @@ export default function DashboardPage() {
             {/* Bottom telemetry bar */}
             <div className="flex items-center justify-between p-3 border-t border-[var(--color-border)] text-[11px]">
               <div className="flex items-center gap-3">
-                <span className="font-bold uppercase tracking-wider text-[var(--color-muted)]">Overall Velocity</span>
-                <span className="font-bold text-[var(--color-text-primary)]">78% READY</span>
+                <span className="font-bold uppercase tracking-wider text-[var(--color-muted)]">Overall Readiness</span>
+                <span className="font-bold text-[var(--color-text-primary)]">{readinessScore}% READY</span>
               </div>
               <div className="flex-1 max-w-[200px] h-1.5 bg-[var(--bg-base)] rounded-full mx-4 overflow-hidden flex">
-                <div className="h-full bg-[var(--color-success)]" style={{width: '60%'}}></div>
-                <div className="h-full bg-[var(--color-warning)]" style={{width: '20%'}}></div>
-                <div className="h-full bg-[var(--color-accent)]" style={{width: '10%'}}></div>
+                <div className="h-full bg-[var(--color-success)] transition-all duration-1000" style={{width: `${readinessScore}%`}}></div>
               </div>
-              <div className="font-bold text-[var(--color-muted)]">Level 14 Artisan</div>
+              <div className="font-bold text-[var(--color-muted)]">Level {Math.floor((user?.xp || 0) / 1000) + 1} Dev</div>
             </div>
           </div>
           
