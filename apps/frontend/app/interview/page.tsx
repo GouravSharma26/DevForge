@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { useResumes, useInterviews, useStartInterview, useDeleteInterview, useUploadResume } from "@/hooks/useResume"
-import { Plus, ChevronDown, Bot, Code2, Trash2 } from "lucide-react"
+import { useResumes, useInterviews, useStartInterview, useDeleteInterview, useUploadResume, useRenameInterview } from "@/hooks/useResume"
+import { Plus, ChevronDown, Bot, Code2, Trash2, Edit2, Download } from "lucide-react"
 import { useAuthStore } from "@/store/auth.store"
 import type { Interview, Resume } from "@devforge/shared-types"
 
@@ -22,6 +22,22 @@ export default function InterviewHubPage() {
   const [selectedResumeId, setSelectedResumeId] = useState<string>("")
   const [showModal, setShowModal] = useState(false)
   const [showResumeSelectModal, setShowResumeSelectModal] = useState(false)
+  const [showDurationModal, setShowDurationModal] = useState(false)
+  
+  const renameInterview = useRenameInterview()
+
+  const handleDownload = (interview: any) => {
+    const data = JSON.stringify(interview, null, 2)
+    const blob = new Blob([data], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `interview-report-${interview.id}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
 
   useEffect(() => {
     if (hydrated && !token) router.push("/login")
@@ -150,7 +166,7 @@ export default function InterviewHubPage() {
               <button
                 onClick={() => {
                   if (!selectedResumeId) return alert("Please select a resume first")
-                  router.push("/interview/agent?resumeId=" + selectedResumeId)
+                  setShowDurationModal(true)
                 }}
                 className="w-full py-2.5 rounded-[10px] font-bold text-[13px] transition-all border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text-primary)] hover:border-[#10b981] hover:text-[#10b981]"
               >
@@ -183,11 +199,22 @@ export default function InterviewHubPage() {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="text-[15px] font-bold text-[var(--color-text-primary)] m-0 mb-1 line-clamp-1">
-                      {interview.resume?.profileName || "Deleted Profile"}
+                      {interview.title || interview.resume?.profileName || "Untitled Interview"}
                     </h3>
-                    <span className="text-[10px] px-2 py-1 rounded-[6px] bg-[var(--color-surface-theme)] text-[var(--color-text-secondary)] border border-[var(--color-border)] inline-block">
-                      {interview.resume?.targetRole || "General Target"}
-                    </span>
+                    <div className="flex gap-2 items-center">
+                      <span className="text-[10px] px-2 py-1 rounded-[6px] bg-[var(--color-surface-theme)] text-[var(--color-text-secondary)] border border-[var(--color-border)] inline-block">
+                        {interview.resume?.targetRole || "General Target"}
+                      </span>
+                      {interview.type === "AI_AGENT" ? (
+                        <span className="text-[10px] px-2 py-1 rounded-[6px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 inline-block">
+                          1-on-1 AI
+                        </span>
+                      ) : (
+                        <span className="text-[10px] px-2 py-1 rounded-[6px] bg-blue-500/10 text-blue-500 border border-blue-500/20 inline-block">
+                          Standard Mock
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-3">
                     {interview.status === "COMPLETED" && interview.score != null ? (
@@ -199,6 +226,28 @@ export default function InterviewHubPage() {
                         IN PROGRESS
                       </span>
                     )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        const newTitle = prompt("Enter new title:", interview.title || interview.resume?.profileName)
+                        if (newTitle) renameInterview.mutate({ id: interview.id, title: newTitle })
+                      }}
+                      disabled={renameInterview.isPending}
+                      className="text-[var(--color-text-primary)] opacity-40 hover:opacity-100 transition-opacity p-1"
+                      title="Rename Interview"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDownload(interview)
+                      }}
+                      className="text-[var(--color-text-primary)] opacity-40 hover:opacity-100 transition-opacity p-1"
+                      title="Download Report"
+                    >
+                      <Download size={16} />
+                    </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
@@ -225,6 +274,33 @@ export default function InterviewHubPage() {
           </div>
         )}
       </div>
+
+      {/* Duration Select Modal */}
+      {showDurationModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm" onClick={() => setShowDurationModal(false)}>
+          <div className="glass-panel bg-[var(--color-surface-theme)] border-[var(--color-border)] rounded-[20px] p-6 max-w-[400px] w-full shadow-[0_0_40px_rgba(0,0,0,0.5)] animate-fade-in-up" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-[16px] font-bold text-[var(--color-text-primary)]">Interview Duration</h3>
+              <button onClick={() => setShowDurationModal(false)} className="text-[var(--color-muted)] hover:text-[var(--color-text-primary)]">✕</button>
+            </div>
+            <p className="text-[13px] text-[var(--color-muted)] mb-6">Select how long you want your 1-on-1 AI agent mock interview to last.</p>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => router.push(`/interview/agent?resumeId=${selectedResumeId}&duration=5`)}
+                className="py-4 rounded-[12px] font-bold border border-[var(--color-border)] bg-[var(--color-card)] hover:border-[#10b981] hover:text-[#10b981] transition-all"
+              >
+                5 Minutes
+              </button>
+              <button
+                onClick={() => router.push(`/interview/agent?resumeId=${selectedResumeId}&duration=10`)}
+                className="py-4 rounded-[12px] font-bold border border-[var(--color-border)] bg-[var(--color-card)] hover:border-[#10b981] hover:text-[#10b981] transition-all"
+              >
+                10 Minutes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Coming Soon Modal */}
       {showModal && (

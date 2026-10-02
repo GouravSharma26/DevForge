@@ -470,6 +470,26 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
     }
   )
 
+  // PATCH /api/resume/interview/:id
+  app.patch(
+    "/interview/:id",
+    { preHandler: [authenticate] },
+    async (req: FastifyRequest<{ Params: { id: string }, Body: { title: string } }>, reply) => {
+      const { id: userId } = req.user as { id: string }
+      const { title } = req.body
+      try {
+        const interview = await prisma.interview.updateMany({
+          where: { id: req.params.id, userId },
+          data: { title }
+        })
+        if (interview.count === 0) return reply.status(404).send({ success: false, error: "Interview not found" })
+        return reply.send({ success: true, data: { message: "Interview renamed" } })
+      } catch (err: any) {
+        return reply.status(500).send({ success: false, error: err.message })
+      }
+    }
+  )
+
   // DELETE /api/resume/interview/:id
   app.delete(
     "/interview/:id",

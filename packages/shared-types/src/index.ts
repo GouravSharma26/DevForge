@@ -94,6 +94,8 @@ export const InterviewSchema = z.object({
   resumeId: z.string(),
   status: z.enum(["IN_PROGRESS", "COMPLETED"]),
   score: z.number().nullable(),
+  title: z.string().nullable().optional(),
+  type: z.string().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
   questions: z.array(QuestionSchema).optional(),

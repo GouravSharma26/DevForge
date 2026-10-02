@@ -20,12 +20,32 @@ function AIInterviewContent() {
   const resumeId = searchParams.get("resumeId")
   const { token, hydrated } = useAuthStore()
 
+  const durationParam = searchParams.get("duration") || "5"
   const [socket, setSocket] = useState<Socket | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isTyping, setIsTyping] = useState(true) // Start true while waiting for AI to speak first
+  const [timeLeft, setTimeLeft] = useState(parseInt(durationParam) * 60)
+  const [isEvaluating, setIsEvaluating] = useState(false)
+  const [finalScore, setFinalScore] = useState<number | null>(null)
+  
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      if (!isEvaluating && finalScore === null) handleEnd(true)
+      return
+    }
+    const timer = setInterval(() => setTimeLeft(t => t - 1), 1000)
+    return () => clearInterval(timer)
+  }, [timeLeft, isEvaluating, finalScore])
+
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60)
+    const s = secs % 60
+    return `${m}:${s.toString().padStart(2, "0")}`
+  }
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -54,12 +74,21 @@ function AIInterviewContent() {
     setSocket(newSocket)
 
     newSocket.on("connect", () => {
-      newSocket.emit("interview:join", { resumeId })
+      newSocket.emit("interview:join", { resumeId, duration: parseInt(durationParam) })
     })
 
     newSocket.on("interview:reply", ({ message }: { message: string }) => {
       setMessages(prev => [...prev, { id: Date.now().toString(), role: "agent", content: message }])
       setIsTyping(false)
+    })
+
+    newSocket.on("interview:evaluating", () => {
+      setIsEvaluating(true)
+    })
+
+    newSocket.on("interview:ended", ({ score }: { score: number }) => {
+      setIsEvaluating(false)
+      setFinalScore(score)
     })
 
     newSocket.on("interview:stream", ({ chunk }: { chunk: string }) => {
@@ -110,9 +139,10 @@ function AIInterviewContent() {
     socket.emit("interview:message", { message: userMsg })
   }
 
-  const handleEnd = () => {
-    if (confirm("Are you sure you want to end the interview?")) {
-      router.push("/interview")
+  const handleEnd = (force = false) => {
+    if (force || confirm("Are you sure you want to end the interview?")) {
+      setIsEvaluating(true)
+      socket?.emit("interview:end")
     }
   }
 
@@ -146,12 +176,12 @@ function AIInterviewContent() {
               </h1>
               <div className="flex items-center gap-2 text-[11px] text-emerald-400/80 uppercase tracking-wider font-semibold mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
-                Secure Uplink
+                Secure Uplink • {formatTime(timeLeft)} remaining
               </div>
             </div>
           </div>
         </div>
-        <button onClick={handleEnd} className="flex items-center gap-2 text-xs font-bold text-red-400 hover:text-red-300 transition-all border border-red-500/20 hover:border-red-500/40 bg-red-500/10 hover:bg-red-500/20 px-4 py-2 rounded-xl backdrop-blur-md">
+        <button onClick={() => handleEnd(false)} className="flex items-center gap-2 text-xs font-bold text-red-400 hover:text-red-300 transition-all border border-red-500/20 hover:border-red-500/40 bg-red-500/10 hover:bg-red-500/20 px-4 py-2 rounded-xl backdrop-blur-md">
           <StopCircle size={14} />
           End Session
         </button>
@@ -252,6 +282,31 @@ function AIInterviewContent() {
           </div>
         </form>
       </div>
+
+      {/* Evaluating Overlay */}
+      {isEvaluating && (
+        <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center text-white">
+          <Loader2 size={48} className="animate-spin text-emerald-500 mb-6" />
+          <h2 className="text-xl font-bold tracking-widest uppercase text-emerald-400 mb-2">Generating Report</h2>
+          <p className="text-sm text-white/50">Analyzing your responses and computing final score...</p>
+        </div>
+      )}
+
+      {/* Score Overlay */}
+      {finalScore !== null && (
+        <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center text-white">
+          <div className={`w-32 h-32 rounded-full border-4 flex items-center justify-center text-5xl font-black mb-8 shadow-[0_0_60px_rgba(16,185,129,0.2)] bg-[#0A0A0A] ${finalScore >= 80 ? 'border-[#10b981] text-[#10b981] shadow-[0_0_60px_rgba(16,185,129,0.2)]' : finalScore >= 60 ? 'border-[#eab308] text-[#eab308] shadow-[0_0_60px_rgba(234,179,8,0.2)]' : 'border-[#ef4444] text-[#ef4444] shadow-[0_0_60px_rgba(239,68,68,0.2)]'}`}>
+            {finalScore}
+          </div>
+          <h2 className="text-2xl font-bold tracking-widest uppercase text-white mb-8">Session Complete</h2>
+          <button 
+            onClick={() => router.push("/interview")}
+            className="px-8 py-4 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500 hover:text-white rounded-xl transition-all font-bold tracking-wide"
+          >
+            Return to Hub
+          </button>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,13 +1,13 @@
 import { Server, Socket } from "socket.io"
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai"
 import { prisma } from "@devforge/database"
 import { consumeAiRequest } from "../utils/ai-rate-limit"
 
 export function registerInterviewHandlers(io: Server, socket: Socket) {
   const userId = socket.data.userId
-  const chatSessions = new Map<string, any>()
+  const chatSessions = new Map<string, { chat: any, interviewId: string, history: any[] }>()
 
-  socket.on("interview:join", async ({ resumeId }: { resumeId: string }) => {
+  socket.on("interview:join", async ({ resumeId, duration }: { resumeId: string, duration?: number }) => {
     try {
       if (!resumeId) throw new Error("Resume ID required")
       const resume = await prisma.resume.findUnique({ where: { id: resumeId } })
@@ -16,6 +16,16 @@ export function registerInterviewHandlers(io: Server, socket: Socket) {
       }
 
       await consumeAiRequest(userId, prisma)
+
+      const interview = await prisma.interview.create({
+        data: {
+          userId,
+          resumeId,
+          type: "AI_AGENT",
+          title: `1-on-1 AI Interview (${duration || 5} min)`,
+          status: "IN_PROGRESS",
+        }
+      })
 
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
       const systemInstruction = `You are an expert technical interviewer. You are conducting a mock interview for a software engineering role. 
@@ -29,13 +39,18 @@ Ask technical questions one by one. Wait for the candidate's answer before proce
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", systemInstruction })
       const chat = model.startChat({ history: [] })
 
-      chatSessions.set(socket.id, chat)
+      chatSessions.set(socket.id, { chat, interviewId: interview.id, history: [] })
 
       const result = await chat.sendMessage("Start the interview.")
       const text = result.response.text()
 
-      socket.emit("interview:reply", { message: text })
-      console.log(`User ${userId} joined AI agent interview with resume ${resumeId}`)
+      const session = chatSessions.get(socket.id)
+      if (session) {
+        session.history.push({ role: "agent", content: text })
+      }
+
+      socket.emit("interview:reply", { message: text, interviewId: interview.id })
+      console.log(`User ${userId} joined AI agent interview ${interview.id} with resume ${resumeId}`)
     } catch (error: any) {
        console.error("Join error", error)
        socket.emit("interview:error", { message: error.message || "Failed to start interview" })
@@ -44,12 +59,14 @@ Ask technical questions one by one. Wait for the candidate's answer before proce
 
   socket.on("interview:message", async ({ message }: { message: string }) => {
     try {
-      const chat = chatSessions.get(socket.id)
-      if (!chat) {
+      const session = chatSessions.get(socket.id)
+      if (!session) {
          return socket.emit("interview:error", { message: "Chat session not found. Please refresh." })
       }
       
-      const result = await chat.sendMessageStream(message)
+      session.history.push({ role: "user", content: message })
+
+      const result = await session.chat.sendMessageStream(message)
       
       let fullResponse = ""
       for await (const chunk of result.stream) {
@@ -57,6 +74,7 @@ Ask technical questions one by one. Wait for the candidate's answer before proce
         fullResponse += chunkText
         socket.emit("interview:stream", { chunk: chunkText })
       }
+      session.history.push({ role: "agent", content: fullResponse })
       socket.emit("interview:stream_end", { fullMessage: fullResponse })
 
     } catch (error: any) {
@@ -65,6 +83,64 @@ Ask technical questions one by one. Wait for the candidate's answer before proce
     }
   })
   
+  socket.on("interview:end", async () => {
+    try {
+      const session = chatSessions.get(socket.id)
+      if (!session) return
+
+      const { interviewId, history } = session
+      chatSessions.delete(socket.id)
+      
+      socket.emit("interview:evaluating", { message: "Generating feedback report..." })
+
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
+      const evalModel = genAI.getGenerativeModel({ 
+        model: "gemini-2.5-flash",
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: SchemaType.OBJECT,
+            properties: {
+              score: { type: SchemaType.NUMBER, description: "Overall score out of 100 based on accuracy and problem-solving skills" },
+              feedback: { type: SchemaType.STRING, description: "Detailed feedback explaining how to improve their answers vs what they provided. Constructive criticism." },
+            },
+            required: ["score", "feedback"]
+          }
+        }
+      })
+
+      const prompt = `Evaluate the following technical interview transcript. Generate a score out of 100 and detailed feedback (what they got right, what they missed, how to improve).
+      
+      Transcript:
+      ${history.map(h => `${h.role === 'user' ? 'Candidate' : 'Interviewer'}: ${h.content}`).join("\\n\\n")}`
+
+      const result = await evalModel.generateContent(prompt)
+      const parsed = JSON.parse(result.response.text())
+
+      await prisma.interview.update({
+        where: { id: interviewId },
+        data: {
+          status: "COMPLETED",
+          score: parsed.score,
+          questions: {
+            create: {
+              round: 1,
+              question: "Overall 1-on-1 AI Interview Session",
+              userAnswer: "See feedback for full transcript details.",
+              feedback: parsed.feedback,
+              score: parsed.score,
+            }
+          }
+        }
+      })
+
+      socket.emit("interview:ended", { interviewId, score: parsed.score })
+    } catch (error: any) {
+      console.error("End error", error)
+      socket.emit("interview:error", { message: "Failed to generate report, but interview was saved." })
+    }
+  })
+
   socket.on("disconnect", () => {
     chatSessions.delete(socket.id)
   })

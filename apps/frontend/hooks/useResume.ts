@@ -195,6 +195,18 @@ export function useDeleteInterview() {
   })
 }
 
+export function useRenameInterview() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, title }: { id: string; title: string }) => {
+      await api.patch(`/resume/interview/${id}`, { title })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["interviews"] })
+    },
+  })
+}
+
 // ─── NEW: JD Matching ───
 
 export function useJDMatches(resumeId: string) {

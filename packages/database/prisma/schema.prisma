@@ -201,6 +201,8 @@ model Interview {
   resumeId  String
   status    InterviewStatus @default(IN_PROGRESS)
   score     Int?
+  title     String?
+  type      String          @default("STANDARD") // "STANDARD" | "AI_AGENT"
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
   resume    Resume          @relation(fields: [resumeId], references: [id], onDelete: Cascade)
