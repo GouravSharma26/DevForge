@@ -32,6 +32,19 @@ export default function DashboardPage() {
 
   if (!hydrated || !token || !mounted) return null
 
+  const isDataLoading = resumesLoading || interviewsLoading || matchesLoading || recommendedLoading;
+
+  if (isDataLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <div className="flex flex-col items-center gap-4 opacity-50">
+          <div className="w-8 h-8 border-2 border-[var(--color-accent)] border-t-transparent rounded-full animate-spin"></div>
+          <div className="text-[12px] font-mono text-[var(--color-muted)] tracking-widest uppercase">Igniting Forge...</div>
+        </div>
+      </div>
+    )
+  }
+
   // Process data from existing backend hooks
   const completedInterviews = interviews?.filter((i: any) => i.status === "COMPLETED") || []
   const completedMatches = matches || []
@@ -236,28 +249,39 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mt-5">
-              <div className="glass-panel rounded-[14px] p-4">
-                <div className="text-[10.5px] text-[var(--color-muted)] uppercase tracking-[0.05em] mb-2.5">Resume match</div>
-                <div className="h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden mb-2.5">
-                  <div className="h-full bg-[var(--color-accent)] rounded-full transition-all duration-1000" style={{ width: `${avgResumeScore}%` }}></div>
+              <div className="glass-panel rounded-[14px] p-4 flex flex-col justify-between hover:border-[var(--color-accent)] transition-all group">
+                <div>
+                  <div className="flex items-center gap-1.5 text-[10.5px] text-[var(--color-muted)] uppercase tracking-[0.05em] mb-2.5">
+                    <FileText size={12} className="text-[var(--color-accent)] opacity-70 group-hover:opacity-100 transition-opacity" /> Resume match
+                  </div>
+                  <div className="h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden mb-2.5">
+                    <div className="h-full bg-[var(--color-accent)] rounded-full transition-all duration-1000" style={{ width: `${avgResumeScore}%` }}></div>
+                  </div>
+                  <div className="text-[20px] font-extrabold text-[var(--color-text-primary)]">{avgResumeScore || 'N/A'} <span className="text-[11px] font-medium opacity-70">/ 100</span></div>
                 </div>
-                <div className="text-[20px] font-extrabold text-[var(--color-text-primary)]">{avgResumeScore || 'N/A'} <span className="text-[11px] font-medium opacity-70">/ 100</span></div>
                 <div className="text-[9px] text-[var(--color-muted)] mt-1 leading-tight">Avg across {activeResumesCount} profile{activeResumesCount !== 1 ? 's' : ''}</div>
               </div>
               
-              <div className="glass-panel rounded-[14px] p-4">
-                <div className="text-[10.5px] text-[var(--color-muted)] uppercase tracking-[0.05em] mb-2.5">Last interview</div>
-                <div className="h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden mb-2.5">
-                  <div className="h-full bg-[var(--color-accent)] rounded-full" style={{ width: `${lastInterviewScore}%` }}></div>
+              <div className="glass-panel rounded-[14px] p-4 flex flex-col justify-between hover:border-[var(--color-accent)] transition-all group">
+                <div>
+                  <div className="flex items-center gap-1.5 text-[10.5px] text-[var(--color-muted)] uppercase tracking-[0.05em] mb-2.5">
+                    <Mic size={12} className="text-[var(--color-accent)] opacity-70 group-hover:opacity-100 transition-opacity" /> Last interview
+                  </div>
+                  <div className="h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden mb-2.5">
+                    <div className="h-full bg-[var(--color-accent)] rounded-full transition-all duration-1000" style={{ width: `${lastInterviewScore}%` }}></div>
+                  </div>
+                  <div className="text-[20px] font-extrabold text-[var(--color-text-primary)]">{lastInterviewScore} <span className="text-[11px] text-[var(--color-muted)] font-medium">/ 100</span></div>
                 </div>
-                <div className="text-[20px] font-extrabold text-[var(--color-text-primary)]">{lastInterviewScore} <span className="text-[11px] text-[var(--color-muted)] font-medium">/ 100</span></div>
+                <div className="text-[9px] text-[var(--color-muted)] mt-1 leading-tight">Mock Protocol Graded</div>
               </div>
               
-              <div className="glass-panel rounded-[14px] p-4 flex flex-col justify-between">
+              <div className="glass-panel rounded-[14px] p-4 flex flex-col justify-between hover:border-[var(--color-accent)] transition-all group">
                 <div>
-                  <div className="text-[10.5px] text-[var(--color-muted)] uppercase tracking-[0.05em] mb-2.5">Arena Win Rate</div>
+                  <div className="flex items-center gap-1.5 text-[10.5px] text-[var(--color-muted)] uppercase tracking-[0.05em] mb-2.5">
+                    <Zap size={12} className="text-[var(--color-accent)] opacity-70 group-hover:opacity-100 transition-opacity" /> Arena Win Rate
+                  </div>
                   <div className="h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden mb-2.5">
-                    <div className="h-full bg-[var(--color-accent)] rounded-full" style={{ width: `${arenaWinRate}%` }}></div>
+                    <div className="h-full bg-[var(--color-accent)] rounded-full transition-all duration-1000" style={{ width: `${arenaWinRate}%` }}></div>
                   </div>
                   <div className="text-[20px] font-extrabold text-[var(--color-text-primary)]">{arenaWinRate}% <span className="text-[11px] font-medium opacity-70 text-[var(--color-muted)]">W/R</span></div>
                 </div>
@@ -272,7 +296,7 @@ export default function DashboardPage() {
               <span className="text-[11px] text-[var(--color-muted)]">Recent Activity</span>
             </div>
             
-            <div className="flex flex-col">
+            <div className="flex flex-col max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
               {forgeLogActivities.length > 0 ? (
                 forgeLogActivities.map((activity: any) => {
                   if (activity.type === 'INTERVIEW') {
