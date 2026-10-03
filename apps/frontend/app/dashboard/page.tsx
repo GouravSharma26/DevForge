@@ -128,10 +128,6 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex flex-col items-end mr-4">
-              <div className="text-[14px] font-display font-bold">Target Role</div>
-              <div className="text-[14px] font-display font-bold text-[var(--color-text-secondary)]">{targetRole}</div>
-            </div>
             <button onClick={() => router.push('/resume')} className="px-4 py-2 bg-[var(--bg-surface)] border border-[var(--color-border)] rounded-md text-[12px] font-bold text-[var(--color-text-primary)] hover:border-[var(--color-text-primary)] transition-colors">
               Sync Resumes
             </button>
