@@ -23,6 +23,13 @@ describe("CORS Configuration", () => {
     })
   })
 
+  it("blocks spoofed domains like evil-devforge.vercel.app", () => {
+    checkCorsOrigin("https://evil-devforge.vercel.app", (err, allow) => {
+      expect(err).toBeNull()
+      expect(allow).toBe(false)
+    })
+  })
+
   it("allows the configured production FRONTEND_URL", () => {
     process.env.FRONTEND_URL = "https://devforge.io"
     checkCorsOrigin("https://devforge.io", (err, allow) => {

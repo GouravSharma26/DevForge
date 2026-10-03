@@ -129,7 +129,7 @@ export async function submitSolution(
         return;
       }
 
-      const output = (stdout || stderr).trim();
+      const output = stdout.trim();
       const passed = output === testCase.expected.trim();
       if (!passed) allPassed = false;
 
@@ -189,15 +189,23 @@ function buildCode(
 ): string {
   if (language === "javascript") {
     return `
+// Hijack stdout so user logs don't interfere with the judge result
+const _out = process.stdout.write.bind(process.stdout);
+process.stdout.write = process.stderr.write.bind(process.stderr);
+if (typeof console !== 'undefined') {
+  console.log = (...args) => process.stderr.write(args.join(" ") + "\\n");
+  console.info = console.log;
+}
+
 ${code}
 
 const lines = ${JSON.stringify(input)}.split("\\n");
 try {
   let result;
   ${getJSRunner(slug)}
-  console.log(result);
+  _out(String(result) + "\\n");
 } catch (e) {
-  console.error(e.message);
+  process.stderr.write(e.message + "\\n");
 }
 `
   }
@@ -206,8 +214,13 @@ try {
     return `
 import json, sys
 
+# Hijack standard output
+_real_stdout = sys.stdout
+sys.stdout = sys.stderr
+
 ${code}
 
+sys.stdout = _real_stdout
 lines = ${JSON.stringify(input)}.strip().split("\\n")
 try:
     ${getPyRunner(slug)}

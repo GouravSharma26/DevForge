@@ -201,11 +201,23 @@ export async function submitAnswer(
 // ─── Run Grandmaster Code (No Evaluation) ─────────────────────────────────────
 
 export async function runGrandmasterCode(interviewId: string, userId: string, questionId: string, code: string) {
-  const { count } = await prisma.question.updateMany({
-    where: { id: questionId, interviewId, isGrandmaster: true, runAttempts: { lt: 4 }, interview: { userId } },
+  const questionCheck = await prisma.question.findUnique({
+    where: { id: questionId },
+    include: { interview: true }
+  })
+
+  if (!questionCheck || questionCheck.interview?.userId !== userId || questionCheck.interviewId !== interviewId || !questionCheck.isGrandmaster) {
+    throw Object.assign(new Error("Not found"), { statusCode: 404 })
+  }
+
+  if (questionCheck.runAttempts >= 4) {
+    throw Object.assign(new Error("Run limit reached"), { statusCode: 429 })
+  }
+
+  await prisma.question.update({
+    where: { id: questionId },
     data: { runAttempts: { increment: 1 } },
   })
-  if (count === 0) throw Object.assign(new Error("Not found or limit reached"), { statusCode: 429 })
 
   const question = await prisma.question.findUnique({
     where: { id: questionId },

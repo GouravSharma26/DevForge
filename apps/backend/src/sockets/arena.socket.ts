@@ -575,6 +575,11 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     if (!room) return
     if (!room.problems.some((p: any) => p.id === problemId)) return socket.emit("arena:error", { message: "Invalid problem ID" })
     
+    // EXAM BOUNDARY CHECK: Prevent submission if the time limit has passed
+    if (room.endTime && Date.now() > room.endTime) {
+      return socket.emit("arena:error", { message: "Exam time has expired. Submissions are no longer accepted." })
+    }
+    
     // Check if already passed
     if (room.examStatus[userId] && room.examStatus[userId][problemId] === "PASSED") {
       return socket.emit("arena:error", { message: "Already passed this question" })
