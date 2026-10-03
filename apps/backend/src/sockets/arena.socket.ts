@@ -217,38 +217,45 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
         const waiting = await getWaitingMatch()
 
       if (waiting && waiting.player1Id !== userId) {
-        const match = await joinMatch(waiting.id, userId)
-        socket.join(match.id)
+        try {
+          const match = await joinMatch(waiting.id, userId)
+          socket.join(match.id)
 
-        const p1SocketId = userSockets.get(match.player1Id)
-        if (p1SocketId) {
-          const p1Socket = io.sockets.sockets.get(p1SocketId)
-          p1Socket?.join(match.id)
+          const p1SocketId = userSockets.get(match.player1Id)
+          if (p1SocketId) {
+            const p1Socket = io.sockets.sockets.get(p1SocketId)
+            p1Socket?.join(match.id)
+          }
+
+          matchPlayers.set(match.id, new Set([match.player1Id, userId]))
+          activeMatches.set(match.id, match)
+
+          io.to(match.id).emit("arena:match_found", {
+            matchId: match.id,
+            problem: match.problem,
+            player1: match.player1,
+            player2: match.player2,
+            isFriendly: false,
+          })
+          console.log(`⚔️  Match started: ${match.id}`)
+          return // successfully joined
+        } catch (err) {
+          console.warn(`⚠️ Failed to join match ${waiting.id}, creating new room...`)
         }
+      }
+      
+      // Fallback: create a new room
+      const problem = await getRandomEasyProblem()
+      const match = await createMatch(userId, problem.id, false)
 
-        matchPlayers.set(match.id, new Set([match.player1Id, userId]))
-        activeMatches.set(match.id, match)
+      activeMatches.set(match.id, match)
 
-        io.to(match.id).emit("arena:match_found", {
-          matchId: match.id,
-          problem: match.problem,
-          player1: match.player1,
-          player2: match.player2,
-          isFriendly: false,
-        })
-        console.log(`⚔️  Match started: ${match.id}`)
-      } else {
-        const problem = await getRandomEasyProblem()
-        const match = await createMatch(userId, problem.id, false)
-
-        activeMatches.set(match.id, match)
-
-        socket.join(match.id)
-        socket.emit("arena:waiting", {
-          matchId: match.id,
-          message: "Waiting for opponent...",
-        })
-        console.log(`⏳ Waiting for opponent: ${match.id}`)
+      socket.join(match.id)
+      socket.emit("arena:waiting", {
+        matchId: match.id,
+        message: "Waiting for opponent...",
+      })
+      console.log(`⏳ Waiting for opponent: ${match.id}`)
 
         const config = await prisma.systemConfig.findUnique({ where: { id: "global" } })
         if (config?.botEnabled) {
@@ -274,7 +281,6 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
             }
           }, config.botQueueWaitTime * 1000)
         }
-      }
       } finally {
         releaseLock()
         if (quickMatchLock) { // Only nullify if it's our lock (though it's sequential anyway)

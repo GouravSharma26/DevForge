@@ -29,7 +29,7 @@ export async function problemRoutes(app: FastifyInstance) {
         const result = await getRecommendedProblems(userId)
         return reply.send({ success: true, data: result })
       } catch (err: any) {
-        return reply.status(500).send({ success: false, error: err.message })
+        return reply.status(500).send({ success: false, error: "Internal Server Error" })
       }
     }
   )
@@ -63,7 +63,7 @@ export async function problemRoutes(app: FastifyInstance) {
         const result = await submitSolution(userId, req.params.id, code, language)
         return reply.send({ success: true, data: result })
       } catch (err: any) {
-        return reply.status(500).send({ success: false, error: err.message })
+        return reply.status(500).send({ success: false, error: "Internal Server Error" })
       }
     }
   )

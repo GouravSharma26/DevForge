@@ -63,8 +63,8 @@ export async function resumeRoutes(app: FastifyInstance) {
         const filled = await generateResumeWithAI(userId, req.body.sections, req.body.resumeId)
         return reply.send({ success: true, data: filled })
       } catch (err: any) {
-        const statusCode = err.message === "Specified resume profile not found" ? 404 : 500
-        return reply.status(statusCode).send({ success: false, error: err.message })
+        const isNotFound = err.message === "Specified resume profile not found"
+        return reply.status(isNotFound ? 404 : 500).send({ success: false, error: isNotFound ? "Specified resume profile not found" : "Internal Server Error" })
       }
     }
   )
@@ -138,7 +138,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
         return reply.send({ success: true, data: resume })
       } catch (err: any) {
         console.error("Analyze builder error:", err)
-        return reply.status(500).send({ success: false, error: err.message })
+        return reply.status(500).send({ success: false, error: "Internal Server Error" })
       }
     }
   )
@@ -162,7 +162,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
         return reply.send({ success: true, data: result.resume })
       } catch (err: any) {
         console.error("🚨 UPLOAD CRASH:", err)
-        return reply.status(500).send({ success: false, error: err.message })
+        return reply.status(500).send({ success: false, error: "Internal Server Error" })
       }
     }
   )
@@ -210,7 +210,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
         const updatedResume = await analyzeExistingResumeText(userId, resume.id, resume.originalText)
         return reply.send({ success: true, data: updatedResume })
       } catch (err: any) {
-        return reply.status(500).send({ success: false, error: err.message })
+        return reply.status(500).send({ success: false, error: "Internal Server Error" })
       }
     }
   )
@@ -233,10 +233,10 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
         const forkedResume = await forkResume(req.params.id, userId, profileName)
         return reply.send({ success: true, data: forkedResume })
       } catch (err: any) {
-        if (err.message.includes("not found or access denied")) {
-          return reply.status(404).send({ success: false, error: err.message })
+        if (err.message?.includes("not found or access denied")) {
+          return reply.status(404).send({ success: false, error: "Not found or access denied" })
         }
-        return reply.status(500).send({ success: false, error: err.message })
+        return reply.status(500).send({ success: false, error: "Internal Server Error" })
       }
     }
   )
@@ -270,10 +270,10 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
         const match = await matchJD(userId, req.params.id, jdText)
         return reply.send({ success: true, data: match })
       } catch (err: any) {
-        if (err.message.includes("not found or unauthorized")) {
-          return reply.status(404).send({ success: false, error: err.message })
+        if (err.message?.includes("not found or unauthorized")) {
+          return reply.status(404).send({ success: false, error: "Not found or unauthorized" })
         }
-        return reply.status(500).send({ success: false, error: err.message })
+        return reply.status(500).send({ success: false, error: "Internal Server Error" })
       }
     }
   )
@@ -303,10 +303,10 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
         const match = await matchJDPdf(userId, req.params.id, buffer)
         return reply.send({ success: true, data: match })
       } catch (err: any) {
-        if (err.message.includes("not found or unauthorized")) {
-          return reply.status(404).send({ success: false, error: err.message })
+        if (err.message?.includes("not found or unauthorized")) {
+          return reply.status(404).send({ success: false, error: "Not found or unauthorized" })
         }
-        return reply.status(500).send({ success: false, error: err.message })
+        return reply.status(500).send({ success: false, error: "Internal Server Error" })
       }
     }
   )
@@ -370,7 +370,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
         const interview = await generateInterview(userId, req.body.resumeId)
         return reply.send({ success: true, data: interview })
       } catch (err: any) {
-        return reply.status(500).send({ success: false, error: err.message })
+        return reply.status(500).send({ success: false, error: "Internal Server Error" })
       }
     }
   )
@@ -414,7 +414,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
       } catch (err: any) {
         console.error("[Submit Answer Error]:", err)
         const status = err.statusCode || 500
-        return reply.status(status).send({ success: false, error: err.message })
+        return reply.status(status).send({ success: false, error: err.status === 404 ? "Not found" : "Internal Server Error" })
       }
     }
   )
@@ -430,7 +430,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
         return reply.send({ success: true, data: interview })
       } catch (err: any) {
         const status = err.statusCode || 500
-        return reply.status(status).send({ success: false, error: err.message })
+        return reply.status(status).send({ success: false, error: err.status === 404 ? "Not found" : "Internal Server Error" })
       }
     }
   )
@@ -449,7 +449,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
         const updated = await appendGrandmasterChallenge(req.params.id, userId)
         return reply.send({ success: true, data: updated })
       } catch (err: any) {
-        return reply.status(500).send({ success: false, error: err.message })
+        return reply.status(500).send({ success: false, error: "Internal Server Error" })
       }
     }
   )
@@ -465,7 +465,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
         return reply.send({ success: true, data: result })
       } catch (err: any) {
         const status = err.statusCode || 500
-        return reply.status(status).send({ success: false, error: err.message })
+        return reply.status(status).send({ success: false, error: err.status === 404 ? "Not found" : "Internal Server Error" })
       }
     }
   )
@@ -485,7 +485,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
         if (interview.count === 0) return reply.status(404).send({ success: false, error: "Interview not found" })
         return reply.send({ success: true, data: { message: "Interview renamed" } })
       } catch (err: any) {
-        return reply.status(500).send({ success: false, error: err.message })
+        return reply.status(500).send({ success: false, error: "Internal Server Error" })
       }
     }
   )
@@ -503,7 +503,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
         }
         return reply.send({ success: true, data: { message: "Interview deleted" } })
       } catch (err: any) {
-        return reply.status(500).send({ success: false, error: err.message })
+        return reply.status(500).send({ success: false, error: "Internal Server Error" })
       }
     }
   )
