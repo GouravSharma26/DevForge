@@ -7,6 +7,7 @@ import { useResumes, useUploadResume } from "@/hooks/useResume"
 import { nanoid } from "nanoid"
 import { ModernProfessional, CreativeMinimalist, ExecutiveProfile, TechInnovator } from "@/components/resume-templates"
 import { Target, FileText, Upload, X } from "lucide-react"
+import { toast } from "sonner"
 
 const mono = "JetBrains Mono, monospace"
 
@@ -70,11 +71,17 @@ export default function ResumeHubPage() {
     const file = e.target.files?.[0]
     if (!file) return
     setIsUploading(true)
+    
+    const toastId = toast.loading("Uploading & Scoring Resume...", { 
+      description: "We are analyzing your resume. This may take a few seconds." 
+    })
+    
     try {
       const res = await uploadResume.mutateAsync({ file, skipAI: false })
+      toast.success("Resume scored successfully!", { id: toastId })
       router.push(`/resume/${res.id}`)
     } catch (err: any) {
-      alert("Upload failed: " + err.message)
+      toast.error("Upload failed: " + err.message, { id: toastId })
       setIsUploading(false)
     }
   }

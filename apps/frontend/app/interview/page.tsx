@@ -3,8 +3,9 @@
 import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useResumes, useInterviews, useStartInterview, useDeleteInterview, useUploadResume, useRenameInterview } from "@/hooks/useResume"
-import { Plus, ChevronDown, Bot, Code2, Trash2, Edit2, Download, Clock } from "lucide-react"
+import { Plus, ChevronDown, Bot, Code2, Trash2, Edit2, Download, Clock, Loader2 } from "lucide-react"
 import { useAuthStore } from "@/store/auth.store"
+import { toast } from "sonner"
 import type { Interview, Resume } from "@devforge/shared-types"
 
 export default function InterviewHubPage() {
@@ -60,16 +61,22 @@ export default function InterviewHubPage() {
     const file = e.target.files?.[0]
     if (!file) return
     if (file.type !== "application/pdf") {
-      return alert("Only PDF files are supported at this time.")
+      return toast.error("Only PDF files are supported at this time.")
     }
+    
+    const toastId = toast.loading("Uploading & Scoring Resume...", { 
+      description: "We are analyzing your resume to tailor the interview. This may take a few seconds." 
+    })
     
     try {
       const newResume = await uploadResume.mutateAsync({ file, skipAI: false })
       if (newResume && newResume.id) {
         setSelectedResumeId(newResume.id)
+        toast.success("Resume scored successfully!", { id: toastId })
       }
     } catch (err: any) {
       console.error(err)
+      toast.error("Failed to upload resume. Please try again.", { id: toastId })
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = ""
     }
@@ -114,7 +121,7 @@ export default function InterviewHubPage() {
               title="Upload New Resume"
               className="w-8 h-8 rounded-[8px] border border-[var(--color-border)] bg-[var(--color-surface-theme)] text-[var(--color-accent)] flex items-center justify-center cursor-pointer hover:border-[var(--color-accent)] hover:bg-[var(--color-card)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Plus size={16} />
+              {uploadResume.isPending ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
             </button>
             <input
               type="file"
