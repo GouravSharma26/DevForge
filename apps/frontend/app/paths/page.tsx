@@ -18,10 +18,30 @@ export default function PathsPage() {
   const hydrated = useAuthStore((s) => s.hydrated)
   const { data: paths, isLoading } = usePaths()
   const enroll = useEnroll()
+  const [systemDesignTreeId, setSystemDesignTreeId] = useState<string | null>(null)
 
   useEffect(() => {
     if (hydrated && !token) router.push("/login")
   }, [hydrated, token])
+
+  // Fetch the skill tree ID for System Design
+  useEffect(() => {
+    async function loadTreeId() {
+      try {
+        const { api } = await import('@/lib/api')
+        const response = await api.get('/learn/trees')
+        if (response.data.success) {
+          const sysDesignTree = response.data.data.find((t: any) => t.title === 'Cloud-Scale Distributed System Design')
+          if (sysDesignTree) {
+            setSystemDesignTreeId(sysDesignTree.id)
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load skill trees", err)
+      }
+    }
+    loadTreeId()
+  }, [])
 
   if (!hydrated || !token) return null
 
@@ -110,7 +130,17 @@ export default function PathsPage() {
                   )}
 
                   <button
-                    onClick={() => path.isEnrolled ? setShowModal(true) : enroll.mutate(path.id)}
+                    onClick={() => {
+                      if (!path.isEnrolled) {
+                        enroll.mutate(path.id)
+                      } else {
+                        if (path.title === 'System Design' && systemDesignTreeId) {
+                          router.push(`/learn/${systemDesignTreeId}`)
+                        } else {
+                          setShowModal(true)
+                        }
+                      }
+                    }}
                     style={{
                       padding: "10px 0", borderRadius: 12, fontSize: 13,
                       fontFamily: "JetBrains Mono, monospace", cursor: "pointer",

@@ -33,6 +33,7 @@ model User {
   resumeBuilder   ResumeBuilder?
   submissions     Submission[]
   progress        UserProgress[]
+  skillProgress   SkillProgress[]
 }
 
 model Article {
@@ -267,5 +268,54 @@ enum MatchStatus {
 
 enum InterviewStatus {
   IN_PROGRESS
+  COMPLETED
+}
+
+model SkillTree {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  nodes       SkillNode[]
+  createdAt   DateTime       @default(now())
+}
+
+model SkillNode {
+  id          String         @id @default(cuid())
+  treeId      String
+  title       String
+  description String?
+  type        NodeType       @default(BLUEPRINT)
+  xPos        Float
+  yPos        Float
+  dependsOn   String[]
+  problemSlug String?
+  content     String?
+  
+  tree        SkillTree      @relation(fields: [treeId], references: [id], onDelete: Cascade)
+  progress    SkillProgress[]
+}
+
+model SkillProgress {
+  id          String     @id @default(cuid())
+  userId      String
+  nodeId      String
+  status      NodeStatus @default(LOCKED)
+  completedAt DateTime?
+  
+  node        SkillNode  @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, nodeId])
+}
+
+enum NodeType {
+  BLUEPRINT
+  ANVIL
+  BOSS
+}
+
+enum NodeStatus {
+  LOCKED
+  UNLOCKED
   COMPLETED
 }

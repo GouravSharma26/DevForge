@@ -79,18 +79,43 @@ export async function getRecommendedProblems(userId: string) {
   return recommendations
 }
 
-export async function getProblemBySlug(slug: string) {
-  return prisma.problem.findUnique({
+export async function getProblemBySlug(slug: string, mode?: string) {
+  const problem = await prisma.problem.findUnique({
     where: { slug },
     select: { id: true, title: true, slug: true, description: true, category: true, difficulty: true, examples: true, constraints: true, starterCode: true }
   })
+  
+  if (!problem) return null;
+
+  if (mode === 'anvil') {
+    // Inject broken code depending on the slug
+    if (slug === 'two-sum') {
+      problem.starterCode = {
+        javascript: `function twoSum(nums, target) {\n  // Junior Dev: "I think this O(N^2) approach will work... right?"\n  for (let i = 0; i <= nums.length; i++) { // BUG: i <= nums.length\n    for (let j = 1; j < nums.length; j++) { // BUG: j starts at 1, should be i + 1\n      if (nums[i] + nums[j] == target) {\n        return [i, j];\n      }\n    }\n  }\n  return [];\n}`,
+        python: `def twoSum(nums, target):\n    # Junior Dev: "I think this O(N^2) approach will work... right?"\n    for i in range(len(nums) + 1): # BUG: out of bounds\n        for j in range(1, len(nums)): # BUG: starts at 1 instead of i+1\n            if nums[i] + nums[j] == target:\n                return [i, j]\n    return []`
+      }
+    } else if (slug === 'maximum-subarray') {
+      problem.starterCode = {
+        javascript: `function maxSubArray(nums) {\n  // Junior Dev: "Let's keep a running sum!"\n  let maxSum = 0; // BUG: Should be -Infinity or nums[0]\n  let currentSum = 0;\n  \n  for (let i = 0; i < nums.length; i++) {\n    currentSum += nums[i];\n    if (currentSum > maxSum) {\n      maxSum = currentSum;\n    }\n    if (currentSum < 0) {\n      currentSum = 1; // BUG: Should reset to 0\n    }\n  }\n  \n  return maxSum;\n}`,
+        python: `def maxSubArray(nums):\n    # Junior Dev: "Let's keep a running sum!"\n    maxSum = 0 # BUG: Should be float('-inf') or nums[0]\n    currentSum = 0\n    \n    for i in range(len(nums)):\n        currentSum += nums[i]\n        if currentSum > maxSum:\n            maxSum = currentSum\n        if currentSum < 0:\n            currentSum = 1 # BUG: Should reset to 0\n            \n    return maxSum`
+      }
+    } else {
+      problem.starterCode = {
+        javascript: `// ANVIL: This code has a bug you need to fix!\n\n` + (problem.starterCode as any).javascript,
+        python: `# ANVIL: This code has a bug you need to fix!\n\n` + (problem.starterCode as any).python
+      }
+    }
+  }
+
+  return problem;
 }
 
 export async function submitSolution(
   userId: string,
   problemId: string,
   code: string,
-  language: string
+  language: string,
+  nodeId?: string
 ) {
   const problem = await prisma.problem.findUnique({ where: { id: problemId } })
   if (!problem) throw new Error("Problem not found")
@@ -177,6 +202,11 @@ export async function submitSolution(
       memory: null,
     },
   })
+
+  if (allPassed && nodeId) {
+    const { completeNode } = await import("./learn.service")
+    await completeNode(userId, nodeId)
+  }
 
   return { submission, results, allPassed }
 }

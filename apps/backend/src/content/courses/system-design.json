@@ -1,0 +1,71 @@
+{
+  "id": "tree-system-design",
+  "title": "Cloud-Scale Distributed System Design",
+  "description": "Master architecture and scalability for Tier IV engineering.",
+  "nodes": [
+    {
+      "id": "node-sd-network",
+      "title": "Networking & Protocols",
+      "description": "TCP/UDP, WebSockets, gRPC, and REST.",
+      "type": "BLUEPRINT",
+      "xPos": 100,
+      "yPos": 250,
+      "dependsOn": []
+    },
+    {
+      "id": "node-sd-lb",
+      "title": "Load Balancing",
+      "description": "L4 vs L7 routing, consistent hashing.",
+      "type": "ANVIL",
+      "xPos": 350,
+      "yPos": 100,
+      "dependsOn": ["node-sd-network"],
+      "problemSlug": "consistent-hashing-impl"
+    },
+    {
+      "id": "node-sd-db",
+      "title": "Database Scaling",
+      "description": "Sharding, replication, and CAP theorem.",
+      "type": "BLUEPRINT",
+      "xPos": 350,
+      "yPos": 400,
+      "dependsOn": ["node-sd-network"]
+    },
+    {
+      "id": "node-sd-cache",
+      "title": "Distributed Cache",
+      "description": "Memcached, Redis, and cache stampedes.",
+      "type": "ANVIL",
+      "xPos": 600,
+      "yPos": 250,
+      "dependsOn": ["node-sd-lb", "node-sd-db"]
+    },
+    {
+      "id": "node-sd-mq",
+      "title": "Message Queues",
+      "description": "Kafka, RabbitMQ, and event-driven architecture.",
+      "type": "BLUEPRINT",
+      "xPos": 850,
+      "yPos": 100,
+      "dependsOn": ["node-sd-cache"]
+    },
+    {
+      "id": "node-sd-microservices",
+      "title": "Microservices",
+      "description": "Service discovery, API gateways, and circuit breakers.",
+      "type": "BLUEPRINT",
+      "xPos": 850,
+      "yPos": 400,
+      "dependsOn": ["node-sd-cache"]
+    },
+    {
+      "id": "node-sd-boss",
+      "title": "Global Scale Architecture",
+      "description": "Design a global real-time chat platform (e.g. Discord).",
+      "type": "BOSS",
+      "xPos": 1100,
+      "yPos": 250,
+      "dependsOn": ["node-sd-mq", "node-sd-microservices"]
+    }
+  ]
+}

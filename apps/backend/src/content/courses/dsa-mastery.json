@@ -1,0 +1,54 @@
+{
+  "id": "tree-dsa-mastery",
+  "title": "Data Structures & Systems Matrix",
+  "description": "The core forging path for DSA.",
+  "nodes": [
+    {
+      "id": "node-dsa-arrays",
+      "title": "Arrays & Strings",
+      "description": "Learn memory contiguity and string manipulation.",
+      "type": "BLUEPRINT",
+      "xPos": 100,
+      "yPos": 250,
+      "dependsOn": []
+    },
+    {
+      "id": "node-dsa-two-pointer",
+      "title": "Two-Pointer Technique",
+      "description": "Fix a flawed two-pointer implementation.",
+      "type": "ANVIL",
+      "xPos": 350,
+      "yPos": 100,
+      "dependsOn": ["node-dsa-arrays"],
+      "problemSlug": "two-sum"
+    },
+    {
+      "id": "node-dsa-sliding-window",
+      "title": "Sliding Window",
+      "description": "Find the maximum subarray sum in O(N).",
+      "type": "ANVIL",
+      "xPos": 600,
+      "yPos": 100,
+      "dependsOn": ["node-dsa-two-pointer"],
+      "problemSlug": "maximum-subarray"
+    },
+    {
+      "id": "node-dsa-hash-maps",
+      "title": "Hash Maps & Sets",
+      "description": "O(1) lookups.",
+      "type": "BLUEPRINT",
+      "xPos": 350,
+      "yPos": 400,
+      "dependsOn": ["node-dsa-arrays"]
+    },
+    {
+      "id": "node-dsa-boss-array",
+      "title": "Grandmaster Array Trial",
+      "description": "A live mock interview with the Grandmaster focusing on arrays.",
+      "type": "BOSS",
+      "xPos": 850,
+      "yPos": 250,
+      "dependsOn": ["node-dsa-sliding-window", "node-dsa-hash-maps"]
+    }
+  ]
+}

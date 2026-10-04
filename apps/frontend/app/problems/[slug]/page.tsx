@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter, useParams } from "next/navigation"
+import { useRouter, useParams, useSearchParams } from "next/navigation"
 import dynamic from "next/dynamic"
 import { useProblem, useSubmit } from "@/hooks/useProblems"
 import { useAuthStore } from "@/store/auth.store"
@@ -19,11 +19,14 @@ const DIFF: Record<string, { color: string; bg: string; border: string }> = {
 export default function ProblemPage() {
   const router  = useRouter()
   const params  = useParams()
+  const searchParams = useSearchParams()
   const slug    = params.slug as string
+  const mode    = searchParams.get("mode")
+  const nodeId  = searchParams.get("nodeId")
   const token   = useAuthStore((s) => s.token)
   const hydrated = useAuthStore((s) => s.hydrated)
 
-  const { data: problem, isLoading } = useProblem(slug)
+  const { data: problem, isLoading } = useProblem(slug, mode)
   const submit = useSubmit()
 
   const [language, setLanguage] = useState<"javascript" | "python">("javascript")
@@ -55,7 +58,7 @@ export default function ProblemPage() {
     setResults(null)
     setAllPassed(null)
     try {
-      const res = await submit.mutateAsync({ id: problem.id, code, language })
+      const res = await submit.mutateAsync({ id: problem.id, code, language, nodeId })
       setResults(res.data.data.results)
       setAllPassed(res.data.data.allPassed)
       setActiveTab("results")
@@ -276,16 +279,39 @@ export default function ProblemPage() {
                       {problem.title}
                     </h1>
                   </div>
-                  <span style={{
-                    fontSize: 11, color: "var(--text-muted)", fontFamily: mono,
-                    padding: "3px 10px", borderRadius: 6,
-                    background: "var(--glass-bg)", border: "1px solid var(--border-subtle)",
-                  }}>
-                    {problem.category}
-                  </span>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <span style={{
+                      fontSize: 11, color: "var(--text-muted)", fontFamily: mono,
+                      padding: "3px 10px", borderRadius: 6,
+                      background: "var(--glass-bg)", border: "1px solid var(--border-subtle)",
+                    }}>
+                      {problem.category}
+                    </span>
+                    {mode === 'anvil' && (
+                      <span style={{
+                        fontSize: 11, color: "#ff6b00", fontFamily: mono,
+                        padding: "3px 10px", borderRadius: 6,
+                        background: "rgba(255, 107, 0, 0.1)", border: "1px solid rgba(255, 107, 0, 0.3)",
+                      }}>
+                        🔨 ANVIL CHALLENGE
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Description */}
+                {mode === 'anvil' && (
+                  <div style={{
+                    padding: 12, borderRadius: 8, background: "rgba(255, 107, 0, 0.05)",
+                    borderLeft: "4px solid #ff6b00", color: "var(--text-secondary)",
+                    fontFamily: mono, fontSize: 12, lineHeight: 1.6
+                  }}>
+                    <strong>Mission:</strong> This code is fundamentally broken. A junior developer tried to implement this but missed some critical edge cases.
+                    <br/><br/>
+                    Your task is to fix the <code>solution.{language === "javascript" ? "js" : "py"}</code> file so that it passes all test cases.
+                  </div>
+                )}
+                
                 <div style={{
                   fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.9,
                   fontFamily: mono, whiteSpace: "pre-wrap",

@@ -38,29 +38,34 @@ export async function problemRoutes(app: FastifyInstance) {
   app.get(
     "/:slug",
     { preHandler: [authenticate] },
-    async (req: FastifyRequest<{ Params: { slug: string } }>, reply) => {
-      const problem = await getProblemBySlug(req.params.slug)
+    async (
+      req: FastifyRequest<{
+        Params: { slug: string }
+        Querystring: { mode?: string }
+      }>,
+      reply
+    ) => {
+      const problem = await getProblemBySlug(req.params.slug, req.query.mode)
       if (!problem)
         return reply.status(404).send({ success: false, error: "Problem not found" })
       return reply.send({ success: true, data: problem })
     }
   )
 
-  // POST /api/problems/:id/submit
   app.post(
     "/:id/submit",
     { preHandler: [authenticate] },
     async (
       req: FastifyRequest<{
         Params: { id: string }
-        Body: { code: string; language: string }
+        Body: { code: string; language: string; nodeId?: string }
       }>,
       reply
     ) => {
       const { id: userId } = req.user as { id: string }
-      const { code, language } = req.body
+      const { code, language, nodeId } = req.body
       try {
-        const result = await submitSolution(userId, req.params.id, code, language)
+        const result = await submitSolution(userId, req.params.id, code, language, nodeId)
         return reply.send({ success: true, data: result })
       } catch (err: any) {
         return reply.status(500).send({ success: false, error: "Internal Server Error" })

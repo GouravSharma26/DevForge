@@ -23,11 +23,13 @@ export function useRecommendedProblems() {
   })
 }
 
-export function useProblem(slug: string) {
+export function useProblem(slug: string, mode?: string | null) {
   return useQuery({
-    queryKey: ["problems", slug],
+    queryKey: ["problems", slug, mode],
     queryFn: async () => {
-      const res = await api.get(`/problems/${slug}`)
+      const params = new URLSearchParams()
+      if (mode) params.append("mode", mode)
+      const res = await api.get(`/problems/${slug}?${params.toString()}`)
       return res.data.data
     },
     enabled: !!slug,
@@ -40,10 +42,12 @@ export function useSubmit() {
       id,
       code,
       language,
+      nodeId,
     }: {
       id: string
       code: string
       language: string
-    }) => api.post(`/problems/${id}/submit`, { code, language }),
+      nodeId?: string | null
+    }) => api.post(`/problems/${id}/submit`, { code, language, nodeId }),
   })
 }

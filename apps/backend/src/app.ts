@@ -13,6 +13,7 @@ import "dotenv/config"
 import { authRoutes } from "./routes/auth.routes"
 import { problemRoutes } from "./routes/problems.routes"
 import { learningRoutes } from "./routes/learning.routes"
+import learnRoutes from "./routes/learn.routes"
 import { userRoutes } from "./routes/user.routes"
 import { newsRoutes } from "./routes/news.routes"
 import { arenaRoutes } from "./routes/arena.routes"
@@ -91,6 +92,7 @@ export function buildApp() {
     await instance.register(userRoutes, { prefix: "/api/user" })
     await instance.register(newsRoutes, { prefix: "/api/news" })
     await instance.register(learningRoutes, { prefix: "/api/paths" })
+    await instance.register(learnRoutes, { prefix: "/api/learn" })
     await instance.register(problemRoutes, { prefix: "/api/problems" })
     await instance.register(arenaRoutes, { prefix: "/api/arena" })
     await instance.register(resumeRoutes, { prefix: "/api/resume" })
