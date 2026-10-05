@@ -34,7 +34,7 @@ export default function SkillTreeGraph({ initialNodes, initialEdges }: { initial
   }, [initialNodes, initialEdges, setNodes, setEdges])
 
   const onConnect = useCallback(
-    (params: Connection | Edge) => setEdges((eds) => addEdge({...params, type: 'smoothstep', style: { stroke: '#ff6b00', strokeWidth: 1.5, strokeDasharray: '4 4' }, animated: false}, eds)),
+    (params: Connection | Edge) => setEdges((eds) => addEdge({ ...params, type: 'smoothstep', style: { stroke: '#ff6b00', strokeWidth: 1.5, strokeDasharray: '4 4' }, animated: false } as Edge, eds)),
     [setEdges]
   )
 
