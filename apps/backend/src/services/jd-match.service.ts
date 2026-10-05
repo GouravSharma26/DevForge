@@ -64,7 +64,7 @@ async function executeJDMatchCore(
       result = await model.generateContent(geminiParts)
       break;
     } catch (error: any) {
-      if (error.status === 503 || error.status === 429 || (error.message && error.message.includes("429")) && retries > 1) {
+      if ((error.status === 503 || error.status === 429 || (error.message && error.message.includes("429"))) && retries > 1) {
         console.warn(`⏳ Gemini API busy generating JD Match. Retrying in ${delay / 1000} seconds...`);
         await new Promise((resolve) => setTimeout(resolve, delay));
         retries--;

@@ -117,6 +117,10 @@ export async function submitSolution(
   language: string,
   nodeId?: string
 ) {
+  if (code.length > 100_000) {
+    throw new Error("Payload too large")
+  }
+
   const problem = await prisma.problem.findUnique({ where: { id: problemId } })
   if (!problem) throw new Error("Problem not found")
 

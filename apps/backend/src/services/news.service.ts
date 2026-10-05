@@ -16,35 +16,67 @@ interface NewsAPIArticle {
 
 export async function fetchAndStoreNews() {
   console.log("📰 Fetching news from NewsAPI...")
+  
+  // Skip initial fetch if we have articles from the last 3 hours
+  const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000)
+  const recentArticle = await prisma.article.findFirst({
+    where: { createdAt: { gte: threeHoursAgo } }
+  })
+  if (recentArticle) {
+    console.log("⏭️  Recent articles found, skipping fetch")
+    return 0
+  }
+
   let totalSaved = 0
 
   for (const category of CATEGORIES) {
     try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
+      
       const res = await fetch(
-        `${BASE_URL}/top-headlines?category=${category}&language=en&pageSize=20&apiKey=${NEWS_API_KEY}`
+        `${BASE_URL}/top-headlines?category=${category}&language=en&pageSize=20`,
+        {
+          headers: {
+            "X-Api-Key": NEWS_API_KEY
+          },
+          signal: controller.signal
+        }
       )
+      clearTimeout(timeoutId)
+
+      if (!res.ok) {
+        console.warn(`NewsAPI returned ${res.status} for category ${category}`)
+        continue
+      }
+
       const data = (await res.json()) as any
       if (!data.articles?.length) {
         console.warn(`No articles for ${category}:`, data)
         continue
       }
 
+      const articlesToCreate = []
       for (const article of data.articles) {
         if (!article.title || !article.url || article.title === "[Removed]") continue
-        await prisma.article.upsert({
-          where: { url: article.url },
-          update: {},
-          create: {
-            title: article.title,
-            description: article.description,
-            url: article.url,
-            imageUrl: article.urlToImage,
-            source: article.source.name,
-            category,
-            publishedAt: new Date(article.publishedAt),
-          },
+        
+        articlesToCreate.push({
+          title: article.title,
+          description: article.description,
+          url: article.url,
+          imageUrl: article.urlToImage,
+          source: article.source?.name || "Unknown",
+          category,
+          publishedAt: new Date(article.publishedAt),
         })
-        totalSaved++
+      }
+      
+      if (articlesToCreate.length > 0) {
+        const result = await prisma.article.createMany({
+          data: articlesToCreate,
+          skipDuplicates: true
+        })
+        totalSaved += result.count
       }
     } catch (err) {
       console.error(`Failed to fetch category: ${category}`, err)

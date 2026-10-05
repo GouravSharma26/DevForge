@@ -60,22 +60,19 @@ export async function joinMatch(matchId: string, player2Id: string) {
 
 export async function completeMatch(matchId: string, winnerId: string) {
   return prisma.$transaction(async (tx) => {
-    // 1. Check match status and type
-    const match = await tx.match.findUnique({
-      where: { id: matchId },
-      include: {
-        player1: { select: { id: true, username: true } },
-        player2: { select: { id: true, username: true } },
-      },
-    })
-    
-    if (!match) throw new Error("Match not found")
-    if (match.status !== "ACTIVE") throw new Error("Match already completed or not active")
-
-    // 2. Mark match completed atomically
-    const updatedMatch = await tx.match.update({
-      where: { id: matchId },
+    // 1. Atomically update the match status
+    const { count } = await tx.match.updateMany({
+      where: { id: matchId, status: "ACTIVE" },
       data: { winnerId, status: "COMPLETED", endedAt: new Date() },
+    })
+
+    if (count === 0) {
+      throw new Error("Match already completed or not active")
+    }
+
+    // 2. Fetch the updated match
+    const updatedMatch = await tx.match.findUniqueOrThrow({
+      where: { id: matchId },
       include: {
         player1: { select: { id: true, username: true } },
         player2: { select: { id: true, username: true } },
@@ -83,7 +80,7 @@ export async function completeMatch(matchId: string, winnerId: string) {
     })
 
     // 3. Award XP if it was a ranked/non-friendly match
-    if (!match.isFriendly) {
+    if (!updatedMatch.isFriendly) {
       await tx.user.update({
         where: { id: winnerId },
         data: { xp: { increment: 100 } },

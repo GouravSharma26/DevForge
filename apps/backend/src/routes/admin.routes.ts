@@ -60,14 +60,20 @@ export async function adminRoutes(fastify: FastifyInstance) {
         totalResumes,
         totalInterviews,
         totalProblems,
-        xpAgg
+        totalSubmissions,
+        activeMatches,
+        xpAgg,
+        aiAgg
       ] = await Promise.all([
         prisma.user.count(),
         prisma.match.count(),
         prisma.resume.count(),
         prisma.interview.count(),
         prisma.problem.count(),
-        prisma.user.aggregate({ _sum: { xp: true } })
+        prisma.submission.count(),
+        prisma.match.count({ where: { status: "ACTIVE" } }),
+        prisma.user.aggregate({ _sum: { xp: true } }),
+        prisma.user.aggregate({ _sum: { aiRequestCount: true } })
       ])
 
       const recentUsers = await prisma.user.findMany({
@@ -103,6 +109,9 @@ export async function adminRoutes(fastify: FastifyInstance) {
         totalResumes,
         totalInterviews,
         totalProblems,
+        totalSubmissions,
+        activeMatches,
+        totalAiRequests: aiAgg._sum.aiRequestCount || 0,
         totalXp: xpAgg._sum.xp || 0,
         recentUsers,
         recentMatches,

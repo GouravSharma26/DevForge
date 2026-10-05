@@ -1,7 +1,10 @@
 {
   "name": "devforge",
   "private": true,
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
@@ -9,12 +12,13 @@
     "typecheck": "turbo run typecheck",
     "db:generate": "turbo run db:generate",
     "db:migrate": "turbo run db:migrate",
-    "db:studio": "turbo run db:studio"
+    "db:studio": "turbo run db:studio",
+    "lint": "turbo run lint"
   },
   "devDependencies": {
+    "prettier": "^3.2.0",
     "turbo": "^2.0.0",
     "typescript": "~5.9.3",
-    "prettier": "^3.2.0",
     "vitest": "^2.0.0"
   },
   "packageManager": "npm@11.6.2",

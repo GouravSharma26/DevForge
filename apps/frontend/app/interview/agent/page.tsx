@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef, Suspense } from "react"
+import { useEffect, useState, useRef, Suspense, useCallback } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { io, Socket } from "socket.io-client"
 import { Bot, Send, User, ChevronLeft, Loader2, StopCircle, Sparkles } from "lucide-react"
@@ -32,6 +32,13 @@ function AIInterviewContent() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  const handleEnd = useCallback((force = false) => {
+    if (force || confirm("Are you sure you want to end the interview?")) {
+      setIsEvaluating(true)
+      socket?.emit("interview:end")
+    }
+  }, [socket])
+
   useEffect(() => {
     if (timeLeft <= 0) {
       if (!isEvaluating && finalScore === null) handleEnd(true)
@@ -39,7 +46,7 @@ function AIInterviewContent() {
     }
     const timer = setInterval(() => setTimeLeft(t => t - 1), 1000)
     return () => clearInterval(timer)
-  }, [timeLeft, isEvaluating, finalScore])
+  }, [timeLeft, isEvaluating, finalScore, handleEnd])
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60)
@@ -138,13 +145,6 @@ function AIInterviewContent() {
     setInput("")
     setIsTyping(true)
     socket.emit("interview:message", { message: userMsg })
-  }
-
-  const handleEnd = (force = false) => {
-    if (force || confirm("Are you sure you want to end the interview?")) {
-      setIsEvaluating(true)
-      socket?.emit("interview:end")
-    }
   }
 
   if (!hydrated || !token) return <div className="min-h-screen bg-[#0A0A0A]" />

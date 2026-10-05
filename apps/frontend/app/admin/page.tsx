@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { Shield, Settings, Server, Activity, Bot, Users, Swords, FileText, Mic, Target, RefreshCw } from "lucide-react"
+import { Shield, Settings, Server, Activity, Bot, Users, Swords, FileText, Mic, Target, RefreshCw, Code, Zap, PlayCircle } from "lucide-react"
 import { useAuthStore } from "@/store/auth.store"
 import { api } from "@/lib/api"
 
@@ -17,16 +17,7 @@ export default function AdminDashboard() {
   const [saving, setSaving] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
 
-  useEffect(() => {
-    if (!hydrated) return
-    if (!user || user.role !== "ADMIN") {
-      router.replace("/dashboard")
-      return
-    }
-    fetchData()
-  }, [user, hydrated, router])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setRefreshing(true)
     try {
       const [configRes, statsRes] = await Promise.all([
@@ -42,7 +33,16 @@ export default function AdminDashboard() {
       setLoading(false)
       setTimeout(() => setRefreshing(false), 500)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated) return
+    if (!user || user.role !== "ADMIN") {
+      router.replace("/dashboard")
+      return
+    }
+    fetchData()
+  }, [user, hydrated, router, fetchData])
 
   const handleSave = async () => {
     setSaving(true)
@@ -92,13 +92,13 @@ export default function AdminDashboard() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
             
             {/* Main Content Column */}
             <div className="xl:col-span-3 space-y-8">
               
               {/* Top Stats Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-surface-theme border border-border rounded-2xl p-5 flex items-center gap-4 hover:border-accent/30 transition-colors group relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
                     <Users size={64} />
@@ -174,6 +174,44 @@ export default function AdminDashboard() {
                   <div className="relative z-10">
                     <p className="text-muted text-xs font-mono uppercase tracking-widest">Active Problems</p>
                     <p className="text-2xl font-bold font-mono">{stats.totalProblems.toLocaleString()}</p>
+                  </div>
+                </div>
+                <div className="bg-surface-theme border border-border rounded-2xl p-5 flex items-center gap-4 hover:border-indigo-500/30 transition-colors group relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
+                    <Code size={64} />
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center group-hover:scale-110 transition-transform relative z-10">
+                    <Code size={24} />
+                  </div>
+                  <div className="relative z-10">
+                    <p className="text-muted text-xs font-mono uppercase tracking-widest">Submissions</p>
+                    <p className="text-2xl font-bold font-mono">{stats.totalSubmissions?.toLocaleString()}</p>
+                  </div>
+                </div>
+
+                <div className="bg-surface-theme border border-border rounded-2xl p-5 flex items-center gap-4 hover:border-orange-500/30 transition-colors group relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
+                    <Zap size={64} />
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center group-hover:scale-110 transition-transform relative z-10">
+                    <Zap size={24} />
+                  </div>
+                  <div className="relative z-10">
+                    <p className="text-muted text-xs font-mono uppercase tracking-widest">AI Requests</p>
+                    <p className="text-2xl font-bold font-mono">{stats.totalAiRequests?.toLocaleString()}</p>
+                  </div>
+                </div>
+
+                <div className="bg-surface-theme border border-border rounded-2xl p-5 flex items-center gap-4 hover:border-emerald-500/30 transition-colors group relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
+                    <PlayCircle size={64} />
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform relative z-10">
+                    <PlayCircle size={24} />
+                  </div>
+                  <div className="relative z-10">
+                    <p className="text-muted text-xs font-mono uppercase tracking-widest">Active Matches</p>
+                    <p className="text-2xl font-bold font-mono">{stats.activeMatches?.toLocaleString()}</p>
                   </div>
                 </div>
               </div>
@@ -377,7 +415,6 @@ export default function AdminDashboard() {
               </div>
 
             </div>
-          </div>
         </div>
       </div>
     </div>

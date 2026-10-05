@@ -29,13 +29,15 @@ export const AuthController = {
     })
 
     const token = await reply.jwtSign({ id: user.id }, { expiresIn: "1h" })
-    reply.setCookie("access_token", token, {
+    const cookieOptions = {
       path: "/",
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax" as const,
       maxAge: 3600,
-    })
+    }
+
+    reply.setCookie("access_token", token, cookieOptions)
     return reply.status(201).send({ success: true, data: { user } })
   },
 
@@ -55,18 +57,24 @@ export const AuthController = {
 
     const { password: _, ...safeUser } = user
     const token = await reply.jwtSign({ id: user.id }, { expiresIn: "1h" })
-    reply.setCookie("access_token", token, {
+    const cookieOptions = {
       path: "/",
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax" as const,
       maxAge: 3600,
-    })
+    }
+    
+    reply.setCookie("access_token", token, cookieOptions)
     return reply.send({ success: true, data: { user: safeUser } })
   },
 
   async logout(req: FastifyRequest, reply: FastifyReply) {
-    reply.clearCookie("access_token", { path: "/", sameSite: "none", secure: true })
+    reply.clearCookie("access_token", { 
+      path: "/", 
+      sameSite: "lax", 
+      secure: process.env.NODE_ENV === "production" 
+    })
     return reply.send({ success: true })
   },
 }

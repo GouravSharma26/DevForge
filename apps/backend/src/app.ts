@@ -99,7 +99,7 @@ export function buildApp() {
     await instance.register(adminRoutes, { prefix: "/api/admin" })
 
     // Global Error Handler
-    instance.setErrorHandler((error, request, reply) => {
+    instance.setErrorHandler((error: any, request, reply) => {
       instance.log.error(error)
       
       if (error.name === "PrismaClientInitializationError" || error.message.includes("Can't reach database server")) {

@@ -111,16 +111,20 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     }
   }
 
+  function safeMatchState(match: any, isFriendly = false) {
+    return {
+      matchId: match.id,
+      problem: match.problem ? { slug: match.problem.slug, title: match.problem.title } : undefined,
+      player1: match.player1 ? { id: match.player1.id, username: match.player1.username } : undefined,
+      player2: match.player2 ? { id: match.player2.id, username: match.player2.username } : undefined,
+      isFriendly
+    }
+  }
+
   const activeMatch = Array.from(activeMatches.values()).find(m => m.player1.id === userId || m.player2?.id === userId)
   if (activeMatch) {
     socket.join(`match_${activeMatch.id}`)
-    socket.emit("arena:match_found", {
-      matchId: activeMatch.id,
-      problem: activeMatch.problem,
-      player1: activeMatch.player1,
-      player2: activeMatch.player2,
-      isFriendly: false
-    })
+    socket.emit("arena:match_found", safeMatchState(activeMatch, false))
   }
 
   socket.on("disconnect", () => {
@@ -230,13 +234,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
           matchPlayers.set(match.id, new Set([match.player1Id, userId]))
           activeMatches.set(match.id, match)
 
-          io.to(match.id).emit("arena:match_found", {
-            matchId: match.id,
-            problem: match.problem,
-            player1: match.player1,
-            player2: match.player2,
-            isFriendly: false,
-          })
+          io.to(match.id).emit("arena:match_found", safeMatchState(match, false))
           console.log(`⚔️  Match started: ${match.id}`)
           return // successfully joined
         } catch (err) {
@@ -267,13 +265,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
                 const botMatch = await joinMatch(match.id, botData.botId)
                 matchPlayers.set(match.id, new Set([match.player1Id, botData.botId]))
                 activeMatches.set(match.id, botMatch)
-                io.to(match.id).emit("arena:match_found", {
-                  matchId: botMatch.id,
-                  problem: botMatch.problem,
-                  player1: botMatch.player1,
-                  player2: botMatch.player2,
-                  isFriendly: false,
-                })
+                io.to(match.id).emit("arena:match_found", safeMatchState(botMatch, false))
                 startBotBattle(match.id, botData.botId, botData.ms, io)
               }
             } catch (e) {
@@ -569,6 +561,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
   })
 
   on(socket, "arena:submit_exam_code", z.object({ problemId: z.string(), code: z.string(), language: z.string() }), async ({ problemId, code: sourceCode, language }) => {
+    if (sourceCode.length > 100_000) return socket.emit("arena:error", { message: "Payload too large" })
     const codeRoom = userToRoom.get(userId)
     if (!codeRoom) return
     const room = friendlyRooms.get(codeRoom)
@@ -624,6 +617,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
   // ── STANDARD IN-GAME EVENTS ──────────────────────────────────────────────────────────────
   
   on(socket, "arena:code_change", z.object({ matchId: z.string(), code: z.string() }), async ({ matchId, code }) => {
+    if (code.length > 100_000) return socket.emit("arena:error", { message: "Payload too large" })
     const matchMem = activeMatches.get(matchId)
     if (!matchMem || (matchMem.player1Id !== userId && matchMem.player2?.id !== userId)) {
       return socket.emit("arena:error", { message: "Unauthorized code change" })
@@ -632,6 +626,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
   })
 
   on(socket, "arena:submit", z.object({ matchId: z.string(), problemId: z.string(), code: z.string(), language: z.string() }), async ({ matchId, problemId, code, language }) => {
+    if (code.length > 100_000) return socket.emit("arena:error", { message: "Payload too large" })
     const matchMem = activeMatches.get(matchId)
     if (!matchMem || (matchMem.player1Id !== userId && matchMem.player2?.id !== userId)) {
       return socket.emit("arena:error", { message: "Unauthorized submission" })
@@ -647,22 +642,29 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     const result = await submitSolution(userId, problemId, code, language)
 
     if (result.allPassed) {
-      const match = await completeMatch(matchId, userId)
+      try {
+        const match = await completeMatch(matchId, userId)
 
-      io.to(matchId).emit("arena:match_over", {
-        winnerId: userId,
-        winnerUsername:
-          match.player1Id === userId
-            ? match.player1.username
-            : match.player2?.username,
-        results: result.results,
-        isFriendly: match.isFriendly,
-      })
+        io.to(matchId).emit("arena:match_over", {
+          winnerId: userId,
+          winnerUsername:
+            match.player1Id === userId
+              ? match.player1.username
+              : match.player2?.username,
+          results: result.results,
+          isFriendly: match.isFriendly,
+        })
 
-      console.log(`🏆 Match ${matchId} won by ${userId}`)
-      cancelBotBattle(matchId)
-      matchPlayers.delete(matchId)
-      activeMatches.delete(matchId)
+        console.log(`🏆 Match ${matchId} won by ${userId}`)
+        cancelBotBattle(matchId)
+        matchPlayers.delete(matchId)
+        activeMatches.delete(matchId)
+      } catch (e: any) {
+        if (e.message.includes("already completed")) {
+          return socket.emit("arena:error", { message: "Match already completed" })
+        }
+        console.error("Failed to complete match on submit", e)
+      }
     } else {
       socket.emit("arena:submit_result", {
         passed: false,

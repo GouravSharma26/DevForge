@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest"
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest"
 import { buildApp } from "../src/app"
 import { prisma } from "@devforge/database"
 import { io as Client } from "socket.io-client"
@@ -14,17 +14,19 @@ describe("Auth & WebSockets", () => {
     const built = buildApp()
     app = built.app
     ioServer = built.io
-    
-    // Create test user
-    const username = `testuser-${Date.now()}`
-    const email = `${username}@example.com`
-    const password = "Password123!"
 
     await app.ready()
     
     // Start listening to bind port for websocket tests
     await app.listen({ port: 0 })
     port = (app.server.address() as AddressInfo).port
+  })
+
+  beforeEach(async () => {
+    // Create test user
+    const username = `testuser-${Date.now()}`
+    const email = `${username}@example.com`
+    const password = "Password123!"
 
     // Register user directly
     const res = await app.inject({
@@ -139,5 +141,20 @@ describe("Auth & WebSockets", () => {
         resolve()
       })
     })
+  })
+
+  it("should reject JWT with invalid crit header extension", async () => {
+    const header = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImNyaXQiOlsiYnlwYXNzZWQiXX0"
+    const payload = "eyJpZCI6IjEyMyIsImlhdCI6MTYxNjIzOTAyMiwiZXhwIjoxNjE2MjQyNjIyfQ" 
+    const token = `${header}.${payload}.invalid_signature`
+    
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/user/me",
+      headers: {
+        cookie: `access_token=${token}`
+      }
+    })
+    expect(res.statusCode).toBe(401)
   })
 })

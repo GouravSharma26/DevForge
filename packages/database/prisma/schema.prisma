@@ -144,10 +144,10 @@ model Match {
   endedAt    DateTime?
   createdAt  DateTime    @default(now())
   isFriendly Boolean     @default(false)
-  player1    User        @relation("player1", fields: [player1Id], references: [id])
-  player2    User?       @relation("player2", fields: [player2Id], references: [id])
-  problem    Problem     @relation(fields: [problemId], references: [id])
-  winner     User?       @relation("winner", fields: [winnerId], references: [id])
+  player1    User        @relation("player1", fields: [player1Id], references: [id], onDelete: Cascade)
+  player2    User?       @relation("player2", fields: [player2Id], references: [id], onDelete: Cascade)
+  problem    Problem     @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  winner     User?       @relation("winner", fields: [winnerId], references: [id], onDelete: SetNull)
 }
 
 model Resume {
@@ -270,6 +270,7 @@ enum MatchStatus {
   WAITING
   ACTIVE
   COMPLETED
+  ABANDONED
 }
 
 enum InterviewStatus {

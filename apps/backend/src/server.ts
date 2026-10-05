@@ -11,11 +11,11 @@ async function start() {
     await app.listen({ port: PORT, host: "0.0.0.0" })
     console.log(`🚀 Backend running on http://localhost:${PORT}`)
 
-    // Start background news fetching
-    await scheduleNewsJob()
+    // Start background news fetching (fire-and-forget)
+    scheduleNewsJob().catch(err => console.error("Failed to schedule news job", err))
 
-    // Fetch news immediately on startup so DB isn't empty
-    await fetchAndStoreNews()
+    // Fetch news immediately on startup so DB isn't empty (fire-and-forget)
+    fetchAndStoreNews().catch(err => console.error("Failed to fetch initial news", err))
   } catch (err) {
     app.log.error(err)
     process.exit(1)

@@ -1,5 +1,5 @@
 "use client"
-
+import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Flame, Crown, Mic, Puzzle, Zap, FileText, Route, Swords } from "lucide-react"
@@ -214,7 +214,7 @@ export default function DashboardPage() {
                 <div className="text-[10px] text-[var(--color-warning)] uppercase tracking-widest font-bold mb-1">Priority Protocol</div>
                 <h2 className="text-[20px] font-display font-bold text-[var(--color-text-primary)]">Next up in the Forge</h2>
               </div>
-              <a href="/paths" className="text-[11.5px] font-bold text-[var(--color-text-primary)] hover:text-[var(--color-accent)]">View Adaptive Plan →</a>
+              <Link href="/paths" className="text-[11.5px] font-bold text-[var(--color-text-primary)] hover:text-[var(--color-accent)]">View Adaptive Plan →</Link>
             </div>
             
             <div className="flex flex-col gap-2.5">
