@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Shield, Settings, Server, Activity, Bot, Users, Swords, FileText, Mic, Target, RefreshCw } from "lucide-react"
 import { useAuthStore } from "@/store/auth.store"
 import { AppShell } from "@/components/ui/AppShell"
+import { api } from "@/lib/api"
 
 // API is proxied through Next.js
 export default function AdminDashboard() {
@@ -30,19 +31,12 @@ export default function AdminDashboard() {
     setRefreshing(true)
     try {
       const [configRes, statsRes] = await Promise.all([
-        fetch(`/api/admin/config`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`/api/admin/stats`, { headers: { Authorization: `Bearer ${token}` } })
+        api.get(`/admin/config`),
+        api.get(`/admin/stats`)
       ])
       
-      if (!configRes.ok || !statsRes.ok) throw new Error("Failed to fetch")
-      
-      const [configData, statsData] = await Promise.all([
-        configRes.json(),
-        statsRes.json()
-      ])
-      
-      setConfig(configData)
-      setStats(statsData)
+      setConfig(configRes.data)
+      setStats(statsRes.data)
     } catch (err) {
       console.error(err)
     } finally {
@@ -54,15 +48,7 @@ export default function AdminDashboard() {
   const handleSave = async () => {
     setSaving(true)
     try {
-      const res = await fetch(`/api/admin/config`, {
-        method: "PUT",
-        headers: { 
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify(config)
-      })
-      if (!res.ok) throw new Error("Failed to save")
+      await api.put(`/admin/config`, config)
     } catch (err) {
       console.error(err)
     } finally {
