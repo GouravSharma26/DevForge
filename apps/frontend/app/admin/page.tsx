@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Shield, Settings, Server, Activity, Bot, Users, Swords, FileText, Mic, Target, RefreshCw } from "lucide-react"
 import { useAuthStore } from "@/store/auth.store"
-import { AppShell } from "@/components/ui/AppShell"
 import { api } from "@/lib/api"
 
 // API is proxied through Next.js
@@ -58,18 +57,15 @@ export default function AdminDashboard() {
 
   if (!hydrated || loading || !config || !stats) {
     return (
-      <AppShell>
-        <div className="flex items-center justify-center h-full">
-          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-        </div>
-      </AppShell>
+      <div className="flex items-center justify-center h-full min-h-[calc(100vh-56px)]">
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
     )
   }
 
   return (
-    <AppShell>
-      <div className="min-h-full p-6 md:p-10 font-sans selection:bg-accent/30 text-primary overflow-x-hidden">
-        <div className="w-full max-w-[1600px] space-y-8">
+    <div className="min-h-full p-6 md:p-10 font-sans selection:bg-accent/30 text-primary overflow-x-hidden">
+      <div className="w-full max-w-[1600px] space-y-8">
           
           {/* Header */}
           <div className="flex items-center justify-between bg-surface-theme/50 backdrop-blur-xl border border-border rounded-3xl p-8 relative overflow-hidden">
@@ -382,8 +378,6 @@ export default function AdminDashboard() {
 
             </div>
           </div>
-        </div>
-      </div>
-    </AppShell>
+    </div>
   )
 }
