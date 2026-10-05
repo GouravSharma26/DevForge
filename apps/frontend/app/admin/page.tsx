@@ -69,7 +69,7 @@ export default function AdminDashboard() {
   return (
     <AppShell>
       <div className="min-h-full p-6 md:p-10 font-sans selection:bg-accent/30 text-primary overflow-x-hidden">
-        <div className="max-w-7xl mx-auto space-y-8">
+        <div className="w-full max-w-[1600px] space-y-8">
           
           {/* Header */}
           <div className="flex items-center justify-between bg-surface-theme/50 backdrop-blur-xl border border-border rounded-3xl p-8 relative overflow-hidden">
