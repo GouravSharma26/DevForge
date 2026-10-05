@@ -373,55 +373,66 @@ export default function ProfilePage() {
 
       {/* ── Edit Profile Modal ── */}
       {isEditing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-surface-theme border border-border rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col relative">
-            <div className="p-6">
-              <h3 className="text-xl font-bold text-primary font-mono mb-6 flex items-center gap-2">
-                <Edit3 className="text-accent" size={20} /> Edit Profile
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-base border border-accent/20 rounded-2xl w-full max-w-md shadow-[0_0_40px_rgba(234,88,12,0.15)] overflow-hidden flex flex-col relative animate-in zoom-in-95 duration-200">
+            {/* Glowing Top Border */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent to-highlight" />
+
+            <div className="p-6 md:p-8">
+              <h3 className="text-2xl font-bold text-primary font-mono mb-8 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center shadow-[0_0_15px_rgba(234,88,12,0.2)]">
+                  <Edit3 className="text-accent" size={20} />
+                </div>
+                Forge Profile
               </h3>
               
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
-                  <label className="block text-xs font-mono text-muted mb-1 uppercase tracking-wider">Username</label>
+                  <label className="block text-xs font-mono text-muted mb-1.5 uppercase tracking-wider">Username</label>
                   <input 
                     type="text" 
                     value={editForm.username} 
                     onChange={e => setEditForm({...editForm, username: e.target.value})}
-                    className="w-full bg-card border border-border rounded-lg px-4 py-2.5 text-sm text-primary outline-none focus:border-accent transition-colors"
+                    className="w-full bg-surface-theme/50 border border-border rounded-xl px-4 py-3 text-sm text-primary outline-none focus:border-accent focus:ring-1 focus:ring-accent/50 transition-all font-mono"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-xs font-mono text-muted mb-1 uppercase tracking-wider">Target Role</label>
+                  <label className="block text-xs font-mono text-muted mb-1.5 uppercase tracking-wider">Target Role</label>
                   <input 
                     type="text" 
                     value={editForm.targetRole} 
                     onChange={e => setEditForm({...editForm, targetRole: e.target.value})}
                     placeholder="e.g. Senior Frontend Engineer"
-                    className="w-full bg-card border border-border rounded-lg px-4 py-2.5 text-sm text-primary outline-none focus:border-accent transition-colors"
+                    className="w-full bg-surface-theme/50 border border-border rounded-xl px-4 py-3 text-sm text-primary outline-none focus:border-accent focus:ring-1 focus:ring-accent/50 transition-all font-mono"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-xs font-mono text-muted mb-1 uppercase tracking-wider">Bio</label>
+                  <label className="block text-xs font-mono text-muted mb-1.5 uppercase tracking-wider">Bio</label>
                   <textarea 
                     value={editForm.bio} 
                     onChange={e => setEditForm({...editForm, bio: e.target.value})}
                     placeholder="Tell us about yourself..."
-                    className="w-full bg-card border border-border rounded-lg px-4 py-2.5 text-sm text-primary outline-none focus:border-accent transition-colors resize-none h-24"
+                    className="w-full bg-surface-theme/50 border border-border rounded-xl px-4 py-3 text-sm text-primary outline-none focus:border-accent focus:ring-1 focus:ring-accent/50 transition-all font-mono resize-none h-28"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-muted mb-2 uppercase tracking-wider">Profile Picture</label>
+                  <label className="block text-xs font-mono text-muted mb-2.5 uppercase tracking-wider">Avatar</label>
                   <div className="flex items-center gap-4">
                     {editForm.avatar ? (
-                       <img src={editForm.avatar} alt="Avatar preview" className="w-12 h-12 rounded-full object-cover border border-border" />
+                       <div className="relative group rounded-full">
+                         <img src={editForm.avatar} alt="Avatar preview" className="w-14 h-14 rounded-full object-cover border-2 border-accent shadow-[0_0_15px_rgba(234,88,12,0.3)]" />
+                         <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer border-2 border-transparent" onClick={() => setEditForm({...editForm, avatar: ""})}>
+                           <Trash2 size={16} className="text-white" />
+                         </div>
+                       </div>
                     ) : (
-                       <div className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center text-[10px] text-muted font-mono">None</div>
+                       <div className="w-14 h-14 rounded-full bg-surface-theme border-2 border-dashed border-border flex items-center justify-center text-[10px] text-muted font-mono">None</div>
                     )}
-                    <label className="cursor-pointer bg-card border border-border hover:border-accent text-primary px-4 py-2 rounded-lg text-xs font-bold font-mono transition-colors flex items-center gap-2">
-                      <Plus size={14} /> Browse File
+                    <label className="cursor-pointer bg-card border border-border hover:border-accent hover:bg-accent/5 text-primary px-4 py-2.5 rounded-xl text-xs font-bold font-mono transition-all flex items-center gap-2">
+                      <Plus size={14} className="text-accent" /> Upload Image
                       <input 
                         type="file" 
                         accept="image/*" 
@@ -441,32 +452,24 @@ export default function ProfilePage() {
                         }}
                       />
                     </label>
-                    {editForm.avatar && (
-                       <button 
-                         onClick={() => setEditForm({...editForm, avatar: ""})} 
-                         className="text-red-500 text-xs font-bold font-mono hover:bg-red-500/10 px-3 py-2 rounded-lg transition-colors border border-transparent hover:border-red-500/20"
-                       >
-                         Remove
-                       </button>
-                    )}
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="flex border-t border-border mt-2">
+            <div className="flex border-t border-border bg-surface-theme/20">
               <button
                 onClick={() => setIsEditing(false)}
-                className="flex-1 py-4 text-sm font-bold text-muted hover:text-primary hover:bg-card transition-colors border-r border-border"
+                className="flex-1 py-4.5 text-sm font-bold text-muted hover:text-primary hover:bg-card transition-colors border-r border-border font-mono py-4"
               >
                 Cancel
               </button>
               <button
                 disabled={updateMe.isPending}
                 onClick={handleSaveProfile}
-                className="flex-1 py-4 text-sm font-bold text-accent hover:bg-accent/10 transition-colors disabled:opacity-50"
+                className="flex-1 py-4.5 text-sm font-bold text-accent hover:bg-accent hover:text-white transition-colors disabled:opacity-50 font-mono py-4"
               >
-                {updateMe.isPending ? "Saving..." : "Save Changes"}
+                {updateMe.isPending ? "Forging..." : "Save Changes"}
               </button>
             </div>
           </div>

@@ -10,6 +10,36 @@ import { useMe } from "@/hooks/useUser"
 import { useTheme } from "next-themes"
 import { RankIcon } from "./RankIcon"
 
+function DashboardSkeleton() {
+  return (
+    <div className="p-6 md:p-8 w-full h-full animate-pulse">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header Skeleton */}
+        <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
+          <div className="space-y-3">
+            <div className="h-8 w-48 bg-surface-theme rounded-lg" />
+            <div className="h-4 w-64 bg-surface-theme/50 rounded-lg" />
+          </div>
+          <div className="h-10 w-32 bg-surface-theme rounded-xl" />
+        </div>
+        
+        {/* Stats Grid Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-28 bg-surface-theme/30 rounded-2xl border border-border" />
+          ))}
+        </div>
+        
+        {/* Main Content Area Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 h-[400px] bg-surface-theme/30 rounded-3xl border border-border" />
+          <div className="h-[400px] bg-surface-theme/30 rounded-3xl border border-border" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(true)
   const [scrolled, setScrolled] = useState(false)
@@ -208,10 +238,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {hydrated || isLandingPage || pathname === "/about" || pathname === "/login" ? (
           children
         ) : (
-          <div className="flex flex-col items-center justify-center w-full h-[calc(100vh-56px)] bg-base text-muted gap-4">
-            <div className="w-12 h-12 rounded-full border-4 border-surface-theme border-t-accent animate-spin" />
-            <div className="font-mono text-sm tracking-widest animate-pulse">WAKING UP FORGE...</div>
-          </div>
+          <DashboardSkeleton />
         )}
       </main>
     </>
