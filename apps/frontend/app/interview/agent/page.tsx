@@ -63,8 +63,8 @@ function AIInterviewContent() {
       return
     }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || apiUrl.replace("/api", "")
+    const apiUrl = "/api"
+    const wsUrl = ""
     
     const newSocket = io(wsUrl, {
       withCredentials: true,

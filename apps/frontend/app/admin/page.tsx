@@ -6,8 +6,7 @@ import { Shield, Settings, Server, Activity, Bot, Users, Swords, FileText, Mic, 
 import { useAuthStore } from "@/store/auth.store"
 import { AppShell } from "@/components/ui/AppShell"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
-
+// API is proxied through Next.js
 export default function AdminDashboard() {
   const router = useRouter()
   const { user, token, hydrated } = useAuthStore()
@@ -31,8 +30,8 @@ export default function AdminDashboard() {
     setRefreshing(true)
     try {
       const [configRes, statsRes] = await Promise.all([
-        fetch(`${API_URL}/admin/config`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API_URL}/admin/stats`, { headers: { Authorization: `Bearer ${token}` } })
+        fetch(`/api/admin/config`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`/api/admin/stats`, { headers: { Authorization: `Bearer ${token}` } })
       ])
       
       if (!configRes.ok || !statsRes.ok) throw new Error("Failed to fetch")
@@ -55,7 +54,7 @@ export default function AdminDashboard() {
   const handleSave = async () => {
     setSaving(true)
     try {
-      const res = await fetch(`${API_URL}/admin/config`, {
+      const res = await fetch(`/api/admin/config`, {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json",

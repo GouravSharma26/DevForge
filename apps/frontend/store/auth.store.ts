@@ -3,8 +3,7 @@ import axios from "axios"
 
 // Plain axios (not the shared `api` instance) is used for the session probe so the
 // shared 401 interceptor does not redirect anonymous visitors to /login.
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
-
+// API requests go through Next.js proxy now
 // The session lives in an httpOnly cookie, so JS never sees a JWT. `token` is kept only as a
 // truthy "session present" marker for the existing `if (!token)` page guards. Remove it once
 // those guards are migrated to check `user`.
@@ -41,7 +40,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   hydrate: async () => {
     const epoch = authEpoch
     try {
-      const res = await axios.get(`${API_URL}/user/me`, { withCredentials: true })
+      const res = await axios.get(`/api/user/me`, { withCredentials: true })
       if (epoch !== authEpoch) return
       const user = res.data?.data ?? null
       set({ user, token: user ? SESSION_MARKER : null, hydrated: true })
