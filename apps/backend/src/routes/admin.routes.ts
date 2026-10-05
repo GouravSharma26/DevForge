@@ -51,4 +51,40 @@ export async function adminRoutes(fastify: FastifyInstance) {
     })
     return reply.send(updated)
   })
+
+  fastify.get("/stats", async (request, reply) => {
+    try {
+      const [
+        totalUsers,
+        totalMatches,
+        totalResumes,
+        totalInterviews,
+        totalProblems
+      ] = await Promise.all([
+        prisma.user.count(),
+        prisma.match.count(),
+        prisma.resume.count(),
+        prisma.interview.count(),
+        prisma.problem.count()
+      ])
+
+      const recentUsers = await prisma.user.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        select: { id: true, username: true, email: true, createdAt: true, role: true }
+      })
+
+      return reply.send({
+        totalUsers,
+        totalMatches,
+        totalResumes,
+        totalInterviews,
+        totalProblems,
+        recentUsers
+      })
+    } catch (err) {
+      console.error(err)
+      return reply.status(500).send({ error: "Failed to fetch stats" })
+    }
+  })
 }
