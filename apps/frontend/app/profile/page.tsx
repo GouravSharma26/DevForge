@@ -5,7 +5,7 @@ import { useMe, useUpdateMe } from "@/hooks/useUser"
 import { useResumes, useDeleteResume, useUploadResume, useInterviews } from "@/hooks/useResume"
 import { useMatchHistory } from "@/hooks/useArena"
 import { useRouter } from "next/navigation"
-import { Flame, Trophy, Star, Edit3, Mail, Target, Clock, Shield, FileText, Plus, Trash2, ArrowRight, Swords } from "lucide-react"
+import { Flame, Trophy, Star, Edit3, Mail, Target, Clock, Shield, FileText, Plus, Trash2, ArrowRight, Swords, Skull, Mic } from "lucide-react"
 import { calculateRank } from "@/lib/rank"
 import { RankIcon } from "@/components/ui/RankIcon"
 
@@ -197,14 +197,14 @@ export default function ProfilePage() {
             <span className="w-1.5 h-6 rounded-full bg-accent"></span>
             Recent Activity
           </h2>
-          <div className="flex flex-col">
+          <div className="flex flex-col max-h-[360px] overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(234,88,12,0.2) transparent' }}>
             {(() => {
               const completedInterviews = interviews?.filter((i: any) => i.status === "COMPLETED") || []
               const completedMatches = matches || []
               const forgeLogActivities = [
                 ...completedInterviews.map((i: any) => ({ ...i, type: 'INTERVIEW', date: new Date(i.createdAt) })),
                 ...completedMatches.map((m: any) => ({ ...m, type: 'MATCH', date: new Date(m.endedAt || m.createdAt) }))
-              ].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 10)
+              ].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 30) // Increased to 30 for scrolling
 
               if (forgeLogActivities.length === 0) {
                 return (
@@ -222,10 +222,12 @@ export default function ProfilePage() {
                 if (activity.type === 'INTERVIEW') {
                   return (
                     <div key={`int-${activity.id}`} className="flex gap-4 py-4 border-b border-border last:border-0 hover:bg-card/30 px-4 -mx-4 rounded-xl transition-colors">
-                      <div className={`w-2.5 h-2.5 rounded-full mt-2 shrink-0 ${activity.score > 80 ? 'bg-[#10b981]' : activity.score > 60 ? 'bg-[#eab308]' : 'bg-[#ef4444]'}`}></div>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${activity.score > 80 ? 'bg-[#10b981]/10 text-[#10b981]' : activity.score > 60 ? 'bg-[#eab308]/10 text-[#eab308]' : 'bg-[#ef4444]/10 text-[#ef4444]'}`}>
+                        <Mic size={18} />
+                      </div>
                       <div className="flex-1">
                         <div className="flex justify-between items-start">
-                          <div className="font-bold text-primary">Mock Interview Protocol Graded — {activity.score}/100</div>
+                          <div className="font-bold text-primary flex items-center gap-2">Mock Interview Protocol Graded — {activity.score}/100</div>
                           <span className="text-xs text-muted font-mono">{activity.date.toLocaleDateString()}</span>
                         </div>
                         <div className="text-muted text-sm mt-1">{activity.jobTitle || 'General Software Engineer'} • AI Agent Session</div>
@@ -237,11 +239,13 @@ export default function ProfilePage() {
                   const opponent = activity.player1Id === user?.id ? activity.player2 : activity.player1
                   return (
                     <div key={`match-${activity.id}`} className="flex gap-4 py-4 border-b border-border last:border-0 hover:bg-card/30 px-4 -mx-4 rounded-xl transition-colors">
-                      <div className={`w-2.5 h-2.5 rounded-full mt-2 shrink-0 ${isWinner ? 'bg-highlight' : 'bg-red-500'}`}></div>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isWinner ? 'bg-highlight/10 text-highlight' : 'bg-red-500/10 text-red-500'}`}>
+                        {isWinner ? <Trophy size={18} /> : <Skull size={18} />}
+                      </div>
                       <div className="flex-1">
                         <div className="flex justify-between items-start">
-                          <div className="font-bold text-primary">
-                            {isWinner ? "🏆 Won" : "💀 Lost"} PvP Battle vs {opponent?.username || "Unknown"}
+                          <div className="font-bold text-primary flex items-center gap-2">
+                            {isWinner ? "Won PvP Battle" : "Lost PvP Battle"} vs {opponent?.username || "Unknown"}
                           </div>
                           <span className="text-xs text-muted font-mono">{activity.date.toLocaleDateString()}</span>
                         </div>
