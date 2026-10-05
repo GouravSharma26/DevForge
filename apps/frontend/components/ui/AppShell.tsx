@@ -205,7 +205,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         className={`transition-[margin] duration-300 ${token && open ? "ml-[252px]" : "ml-0"}`}
         style={{ minHeight: "calc(100vh - 56px)" }}
       >
-        {hydrated ? children : null}
+        {hydrated || isLandingPage || pathname === "/about" || pathname === "/login" ? (
+          children
+        ) : (
+          <div className="flex flex-col items-center justify-center w-full h-[calc(100vh-56px)] bg-base text-muted gap-4">
+            <div className="w-12 h-12 rounded-full border-4 border-surface-theme border-t-accent animate-spin" />
+            <div className="font-mono text-sm tracking-widest animate-pulse">WAKING UP FORGE...</div>
+          </div>
+        )}
       </main>
     </>
   )

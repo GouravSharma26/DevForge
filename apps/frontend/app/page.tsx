@@ -265,9 +265,7 @@ export default function LandingPage() {
     }
   }
   
-  if (!hydrated) {
-    return <div style={{ background: "#171210", minHeight: "100vh" }} />
-  }
+
 
   return (
     <div style={{ background: "#171210", minHeight: "100vh", color: "#fdf6f0", overflowX: "hidden" }}>
