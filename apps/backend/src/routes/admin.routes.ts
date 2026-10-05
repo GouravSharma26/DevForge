@@ -59,13 +59,15 @@ export async function adminRoutes(fastify: FastifyInstance) {
         totalMatches,
         totalResumes,
         totalInterviews,
-        totalProblems
+        totalProblems,
+        xpAgg
       ] = await Promise.all([
         prisma.user.count(),
         prisma.match.count(),
         prisma.resume.count(),
         prisma.interview.count(),
-        prisma.problem.count()
+        prisma.problem.count(),
+        prisma.user.aggregate({ _sum: { xp: true } })
       ])
 
       const recentUsers = await prisma.user.findMany({
@@ -74,13 +76,36 @@ export async function adminRoutes(fastify: FastifyInstance) {
         select: { id: true, username: true, email: true, createdAt: true, role: true }
       })
 
+      const recentMatches = await prisma.match.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        include: {
+          players: { select: { user: { select: { username: true } }, score: true } },
+          problem: { select: { title: true, difficulty: true } }
+        }
+      })
+
+      const memoryUsage = process.memoryUsage()
+      const serverStats = {
+        uptime: process.uptime(),
+        memory: {
+          total: memoryUsage.heapTotal,
+          used: memoryUsage.heapUsed,
+          rss: memoryUsage.rss
+        },
+        nodeVersion: process.version
+      }
+
       return reply.send({
         totalUsers,
         totalMatches,
         totalResumes,
         totalInterviews,
         totalProblems,
-        recentUsers
+        totalXp: xpAgg._sum.xp || 0,
+        recentUsers,
+        recentMatches,
+        serverStats
       })
     } catch (err) {
       console.error(err)
