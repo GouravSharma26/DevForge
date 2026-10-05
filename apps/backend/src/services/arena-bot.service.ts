@@ -46,22 +46,30 @@ export function startBotBattle(matchId: string, botId: string, solveTimeMs: numb
       
       // 2. Wait 3 seconds to "evaluate"
       setTimeout(async () => {
-        // Complete the match with bot as winner
-        const match = await completeMatch(matchId, botId)
-        
-        const winner = await prisma.user.findUnique({ where: { id: botId } })
-        
-        io.to(matchId).emit("arena:match_over", {
-          winnerId: botId,
-          winnerUsername: winner?.username || "DevBot",
-          results: [{ 
-            passed: true, 
-            input: "Bot Auto-Solve", 
-            expected: "Passed", 
-            actual: "Passed" 
-          }]
-        })
-        console.log(`🤖 Bot ${botId} WON match ${matchId}`)
+        try {
+          // Complete the match with bot as winner
+          const match = await completeMatch(matchId, botId)
+          
+          const winner = await prisma.user.findUnique({ where: { id: botId } })
+          
+          io.to(matchId).emit("arena:match_over", {
+            winnerId: botId,
+            winnerUsername: winner?.username || "DevBot",
+            results: [{ 
+              passed: true, 
+              input: "Bot Auto-Solve", 
+              expected: "Passed", 
+              actual: "Passed" 
+            }]
+          })
+          console.log(`🤖 Bot ${botId} WON match ${matchId}`)
+        } catch (err: any) {
+          if (err.message?.includes("Match already completed")) {
+            console.log(`🤖 Bot ${botId} lost match ${matchId} (human finished first during evaluation)`);
+          } else {
+            console.error("Bot evaluation error", err)
+          }
+        }
       }, 3000)
 
     } catch (err) {

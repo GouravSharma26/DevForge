@@ -118,7 +118,7 @@ export async function submitSolution(
   nodeId?: string
 ) {
   if (code.length > 100_000) {
-    throw new Error("Payload too large")
+    throw Object.assign(new Error("Payload too large"), { statusCode: 413 })
   }
 
   const problem = await prisma.problem.findUnique({ where: { id: problemId } })

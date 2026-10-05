@@ -2,6 +2,9 @@ import { prisma } from "@devforge/database"
 import { beforeEach } from "vitest"
 
 beforeEach(async () => {
+  const dbName = new URL(process.env.DATABASE_URL!).pathname
+  if (!/test/i.test(dbName)) throw new Error(`Refusing to truncate non-test DB: ${dbName}`)
+
   const tablenames = await prisma.$queryRaw<
     Array<{ tablename: string }>
   >`SELECT tablename FROM pg_tables WHERE schemaname='public'`
