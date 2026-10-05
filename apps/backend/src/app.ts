@@ -9,6 +9,7 @@ import multipart from "@fastify/multipart"
 import { Server } from "socket.io"
 import { prisma } from "@devforge/database"
 import "dotenv/config"
+import { serializerCompiler, validatorCompiler, ZodTypeProvider } from "fastify-type-provider-zod"
 
 import { authRoutes } from "./routes/auth.routes"
 import { problemRoutes } from "./routes/problems.routes"
@@ -34,6 +35,9 @@ const requireEnv = (k: string) => {
 
 export function buildApp() {
   const app = Fastify({ logger: true, trustProxy: true })
+
+  app.setValidatorCompiler(validatorCompiler)
+  app.setSerializerCompiler(serializerCompiler)
 
   // Initialize Socket.io early so it can be passed or accessed if needed
   const io = new Server(app.server, {
@@ -106,6 +110,16 @@ export function buildApp() {
         return reply.status(503).send({ 
           success: false, 
           error: "Database connection timeout. Please try again." 
+        })
+      }
+
+      if (error.code === 'FST_ERR_VALIDATION' || error.name === 'ZodError') {
+        const message = error.validation 
+          ? error.validation.map((v: any) => v.message).join(", ") 
+          : error.message;
+        return reply.status(400).send({
+          success: false,
+          error: message || "Validation failed"
         })
       }
 

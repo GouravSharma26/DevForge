@@ -2,15 +2,12 @@ import { FastifyRequest, FastifyReply } from "fastify"
 import bcrypt from "bcrypt"
 import { prisma } from "@devforge/database"
 import { RegisterSchema, LoginSchema } from "@devforge/shared-types"
+import { z } from "zod"
 
 
 export const AuthController = {
-  async register(req: FastifyRequest, reply: FastifyReply) {
-    const body = RegisterSchema.safeParse(req.body)
-    if (!body.success)
-      return reply.status(400).send({ success: false, error: body.error.message })
-
-    const { username, email, password } = body.data
+  async register(req: FastifyRequest<{ Body: z.infer<typeof RegisterSchema> }>, reply: FastifyReply) {
+    const { username, email, password } = req.body
 
     const existing = await prisma.user.findFirst({
       where: { OR: [{ email }, { username }] },
@@ -41,12 +38,8 @@ export const AuthController = {
     return reply.status(201).send({ success: true, data: { user } })
   },
 
-  async login(req: FastifyRequest, reply: FastifyReply) {
-    const body = LoginSchema.safeParse(req.body)
-    if (!body.success)
-      return reply.status(400).send({ success: false, error: body.error.message })
-
-    const { email, password } = body.data
+  async login(req: FastifyRequest<{ Body: z.infer<typeof LoginSchema> }>, reply: FastifyReply) {
+    const { email, password } = req.body
     const user = await prisma.user.findUnique({ where: { email } })
     if (!user)
       return reply.status(401).send({ success: false, error: "Invalid credentials" })
