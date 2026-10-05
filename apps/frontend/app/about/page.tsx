@@ -1,134 +1,250 @@
 "use client"
 
-import { HelpCircle, Star, Swords, Target, BookOpen, Mic, FileText, Zap, Trophy, Shield, ShieldQuestion } from "lucide-react"
+import { useState, useEffect } from "react"
+import { HelpCircle, Star, Swords, Target, BookOpen, Mic, FileText, Zap, Trophy, Shield, ShieldQuestion, ChevronRight, BrainCircuit, Code, Play } from "lucide-react"
+import { RankIcon } from "@/components/ui/RankIcon"
 
 export default function AboutPage() {
   return (
-    <div className="max-w-[800px] mx-auto p-4 md:p-8 space-y-12 pb-24">
+    <div className="max-w-[1000px] mx-auto p-4 md:p-8 space-y-20 pb-32 overflow-hidden">
       {/* Header */}
-      <div className="flex flex-col items-center text-center space-y-4 mb-12">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-highlight flex items-center justify-center shadow-lg shadow-[#ea580c]/20">
-          <HelpCircle size={32} className="text-white" />
+      <div className="flex flex-col items-center text-center space-y-6 mb-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+        <div className="relative">
+          <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full" />
+          <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-accent to-highlight flex items-center justify-center shadow-lg shadow-[#ea580c]/30">
+            <HelpCircle size={40} className="text-white" />
+          </div>
         </div>
-        <h1 className="text-4xl font-extrabold text-primary tracking-tight">
-          Welcome to DevForge
+        <h1 className="text-5xl font-black text-primary tracking-tight font-mono">
+          THE DEVFORGE <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-highlight">CODEX</span>
         </h1>
-        <p className="text-muted max-w-2xl text-lg">
-          The ultimate platform to forge your skills, build standout resumes, and prove your mettle in the arena. Here is everything you need to know.
+        <p className="text-muted max-w-2xl text-lg leading-relaxed">
+          Welcome to the ultimate proving grounds. DevForge isn't just a learning platform—it's a gamified ecosystem designed to temper your skills, forge your career, and test your mettle in the Arena.
         </p>
       </div>
 
-      {/* Feature Walkthrough */}
-      <section className="space-y-6">
-        <h2 className="text-2xl font-bold text-primary flex items-center gap-3 font-mono border-b border-border pb-4">
-          <Target className="text-accent" /> Core Features Walkthrough
-        </h2>
-
-        <div className="grid gap-6">
-          <FeatureCard 
-            icon={<FileText />}
-            title="Resume Hub & Builder"
-            description="Manage all your resumes in one place. Upload an existing PDF to instantly get an AI-powered ATS score breakdown, or use the Builder to craft a brand new one. The AI will automatically extract your skills, analyze your project impact, and suggest improvements."
-          />
-          <FeatureCard 
-            icon={<Mic />}
-            title="Interview Hub"
-            description="Prepare for the real deal. DevForge uses cutting-edge AI to conduct realistic technical, behavioral, and system design interviews. It listens to your voice, evaluates your answers in real-time, and provides actionable feedback to help you ace your next big opportunity."
-          />
-          <FeatureCard 
-            icon={<BookOpen />}
-            title="Practice & Problems"
-            description="Grind through our curated list of technical problems. From algorithms to system design, these challenges are tailored to your target role. Solving problems earns you XP, which contributes directly to your global rank."
-          />
+      {/* Interactive Core Loop Animation */}
+      <section className="space-y-8 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-150 fill-mode-both">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-primary font-mono mb-3">The Forge Loop</h2>
+          <p className="text-muted">How to ascend from an Iron Apprentice to an Ember Grandmaster.</p>
         </div>
+        
+        <CoreLoopAnimation />
       </section>
 
-      {/* Ranking System */}
-      <section className="space-y-6 mt-16">
-        <h2 className="text-2xl font-bold text-primary flex items-center gap-3 font-mono border-b border-border pb-4">
-          <Star className="text-[#84cc16]" /> The Ranking System
-        </h2>
-        
-        <div className="p-6 rounded-2xl border border-border bg-surface-theme/50 backdrop-blur-xl">
-          <p className="text-muted mb-6 leading-relaxed">
-            Your journey on DevForge is tracked through a global ranking system. As you solve problems, complete interviews, and participate in the Arena, you earn <strong className="text-primary">XP (Experience Points)</strong>. Hitting specific XP thresholds will automatically promote you to the next rank tier.
-          </p>
-          
-          <div className="space-y-4">
-            <RankTier tier="Beginner" levels="1, 2, 3" xp="0 - 1500 XP" color="text-[#10b981]" bg="bg-[#10b981]/10" />
-            <RankTier tier="Intermediate" levels="1, 2, 3" xp="1500 - 3000 XP" color="text-[#3b82f6]" bg="bg-[#3b82f6]/10" />
-            <RankTier tier="Advanced" levels="1, 2, 3" xp="3000 - 6000 XP" color="text-[#a855f7]" bg="bg-[#a855f7]/10" />
-            <RankTier tier="Grandmaster" levels="Top Tier" xp="6000+ XP" color="text-highlight" bg="bg-highlight/10" isGrandmaster />
+      {/* Feature Breakdown */}
+      <section className="space-y-12">
+        <FeatureSection 
+          icon={<BookOpen className="text-blue-500" size={28} />}
+          title="The Learning Hub"
+          description="A dynamic, content-as-code learning tree. Master concepts through interactive nodes and prove your mastery in the Anvil."
+          delay="delay-200"
+        >
+          <div className="grid md:grid-cols-2 gap-4 mt-6">
+            <div className="p-4 rounded-xl bg-surface-theme/50 border border-border">
+              <h4 className="font-bold text-primary mb-2 flex items-center gap-2"><BrainCircuit size={16} className="text-accent"/> Interactive Nodes</h4>
+              <p className="text-sm text-muted leading-relaxed">Courses are structured as branching skill trees. Completing a node grants you <strong className="text-primary">+100 XP</strong>.</p>
+            </div>
+            <div className="p-4 rounded-xl bg-surface-theme/50 border border-border">
+              <h4 className="font-bold text-primary mb-2 flex items-center gap-2"><Target size={16} className="text-accent"/> The Anvil Challenges</h4>
+              <p className="text-sm text-muted leading-relaxed">At the end of a path lies the Anvil—a high-stakes coding sandbox with a time limit. Fix the bug, prove your worth, and earn massive XP.</p>
+            </div>
           </div>
+        </FeatureSection>
+
+        <FeatureSection 
+          icon={<FileText className="text-emerald-500" size={28} />}
+          title="Resume Hub & ATS Scoring"
+          description="Your resume is your armor. Make sure it's impenetrable before you head into battle."
+          delay="delay-300"
+          reverse
+        >
+          <div className="grid gap-4 mt-6">
+            <div className="flex gap-4 p-4 rounded-xl bg-surface-theme/50 border border-border items-start">
+              <div className="mt-1 shrink-0 w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">1</div>
+              <div>
+                <h4 className="font-bold text-primary mb-1">Upload & Parse</h4>
+                <p className="text-sm text-muted">Upload your PDF. Our system extracts skills, gaps, and experience.</p>
+              </div>
+            </div>
+            <div className="flex gap-4 p-4 rounded-xl bg-surface-theme/50 border border-border items-start">
+              <div className="mt-1 shrink-0 w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">2</div>
+              <div>
+                <h4 className="font-bold text-primary mb-1">AI ATS Evaluation</h4>
+                <p className="text-sm text-muted">The AI scores your resume out of 100 based on phrasing, impact metrics, and role alignment.</p>
+              </div>
+            </div>
+          </div>
+        </FeatureSection>
+
+        <FeatureSection 
+          icon={<Mic className="text-purple-500" size={28} />}
+          title="The Interview Hub"
+          description="Face off against our 1-on-1 AI Agent in a realistic voice-to-voice or text-based interview environment."
+          delay="delay-500"
+        >
+           <div className="grid md:grid-cols-2 gap-4 mt-6">
+            <div className="p-4 rounded-xl bg-surface-theme/50 border border-border">
+              <h4 className="font-bold text-primary mb-2 flex items-center gap-2"><Mic size={16} className="text-purple-500"/> Realistic AI Agent</h4>
+              <p className="text-sm text-muted leading-relaxed">The AI reads your resume, identifies your skill gaps, and grills you specifically on your weak points.</p>
+            </div>
+            <div className="p-4 rounded-xl bg-surface-theme/50 border border-border">
+              <h4 className="font-bold text-primary mb-2 flex items-center gap-2"><Code size={16} className="text-purple-500"/> Grandmaster Sandbox</h4>
+              <p className="text-sm text-muted leading-relaxed">Round 4 of your interview is a live coding sandbox. You must execute and fix buggy code in a Piston-powered terminal.</p>
+            </div>
+          </div>
+        </FeatureSection>
+      </section>
+
+      {/* The RPG System */}
+      <section className="space-y-12 pt-12 border-t border-border animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-700 fill-mode-both">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-primary font-mono mb-3">The Ranking System</h2>
+          <p className="text-muted">Earn XP to Level up. Gain Elo in the Arena to reach higher divisions.</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <RankCard rank="Iron Apprentice" title="Lv. 1 - 4" desc="You have entered the forge." />
+          <RankCard rank="Bronze Artificer" title="Lv. 5 - 9" desc="You are beginning to shape the code." />
+          <RankCard rank="Silver Forgesmith" title="Lv. 10 - 14" desc="Your tools are sharpened." />
+          <RankCard rank="Gold Innovator" title="Lv. 15 - 24" desc="Your architectures spark with brilliance." />
+          <RankCard rank="Obsidian Architect" title="Lv. 25 - 49" desc="You build unbreakable systems." />
+          <RankCard rank="Ember Grandmaster" title="Lv. 50+" desc="The Apex. The Forge is yours to command." />
         </div>
       </section>
 
       {/* The Arena */}
-      <section className="space-y-6 mt-16">
-        <h2 className="text-2xl font-bold text-primary flex items-center gap-3 font-mono border-b border-border pb-4">
-          <Swords className="text-[#ef4444]" /> The PvP Arena
-        </h2>
+      <section className="mt-20 p-8 rounded-3xl border border-[#ef4444]/30 bg-gradient-to-br from-[#1c1614] to-[#ef4444]/10 backdrop-blur-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-[#ef4444]/20 blur-3xl rounded-full pointer-events-none" />
         
-        <div className="p-6 rounded-2xl border border-border bg-gradient-to-br from-[#1c1614] to-[#ef4444]/5 backdrop-blur-xl">
-          <p className="text-muted mb-6 leading-relaxed">
-            The Arena is where you put your skills to the ultimate test against real developers from around the world. It's a high-stakes competitive environment where your performance heavily impacts your XP. Compete, win, and level yourself up.
+        <div className="relative z-10">
+          <h2 className="text-3xl font-bold text-white flex items-center gap-3 font-mono mb-4">
+            <Swords className="text-[#ef4444]" size={32} /> The PvP Arena
+          </h2>
+          <p className="text-zinc-300 max-w-2xl text-lg mb-8 leading-relaxed">
+            The Arena is where you put your skills to the ultimate test against real developers. Compete in 1v1 duels or Battle Royales to earn <strong className="text-white">Competitive Elo</strong>.
           </p>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="p-5 rounded-xl bg-card border border-border">
-              <h4 className="text-white font-bold mb-2 flex items-center gap-2 font-mono"><Zap size={16} className="text-[#eab308]" /> Matchmaking</h4>
-              <p className="text-sm text-muted">You can challenge real developers matching your current tier. Winning a match grants a massive XP boost, but losing will cost you. Choose your opponents wisely.</p>
+            <div className="p-5 rounded-xl bg-black/40 border border-white/10 backdrop-blur-md">
+              <h4 className="text-white font-bold mb-2 flex items-center gap-2 font-mono"><Zap size={16} className="text-[#ef4444]" /> High Stakes</h4>
+              <p className="text-sm text-zinc-400 leading-relaxed">Winning an Arena match grants you Elo and massive XP (+150 for 1v1). Losing drops your Elo, but you still gain +25 XP for the combat experience.</p>
             </div>
-            <div className="p-5 rounded-xl bg-card border border-border">
-              <h4 className="text-white font-bold mb-2 flex items-center gap-2 font-mono"><Trophy size={16} className="text-[#eab308]" /> Top Tier Competitors</h4>
-              <p className="text-sm text-muted">The ultimate challenge. Face off against Grandmaster-level developers who possess near-perfect system design and algorithmic knowledge. Defeating them proves you belong at the top.</p>
+            <div className="p-5 rounded-xl bg-black/40 border border-white/10 backdrop-blur-md">
+              <h4 className="text-white font-bold mb-2 flex items-center gap-2 font-mono"><Trophy size={16} className="text-[#ef4444]" /> Leaderboards</h4>
+              <p className="text-sm text-zinc-400 leading-relaxed">Your Elo dictates your Competitive Division. Only the top 50 players globally can hold the title of Ember Grandmaster in the Arena.</p>
             </div>
           </div>
         </div>
       </section>
-      
+
       {/* Footer Note */}
-      <div className="mt-12 text-center">
-        <p className="text-sm text-muted flex items-center justify-center gap-2">
-          <ShieldQuestion size={16} /> Have more questions? Feel free to explore the platform.
+      <div className="mt-16 text-center">
+        <p className="text-sm text-muted flex items-center justify-center gap-2 font-mono">
+          <Shield size={16} className="text-accent" /> May your code compile on the first try.
         </p>
       </div>
     </div>
   )
 }
 
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+function CoreLoopAnimation() {
+  const [activeStep, setActiveStep] = useState(0)
+  const steps = [
+    { icon: <BookOpen />, label: "Learn", desc: "Master concepts in the Hub." },
+    { icon: <FileText />, label: "Build", desc: "Craft an ATS-beating resume." },
+    { icon: <Mic />, label: "Interview", desc: "Pass the AI Agent." },
+    { icon: <Swords />, label: "Compete", desc: "Dominate the Arena." },
+  ]
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % steps.length)
+    }, 2500)
+    return () => clearInterval(interval)
+  }, [steps.length])
+
   return (
-    <div className="p-6 rounded-2xl border border-border bg-surface-theme/30 backdrop-blur-md flex gap-5 hover:bg-surface-theme/60 transition-colors">
-      <div className="w-12 h-12 shrink-0 rounded-xl bg-accent/10 text-accent flex items-center justify-center">
-        {icon}
+    <div className="w-full max-w-4xl mx-auto p-6 md:p-10 rounded-3xl bg-surface-theme/20 border border-border backdrop-blur-sm">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 relative">
+        {/* Connecting Line (Desktop) */}
+        <div className="hidden md:block absolute top-1/2 left-[10%] right-[10%] h-1 bg-border -translate-y-1/2 z-0" />
+        
+        {/* Active Line (Desktop) */}
+        <div 
+          className="hidden md:block absolute top-1/2 left-[10%] h-1 bg-gradient-to-r from-accent to-highlight -translate-y-1/2 z-0 transition-all duration-700 ease-in-out" 
+          style={{ width: `${(activeStep / (steps.length - 1)) * 80}%` }}
+        />
+
+        {steps.map((step, idx) => {
+          const isActive = idx === activeStep
+          const isPast = idx < activeStep
+          
+          return (
+            <div key={idx} className="relative z-10 flex flex-col items-center gap-3 w-full md:w-32 group cursor-pointer" onClick={() => setActiveStep(idx)}>
+              <div 
+                className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-xl
+                  ${isActive 
+                    ? "bg-gradient-to-br from-accent to-highlight text-white scale-110 shadow-accent/40" 
+                    : isPast 
+                      ? "bg-accent/20 text-accent border border-accent/30" 
+                      : "bg-surface-theme border border-border text-muted"
+                  }
+                `}
+              >
+                <div className={`transition-transform duration-500 ${isActive ? 'scale-110' : ''}`}>
+                  {step.icon}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className={`font-bold font-mono transition-colors duration-300 ${isActive ? 'text-primary' : 'text-muted'}`}>
+                  {step.label}
+                </div>
+                <div className={`text-[10px] mt-1 transition-opacity duration-300 ${isActive ? 'opacity-100 text-muted' : 'opacity-0 md:opacity-100 md:text-muted/50'}`}>
+                  {step.desc}
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
-      <div>
-        <h3 className="text-lg font-bold text-primary mb-2">{title}</h3>
-        <p className="text-muted leading-relaxed text-sm">
+    </div>
+  )
+}
+
+function FeatureSection({ icon, title, description, children, reverse, delay }: any) {
+  return (
+    <div className={`flex flex-col ${reverse ? 'md:flex-row-reverse' : 'md:flex-row'} gap-8 md:gap-12 items-center animate-in fade-in slide-in-from-bottom-8 duration-1000 ${delay} fill-mode-both`}>
+      <div className="flex-1 space-y-4">
+        <div className="flex items-center gap-4 border-b border-border pb-4">
+          <div className="w-14 h-14 rounded-2xl bg-surface-theme border border-border flex items-center justify-center shadow-sm">
+            {icon}
+          </div>
+          <h2 className="text-2xl font-bold text-primary font-mono">{title}</h2>
+        </div>
+        <p className="text-muted text-lg leading-relaxed">
           {description}
         </p>
+        {children}
+      </div>
+      <div className="flex-1 w-full bg-surface-theme/20 rounded-3xl border border-border aspect-[4/3] flex items-center justify-center overflow-hidden relative group">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        <Play size={48} className="text-muted/20 group-hover:text-accent/50 transition-colors duration-500" />
+        <div className="absolute bottom-4 left-0 right-0 text-center text-xs font-mono text-muted/50">Interactive Demo (Coming Soon)</div>
       </div>
     </div>
   )
 }
 
-function RankTier({ tier, levels, xp, color, bg, isGrandmaster = false }: { tier: string, levels: string, xp: string, color: string, bg: string, isGrandmaster?: boolean }) {
+function RankCard({ rank, title, desc }: { rank: string, title: string, desc: string }) {
   return (
-    <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-white/[0.02]">
-      <div className="flex items-center gap-4">
-        <div className={`w-10 h-10 rounded-lg ${bg} ${color} flex items-center justify-center font-bold text-lg`}>
-          {tier.charAt(0)}
-        </div>
-        <div>
-          <h4 className={`font-bold ${color} font-mono`}>{tier}</h4>
-          <p className="text-xs text-muted mt-0.5">{isGrandmaster ? "The Apex" : `Levels: ${levels}`}</p>
-        </div>
-      </div>
-      <div className="text-right">
-        <span className="text-sm font-mono text-primary bg-card px-3 py-1 rounded-full border border-border">
-          {xp}
-        </span>
+    <div className="p-6 rounded-2xl border border-border bg-surface-theme/50 hover:bg-surface-theme transition-all duration-300 group flex flex-col items-center text-center gap-4 hover:border-accent/30 hover:shadow-[0_0_20px_rgba(234,88,12,0.1)]">
+      <RankIcon rankTitle={rank} className="w-16 h-16 group-hover:scale-110 transition-transform duration-500" />
+      <div>
+        <h4 className="font-bold text-primary font-mono text-lg">{rank}</h4>
+        <div className="text-xs font-bold text-accent mb-2 uppercase tracking-widest">{title}</div>
+        <p className="text-sm text-muted">{desc}</p>
       </div>
     </div>
   )

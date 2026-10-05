@@ -24,6 +24,12 @@ export const UserSchema = z.object({
   targetRole: z.string().nullable(),
   experienceLevel: z.enum(["BEGINNER", "MID", "SENIOR"]),
   xp: z.number(),
+  level: z.number().optional(),
+  rankTitle: z.string().optional(),
+  elo: z.number().optional(),
+  arenaWins: z.number().optional(),
+  arenaLosses: z.number().optional(),
+  arenaDraws: z.number().optional(),
   streak: z.number(),
   createdAt: z.string(),
 })

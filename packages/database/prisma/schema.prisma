@@ -17,6 +17,12 @@ model User {
   targetRole      String?
   experienceLevel ExperienceLevel @default(BEGINNER)
   xp              Int             @default(0)
+  level           Int             @default(1)
+  rankTitle       String          @default("Iron Apprentice")
+  elo             Int             @default(1000)
+  arenaWins       Int             @default(0)
+  arenaLosses     Int             @default(0)
+  arenaDraws      Int             @default(0)
   streak          Int             @default(0)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt

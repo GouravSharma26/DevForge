@@ -8,6 +8,7 @@ import { Navbar } from "./Navbar"
 import { useAuthStore } from "@/store/auth.store"
 import { useMe } from "@/hooks/useUser"
 import { useTheme } from "next-themes"
+import { RankIcon } from "./RankIcon"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(true)
@@ -103,10 +104,30 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {token && hydrated && !isLandingPage && (
           <div className="relative flex items-center gap-3">
             {user && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-theme border border-accent/30 shadow-[0_0_10px_rgba(234,88,12,0.1)]">
-                <span className="text-xs font-mono text-muted">Credits:</span>
-                <span className={`text-xs font-bold font-mono ${displayCredits === 'ult' ? 'text-highlight' : 'text-accent'}`}>{displayCredits}</span>
-              </div>
+              <>
+                <div className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-full bg-surface-theme border border-border shadow-[0_0_10px_rgba(234,88,12,0.05)]">
+                  <div className="flex flex-col items-end justify-center">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <RankIcon rankTitle={user.rankTitle || "Iron Apprentice"} className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-mono text-muted uppercase tracking-wider leading-none">{user.rankTitle || "Iron Apprentice"}</span>
+                    </div>
+                    <span className="text-xs font-bold font-mono text-primary leading-none">Lv. {user.level || 1}</span>
+                  </div>
+                  <div className="w-24 h-2.5 bg-card rounded-full overflow-hidden border border-border relative">
+                     {/* Temporary approximate progress percentage */}
+                     <div 
+                       className="absolute top-0 left-0 h-full bg-gradient-to-r from-accent to-highlight transition-all duration-500" 
+                       style={{ width: `${Math.min(100, Math.max(0, ((user.xp || 0) % 500) / 500 * 100))}%` }} 
+                     />
+                  </div>
+                  <span className="text-[10px] font-mono text-muted">{user.xp || 0} XP</span>
+                </div>
+                
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-theme border border-accent/30 shadow-[0_0_10px_rgba(234,88,12,0.1)]">
+                  <span className="text-xs font-mono text-muted">Credits:</span>
+                  <span className={`text-xs font-bold font-mono ${displayCredits === 'ult' ? 'text-highlight' : 'text-accent'}`}>{displayCredits}</span>
+                </div>
+              </>
             )}
             <button 
               onClick={() => setProfileOpen(!profileOpen)}

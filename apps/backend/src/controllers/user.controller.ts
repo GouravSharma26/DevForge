@@ -13,6 +13,8 @@ export const UserController = {
         avatar: true, bio: true, targetRole: true,
         experienceLevel: true, xp: true, streak: true, createdAt: true,
         role: true, aiRequestCount: true, lastAiRequestAt: true,
+        level: true, rankTitle: true, elo: true,
+        arenaWins: true, arenaLosses: true, arenaDraws: true,
       },
     })
     if (!user)
@@ -46,6 +48,8 @@ export const UserController = {
         avatar: true, bio: true, targetRole: true,
         experienceLevel: true, xp: true, streak: true, createdAt: true,
         role: true, aiRequestCount: true, lastAiRequestAt: true,
+        level: true, rankTitle: true, elo: true,
+        arenaWins: true, arenaLosses: true, arenaDraws: true,
       },
     })
     return reply.send({ success: true, data: user })

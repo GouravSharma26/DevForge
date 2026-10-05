@@ -354,6 +354,13 @@ Answer: ${q.userAnswer}
     ? Math.round(graded.reduce((sum, q) => sum + (q.score || 0), 0) / graded.length)
     : 0
 
+  // ─── Gamification: Award XP for passing interviews ───
+  if (avgScore >= 70) {
+    const { awardXp } = await import("./xp.service")
+    const xpReward = updatedInterview.type === "AI_AGENT" ? 350 : 250
+    await awardXp(userId, xpReward).catch(err => console.error("Failed to award XP:", err))
+  }
+
   return prisma.interview.update({
     where: { id: interviewId },
     data: { status: "COMPLETED", score: avgScore },
