@@ -19,8 +19,9 @@ function getRankTitle(level: number): string {
   return "Ember Grandmaster"
 }
 
-export async function awardXp(userId: string, xpAmount: number) {
-  const user = await prisma.user.findUnique({ where: { id: userId } })
+export async function awardXp(userId: string, xpAmount: number, tx?: any) {
+  const db = tx || prisma
+  const user = await db.user.findUnique({ where: { id: userId } })
   if (!user) throw new Error("User not found")
 
   let newXp = user.xp + xpAmount
@@ -33,7 +34,7 @@ export async function awardXp(userId: string, xpAmount: number) {
 
   const newRankTitle = getRankTitle(newLevel)
 
-  await prisma.user.update({
+  await db.user.update({
     where: { id: userId },
     data: {
       xp: newXp,

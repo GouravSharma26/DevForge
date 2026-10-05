@@ -81,10 +81,8 @@ export async function completeMatch(matchId: string, winnerId: string) {
 
     // 3. Award XP if it was a ranked/non-friendly match
     if (!updatedMatch.isFriendly) {
-      await tx.user.update({
-        where: { id: winnerId },
-        data: { xp: { increment: 100 } },
-      })
+      const { awardXp } = await import("./xp.service")
+      await awardXp(winnerId, 100, tx)
     }
 
     return updatedMatch
