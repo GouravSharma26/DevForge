@@ -80,7 +80,8 @@ export async function adminRoutes(fastify: FastifyInstance) {
         orderBy: { createdAt: 'desc' },
         take: 5,
         include: {
-          players: { select: { user: { select: { username: true } }, score: true } },
+          player1: { select: { username: true } },
+          player2: { select: { username: true } },
           problem: { select: { title: true, difficulty: true } }
         }
       })

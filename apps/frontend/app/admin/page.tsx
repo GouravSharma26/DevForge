@@ -338,19 +338,19 @@ export default function AdminDashboard() {
                   {stats.recentMatches.map((m: any, i: number) => (
                     <div key={i} className="flex flex-col gap-2 border-b border-border pb-3 last:border-0 last:pb-0">
                       <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-white max-w-[150px] truncate">{m.problem.title}</span>
-                        <span className={`text-[10px] uppercase font-bold tracking-wider ${m.problem.difficulty === 'EASY' ? 'text-green-400' : m.problem.difficulty === 'MEDIUM' ? 'text-yellow-400' : 'text-red-400'}`}>
-                          {m.problem.difficulty}
+                        <span className="text-xs font-bold text-white max-w-[150px] truncate">{m.problem?.title || 'Unknown Problem'}</span>
+                        <span className={`text-[10px] uppercase font-bold tracking-wider ${m.problem?.difficulty === 'EASY' ? 'text-green-400' : m.problem?.difficulty === 'MEDIUM' ? 'text-yellow-400' : 'text-red-400'}`}>
+                          {m.problem?.difficulty || 'N/A'}
                         </span>
                       </div>
                       <div className="flex justify-between items-center text-[11px] font-mono">
                         <div className="flex items-center gap-2">
-                          <span className={m.players[0]?.score > m.players[1]?.score ? "text-accent" : "text-muted"}>
-                            {m.players[0]?.user?.username}
+                          <span className="text-muted">
+                            {m.player1?.username || 'Unknown'}
                           </span>
                           <span className="text-muted/50 text-[10px]">vs</span>
-                          <span className={m.players[1]?.score > m.players[0]?.score ? "text-accent" : "text-muted"}>
-                            {m.players[1]?.user?.username || 'Bot'}
+                          <span className="text-muted">
+                            {m.player2?.username || 'Bot'}
                           </span>
                         </div>
                       </div>
