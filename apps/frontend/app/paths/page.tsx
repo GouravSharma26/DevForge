@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { usePaths, useEnroll } from "@/hooks/usePaths"
 import { useAuthStore } from "@/store/auth.store"
+import { Anvil } from "lucide-react"
 
 const LEVEL_STYLE: Record<string, { color: string; bg: string; border: string }> = {
   BEGINNER: { color: "#10b981", bg: "#10b98115", border: "#10b98130" },
@@ -166,43 +167,34 @@ export default function PathsPage() {
         )}
       </div>
 
-      {/* Coming Soon Modal */}
       {showModal && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 100,
-          background: "rgba(23, 18, 16, 0.8)", backdropFilter: "blur(4px)",
-          display: "flex", alignItems: "center", justifyContent: "center", padding: 24
-        }}>
-          <div className="bg-base">
-            <div style={{
-              width: 48, height: 48, borderRadius: "50%", background: "rgba(234,88,12,0.1)",
-              color: "#ea580c", display: "flex", alignItems: "center", justifyContent: "center",
-              margin: "0 auto 20px", fontSize: 24, border: "1px solid rgba(234,88,12,0.2)"
-            }}>
-              🚧
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setShowModal(false)}
+        >
+          <div 
+            className="w-full max-w-sm bg-surface-theme border border-accent/20 rounded-2xl p-6 shadow-[0_0_40px_rgba(234,88,12,0.15)] flex flex-col items-center text-center animate-in zoom-in-95 duration-200 relative overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent to-highlight" />
+            
+            <div className="w-16 h-16 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center mb-4 shadow-[0_0_15px_rgba(234,88,12,0.2)]">
+              <Anvil size={28} className="text-accent" />
             </div>
-            <h3 style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace", marginBottom: 8 }}>
-              Coming Soon
+            
+            <h3 className="text-xl font-bold font-mono text-primary mb-2">
+              Currently in the Forge
             </h3>
-            <p style={{ fontSize: 13, color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace", lineHeight: 1.5, marginBottom: 24 }}>
-              The interactive curriculum for this path is currently being forged. Check back in a few days!
+            
+            <p className="text-sm font-mono text-muted mb-6 leading-relaxed">
+              The interactive curriculum for this path is currently being hammered out. Check back soon to continue your journey!
             </p>
+            
             <button
               onClick={() => setShowModal(false)}
-              style={{
-                width: "100%", padding: "10px 0", borderRadius: 12, fontSize: 13,
-                fontFamily: "JetBrains Mono, monospace", cursor: "pointer", fontWeight: 600,
-                background: "var(--glass-bg)", border: "1px solid var(--border-subtle)",
-                color: "var(--text-primary)", transition: "all 0.2s"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(var(--glass-bg-rgb),0.1)"
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "var(--glass-bg)"
-              }}
+              className="w-full py-2.5 rounded-xl font-mono text-sm font-bold bg-card border border-border text-primary hover:bg-accent/10 hover:border-accent/30 hover:text-accent hover:shadow-[0_0_20px_rgba(234,88,12,0.2)] transition-all duration-200"
             >
-              Got it
+              Acknowledge
             </button>
           </div>
         </div>

@@ -5,8 +5,9 @@ import { useMe, useUpdateMe } from "@/hooks/useUser"
 import { useResumes, useDeleteResume, useUploadResume, useInterviews } from "@/hooks/useResume"
 import { useMatchHistory } from "@/hooks/useArena"
 import { useRouter } from "next/navigation"
-import { Flame, Trophy, Star, Edit3, Mail, Target, Clock, Shield, FileText, Plus, Trash2, ArrowRight } from "lucide-react"
+import { Flame, Trophy, Star, Edit3, Mail, Target, Clock, Shield, FileText, Plus, Trash2, ArrowRight, Swords } from "lucide-react"
 import { calculateRank } from "@/lib/rank"
+import { RankIcon } from "@/components/ui/RankIcon"
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -78,30 +79,40 @@ export default function ProfilePage() {
         {/* Header / Banner Card */}
         <div className="relative overflow-hidden rounded-3xl border border-border bg-surface-theme/50 backdrop-blur-xl shadow-2xl">
           {/* Ambient Glow */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-32 bg-gradient-to-b from-[#ea580c]/10 to-transparent blur-3xl pointer-events-none"></div>
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-32 bg-gradient-to-b from-accent/20 to-transparent blur-3xl pointer-events-none"></div>
           
           <div className="p-8 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-8 relative z-10">
             {/* Avatar */}
-            {user.avatar ? (
-              <img src={user.avatar} alt={user.username} className="w-32 h-32 rounded-full border-4 border-[#1f1a18] shadow-[0_0_40px_rgba(234,88,12,0.3)] object-cover shrink-0" />
-            ) : (
-              <div className="w-32 h-32 rounded-full border-4 border-[#1f1a18] bg-gradient-to-br from-accent to-highlight shadow-[0_0_40px_rgba(234,88,12,0.3)] flex items-center justify-center text-5xl font-bold font-mono tracking-tighter shrink-0 text-white">
-                {user.username.substring(0, 2).toUpperCase()}
+            <div className="relative">
+              {user.avatar ? (
+                <img src={user.avatar} alt={user.username} className="w-32 h-32 rounded-full border-4 border-[#1f1a18] shadow-[0_0_40px_rgba(234,88,12,0.3)] object-cover shrink-0 relative z-10" />
+              ) : (
+                <div className="w-32 h-32 rounded-full border-4 border-[#1f1a18] bg-gradient-to-br from-accent to-highlight shadow-[0_0_40px_rgba(234,88,12,0.3)] flex items-center justify-center text-5xl font-bold font-mono tracking-tighter shrink-0 text-white relative z-10">
+                  {user.username.substring(0, 2).toUpperCase()}
+                </div>
+              )}
+              {/* Level Badge Overlapping Avatar */}
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-[#1f1a18] border border-accent/50 text-accent font-bold font-mono px-3 py-0.5 rounded-full text-xs shadow-lg z-20 whitespace-nowrap">
+                Lv. {user.level || 1}
               </div>
-            )}
+            </div>
             
             {/* Info */}
-            <div className="flex-1 text-center md:text-left space-y-4">
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight mb-1">{user.username}</h1>
-                <p className="text-secondary font-mono text-sm flex items-center justify-center md:justify-start gap-2">
-                  <Mail size={14} />
-                  {user.email}
-                </p>
+            <div className="flex-1 text-center md:text-left space-y-4 pt-2">
+              <div className="flex flex-col md:flex-row items-center gap-3">
+                <h1 className="text-3xl font-bold tracking-tight">{user.username}</h1>
+                <div className="flex items-center gap-1.5 px-3 py-1 bg-accent/10 border border-accent/20 rounded-full">
+                  <RankIcon rankTitle={user.rankTitle || "Iron Apprentice"} className="w-4 h-4" />
+                  <span className="text-xs font-mono font-bold text-accent uppercase tracking-wider">{user.rankTitle || "Iron Apprentice"}</span>
+                </div>
               </div>
+              <p className="text-secondary font-mono text-sm flex items-center justify-center md:justify-start gap-2">
+                <Mail size={14} />
+                {user.email}
+              </p>
               
               <p className="text-muted max-w-lg leading-relaxed text-sm">
-                {user.bio || "No bio provided yet. Add a short bio to let others know who you are."}
+                {user.bio || "No bio provided yet. Forge your destiny."}
               </p>
               
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
@@ -121,7 +132,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Edit Button */}
-            <div className="shrink-0">
+            <div className="shrink-0 pt-2">
               <button 
                 onClick={openEditModal}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-card hover:bg-card/80 border border-border hover:border-accent transition-all font-medium text-sm text-primary"
@@ -134,50 +145,48 @@ export default function ProfilePage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 rounded-2xl border border-border bg-surface-theme/30 backdrop-blur-md flex items-center gap-5 hover:border-accent/30 transition-colors group">
-            <div className="w-12 h-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Trophy size={24} />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="p-5 rounded-2xl border border-border bg-surface-theme/30 backdrop-blur-md flex flex-col items-center text-center gap-2 hover:border-accent/30 transition-colors group">
+            <div className="w-10 h-10 rounded-full bg-accent/10 text-accent flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Trophy size={20} />
             </div>
             <div>
-              <p className="text-muted text-xs font-mono uppercase tracking-wider mb-1">Total XP</p>
-              <p className="text-2xl font-bold font-mono">{user.xp.toLocaleString()}</p>
+              <p className="text-muted text-[10px] font-mono uppercase tracking-widest mb-1">Total XP</p>
+              <p className="text-xl font-bold font-mono">{user.xp?.toLocaleString() || 0}</p>
             </div>
           </div>
           
-          <div className="p-6 rounded-2xl border border-border bg-surface-theme/30 backdrop-blur-md flex items-center gap-5 hover:border-highlight/30 transition-colors group">
-            <div className="w-12 h-12 rounded-xl bg-highlight/10 text-highlight flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Flame size={24} />
+          <div className="p-5 rounded-2xl border border-border bg-surface-theme/30 backdrop-blur-md flex flex-col items-center text-center gap-2 hover:border-highlight/30 transition-colors group">
+            <div className="w-10 h-10 rounded-full bg-highlight/10 text-highlight flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Flame size={20} />
             </div>
             <div>
-              <p className="text-muted text-xs font-mono uppercase tracking-wider mb-1">Current Streak</p>
-              <p className="text-2xl font-bold font-mono">{user.streak} <span className="text-sm text-muted font-sans">days</span></p>
+              <p className="text-muted text-[10px] font-mono uppercase tracking-widest mb-1">Streak</p>
+              <p className="text-xl font-bold font-mono">{user.streak || 0}</p>
             </div>
           </div>
 
-          <div className="p-6 rounded-2xl border border-border bg-surface-theme/30 backdrop-blur-md flex items-center gap-5 hover:border-[#84cc16]/30 transition-colors group">
-            <div className="w-12 h-12 rounded-xl bg-[#84cc16]/10 text-[#84cc16] flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Star size={24} />
+          <div className="p-5 rounded-2xl border border-border bg-surface-theme/30 backdrop-blur-md flex flex-col items-center text-center gap-2 hover:border-[#84cc16]/30 transition-colors group">
+            <div className="w-10 h-10 rounded-full bg-[#84cc16]/10 text-[#84cc16] flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Swords size={20} />
             </div>
-            <div className="flex-1">
-              <p className="text-muted text-xs font-mono uppercase tracking-wider mb-1">Rank</p>
-              <p className="text-xl font-bold font-mono text-primary mb-1">
-                {user ? calculateRank(user.xp).title : "Beginner 1"}
+            <div>
+              <p className="text-muted text-[10px] font-mono uppercase tracking-widest mb-1">Arena Elo</p>
+              <p className="text-xl font-bold font-mono">{user.elo || 1000}</p>
+            </div>
+          </div>
+
+          <div className="p-5 rounded-2xl border border-border bg-surface-theme/30 backdrop-blur-md flex flex-col items-center text-center gap-2 hover:border-[#3b82f6]/30 transition-colors group">
+            <div className="w-10 h-10 rounded-full bg-[#3b82f6]/10 text-[#3b82f6] flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Target size={20} />
+            </div>
+            <div>
+              <p className="text-muted text-[10px] font-mono uppercase tracking-widest mb-1">Win Rate</p>
+              <p className="text-xl font-bold font-mono">
+                {user.arenaWins + user.arenaLosses > 0 
+                  ? Math.round((user.arenaWins / (user.arenaWins + user.arenaLosses)) * 100) 
+                  : 0}%
               </p>
-              {user && calculateRank(user.xp).tier !== "Grandmaster" && (
-                <div className="w-full">
-                  <div className="flex justify-between text-[10px] text-muted font-mono mb-1">
-                    <span>{calculateRank(user.xp).xpInCurrentLevel} XP</span>
-                    <span>{calculateRank(user.xp).xpRequiredForNextLevel} XP</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-card rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-[#84cc16] rounded-full transition-all" 
-                      style={{ width: `${calculateRank(user.xp).progressPercentage}%` }} 
-                    />
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>

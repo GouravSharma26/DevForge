@@ -6,7 +6,7 @@ import { RankIcon } from "@/components/ui/RankIcon"
 
 export default function AboutPage() {
   return (
-    <div className="max-w-[1000px] mx-auto p-4 md:p-8 space-y-20 pb-32 overflow-hidden">
+    <div className="max-w-[1000px] mx-auto p-4 md:p-8 pt-12 md:pt-20 space-y-20 pb-32 overflow-hidden">
       {/* Header */}
       <div className="flex flex-col items-center text-center space-y-6 mb-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
         <div className="relative">
