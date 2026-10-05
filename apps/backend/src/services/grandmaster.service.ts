@@ -106,6 +106,9 @@ export async function evaluateGrandmasterSubmission(userId: string, scenario: st
 
   const model = getModel(systemInstruction, schema)
 
+  const truncatedStdout = (pistonStdout || "<empty>").substring(0, 500);
+  const truncatedStderr = (pistonStderr || "<empty>").substring(0, 500);
+
   const prompt = `
 Scenario:
 ${scenario}
@@ -117,10 +120,10 @@ User's Submitted Code:
 ${submittedCode}
 
 Actual Execution Output (Stdout):
-${pistonStdout || "<empty>"}
+${truncatedStdout}
 
 Execution Errors (Stderr):
-${pistonStderr || "<empty>"}
+${truncatedStderr}
   `
 
   try {

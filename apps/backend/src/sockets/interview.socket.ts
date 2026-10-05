@@ -2,6 +2,7 @@ import { Server, Socket } from "socket.io"
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai"
 import { prisma } from "@devforge/database"
 import { consumeAiRequest } from "../utils/ai-rate-limit"
+import { containsPromptInjection, isGarbageText } from "../utils/prompt-scrubber"
 
 export function registerInterviewHandlers(io: Server, socket: Socket) {
   const userId = socket.data.userId
@@ -34,7 +35,7 @@ Skills: ${resume.skills.join(", ")}
 Experience Level: ${resume.experienceLevel}
 Target Role: ${resume.targetRole || "Software Developer"}
 
-Ask technical questions one by one. Wait for the candidate's answer before proceeding. Be conversational, constructive, and realistic. Start by welcoming the candidate and asking the first question. Keep your responses concise.`
+Ask technical questions one by one. Wait for the candidate's answer before proceeding. Be conversational, constructive, and realistic. Start by welcoming the candidate and asking the first question. Keep your responses concise (under 100 words).`
 
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", systemInstruction })
       const chat = model.startChat({ history: [] })
@@ -64,6 +65,22 @@ Ask technical questions one by one. Wait for the candidate's answer before proce
          return socket.emit("interview:error", { message: "Chat session not found. Please refresh." })
       }
       
+      if (containsPromptInjection(message)) {
+        const errorMsg = "Please stick to the interview context. Unrelated instructions are not permitted."
+        socket.emit("interview:reply", { message: errorMsg })
+        session.history.push({ role: "user", content: message })
+        session.history.push({ role: "agent", content: errorMsg })
+        return
+      }
+
+      if (isGarbageText(message)) {
+        const errorMsg = "I couldn't quite understand that. Could you please provide a clearer answer?"
+        socket.emit("interview:reply", { message: errorMsg })
+        session.history.push({ role: "user", content: message })
+        session.history.push({ role: "agent", content: errorMsg })
+        return
+      }
+
       session.history.push({ role: "user", content: message })
 
       const result = await session.chat.sendMessageStream(message)

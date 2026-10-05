@@ -150,6 +150,10 @@ export async function submitAnswer(
   questionId: string,
   userAnswer: string
 ) {
+  const { containsPromptInjection } = await import("../utils/prompt-scrubber")
+  if (containsPromptInjection(userAnswer)) {
+    throw Object.assign(new Error("Please stick to the interview context. Unrelated instructions are not permitted."), { statusCode: 400 })
+  }
   const question = await prisma.question.findFirst({
     where: { id: questionId, interviewId, interview: { userId } },
     include: { interview: true }
