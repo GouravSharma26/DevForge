@@ -208,8 +208,21 @@ export async function submitSolution(
   })
 
   if (allPassed && nodeId) {
-    const { completeNode } = await import("./learn.service")
-    await completeNode(userId, nodeId)
+    const node = await prisma.skillNode.findUnique({ where: { id: nodeId } })
+    if (node && node.problemSlug === problem.slug) {
+      const isRoot = !node.dependsOn || node.dependsOn.length === 0;
+      let canComplete = isRoot;
+      if (!isRoot) {
+        const progress = await prisma.skillProgress.findUnique({ where: { userId_nodeId: { userId, nodeId } } })
+        if (progress && (progress.status === "UNLOCKED" || progress.status === "COMPLETED")) {
+          canComplete = true;
+        }
+      }
+      if (canComplete) {
+        const { completeNode } = await import("./learn.service")
+        await completeNode(userId, nodeId)
+      }
+    }
   }
 
   return { submission, results, allPassed }

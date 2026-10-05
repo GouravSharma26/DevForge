@@ -102,11 +102,14 @@ export async function getAllSkillTrees(userId: string) {
 }
 
 export async function unlockNode(userId: string, nodeId: string) {
-  return prisma.skillProgress.upsert({
-    where: { userId_nodeId: { userId, nodeId } },
-    update: { status: "UNLOCKED" },
-    create: { userId, nodeId, status: "UNLOCKED" }
-  })
+  const existing = await prisma.skillProgress.findUnique({ where: { userId_nodeId: { userId, nodeId } } })
+  if (existing) {
+    if (existing.status !== "COMPLETED") {
+      return prisma.skillProgress.update({ where: { userId_nodeId: { userId, nodeId } }, data: { status: "UNLOCKED" } })
+    }
+    return existing
+  }
+  return prisma.skillProgress.create({ data: { userId, nodeId, status: "UNLOCKED" } })
 }
 
 export async function completeNode(userId: string, nodeId: string) {
@@ -116,17 +119,26 @@ export async function completeNode(userId: string, nodeId: string) {
     create: { userId, nodeId, status: "COMPLETED", completedAt: new Date() }
   })
   
-  // Find dependent nodes and unlock them if requirements are met
-  // This is a simplified auto-unlock for the next nodes in line
-  const node = await prisma.skillNode.findUnique({ where: { id: nodeId } })
-  if (node) {
-    const dependentNodes = await prisma.skillNode.findMany({
-      where: { dependsOn: { has: nodeId } }
+  const dependentNodes = await prisma.skillNode.findMany({
+    where: { dependsOn: { has: nodeId } }
+  })
+  
+  if (dependentNodes.length > 0) {
+    const allDepNodesDependsOn = Array.from(new Set(dependentNodes.flatMap(n => n.dependsOn)))
+    const userProgress = await prisma.skillProgress.findMany({
+      where: { userId, nodeId: { in: allDepNodesDependsOn } }
     })
     
-    for (const dNode of dependentNodes) {
-      // In a real strict implementation, you'd verify ALL dependencies are completed
-      await unlockNode(userId, dNode.id)
+    const completedNodeIds = new Set(userProgress.filter(p => p.status === "COMPLETED").map(p => p.nodeId))
+    completedNodeIds.add(nodeId)
+    
+    const nodesToUnlock = dependentNodes.filter(dNode => dNode.dependsOn.every(id => completedNodeIds.has(id))).map(n => n.id)
+    
+    if (nodesToUnlock.length > 0) {
+      await prisma.skillProgress.createMany({
+        data: nodesToUnlock.map(nId => ({ userId, nodeId: nId, status: "UNLOCKED" })),
+        skipDuplicates: true
+      })
     }
   }
   

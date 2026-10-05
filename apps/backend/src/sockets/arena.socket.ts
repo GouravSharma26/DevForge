@@ -24,6 +24,8 @@ const activeMatches = new Map<string, any>()
 let quickMatchLock: Promise<void> | null = null
 
 
+import crypto from "crypto"
+
 // In-memory map: Friendly Rooms (Exam Mode)
 interface FriendlyRoom {
   code: string
@@ -46,6 +48,7 @@ interface FriendlyRoom {
   startTime: number | null
   endTime: number | null
   examTimeout: NodeJS.Timeout | null
+  examEnded?: boolean
   examStatus: Record<string, Record<string, "PASSED" | "FAILED" | "NONE">> // userId -> { problemId: status }
   activeTabs: Record<string, string> // userId -> problemId
   scores: Record<string, number> // userId -> score
@@ -54,9 +57,16 @@ const friendlyRooms = new Map<string, FriendlyRoom>() // code -> room
 const userToRoom = new Map<string, string>() // userId -> code
 
 function generateRoomCode() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase()
+  while (true) {
+    const code = crypto.randomBytes(3).toString("hex").toUpperCase()
+    if (!friendlyRooms.has(code)) return code
+  }
 }
 
+function publicRoom(r: FriendlyRoom) {
+  const { examTimeout, ...rest } = r;
+  return rest;
+}
 
 function on<T>(socket: Socket, ev: string, schema: z.ZodType<T>, fn: (p: T) => Promise<any> | any) {
   socket.on(ev, async (raw: unknown) => {
@@ -106,7 +116,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
           activeTabs: room.activeTabs,
         })
       } else {
-        socket.emit("arena:room_restarted", room) // Re-syncs them directly into the lobby
+        socket.emit("arena:room_restarted", publicRoom(room)) // Re-syncs them directly into the lobby
       }
     }
   }
@@ -128,6 +138,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
   }
 
   socket.on("disconnect", () => {
+    if (userSockets.get(userId) !== socket.id) return;
     userSockets.delete(userId)
     
     const timeout = setTimeout(async () => {
@@ -179,7 +190,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
               delete room.examStatus[userId]
               delete room.activeTabs[userId]
               delete room.scores[userId]
-              io.to(`room_${codeRoom}`).emit("arena:room_updated", room)
+              io.to(`room_${codeRoom}`).emit("arena:room_updated", publicRoom(room))
             } else {
               if (room.examTimeout) clearTimeout(room.examTimeout)
               friendlyRooms.delete(codeRoom)
@@ -192,7 +203,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
             delete room.examStatus[userId]
             delete room.activeTabs[userId]
             delete room.scores[userId]
-            io.to(`room_${codeRoom}`).emit("arena:room_updated", room)
+            io.to(`room_${codeRoom}`).emit("arena:room_updated", publicRoom(room))
           }
           userToRoom.delete(userId)
         }
@@ -287,7 +298,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
 
   // ── FRIENDLY MATCHES (Custom Rooms / Exam Mode) ──────────────────────────────────────────
   
-  on(socket, "arena:create_room", z.object({ name: z.string(), numberOfQuestions: z.number(), timeLimitMinutes: z.number(), difficulties: z.array(z.string()) }), async ({ name, numberOfQuestions, timeLimitMinutes, difficulties }) => {
+  on(socket, "arena:create_room", z.object({ name: z.string().min(1).max(40), numberOfQuestions: z.number().min(1).max(10), timeLimitMinutes: z.number().min(1).max(180), difficulties: z.array(z.enum(["EASY", "MEDIUM", "HARD"])).min(1) }), async ({ name, numberOfQuestions, timeLimitMinutes, difficulties }) => {
     const existingCode = userToRoom.get(userId)
     if (existingCode) {
       friendlyRooms.delete(existingCode)
@@ -321,7 +332,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     userToRoom.set(userId, code)
     socket.join(`room_${code}`)
     
-    socket.emit("arena:room_created", room)
+    socket.emit("arena:room_created", publicRoom(room))
     console.log(`🏠 Friendly Room created: ${code} by ${userId}`)
   })
 
@@ -347,7 +358,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     userToRoom.set(userId, code)
     socket.join(`room_${code}`)
 
-    io.to(`room_${code}`).emit("arena:room_updated", room)
+    io.to(`room_${code}`).emit("arena:room_updated", publicRoom(room))
   })
 
   on(socket, "arena:toggle_ready", z.object({}), async () => {
@@ -356,7 +367,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     const room = friendlyRooms.get(code)
     if (room && room.participantId === userId) {
       room.participantReady = !room.participantReady
-      io.to(`room_${code}`).emit("arena:room_updated", room)
+      io.to(`room_${code}`).emit("arena:room_updated", publicRoom(room))
     }
   })
 
@@ -379,7 +390,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
       delete room.examStatus[room.participantId as string]
       delete room.activeTabs[room.participantId as string]
       delete room.scores[room.participantId as string]
-      io.to(`room_${code}`).emit("arena:room_updated", room)
+      io.to(`room_${code}`).emit("arena:room_updated", publicRoom(room))
     }
   })
 
@@ -400,7 +411,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
             delete room.examStatus[userId]
             delete room.activeTabs[userId]
             delete room.scores[userId]
-            socket.to(`room_${codeRoom}`).emit("arena:room_updated", room)
+            socket.to(`room_${codeRoom}`).emit("arena:room_updated", publicRoom(room))
           } else {
             friendlyRooms.delete(codeRoom)
           }
@@ -412,7 +423,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
           delete room.examStatus[userId]
           delete room.activeTabs[userId]
           delete room.scores[userId]
-          socket.to(`room_${codeRoom}`).emit("arena:room_updated", room)
+          socket.to(`room_${codeRoom}`).emit("arena:room_updated", publicRoom(room))
         }
         userToRoom.delete(userId)
       }
@@ -420,7 +431,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     socket.leave(`room_${codeRoom}`)
   })
 
-  on(socket, "arena:update_room_settings", z.object({ numberOfQuestions: z.number(), timeLimitMinutes: z.number(), difficulties: z.array(z.string()) }), async ({ numberOfQuestions, timeLimitMinutes, difficulties }) => {
+  on(socket, "arena:update_room_settings", z.object({ numberOfQuestions: z.number().min(1).max(10), timeLimitMinutes: z.number().min(1).max(180), difficulties: z.array(z.enum(["EASY", "MEDIUM", "HARD"])).min(1) }), async ({ numberOfQuestions, timeLimitMinutes, difficulties }) => {
     const code = userToRoom.get(userId)
     if (!code) return
     const room = friendlyRooms.get(code)
@@ -429,7 +440,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
       room.timeLimitMinutes = timeLimitMinutes
       room.difficulties = difficulties
       room.participantReady = false
-      io.to(`room_${code}`).emit("arena:room_updated", room)
+      io.to(`room_${code}`).emit("arena:room_updated", publicRoom(room))
     }
   })
 
@@ -455,10 +466,11 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
           room.examTimeout = null
         }
         room.participantReady = false
+        room.examEnded = false
       }
       console.log(`emitting room_restarted to ${userId}`)
-      socket.emit("arena:room_restarted", room)
-      socket.to(`room_${code}`).emit("arena:room_updated", room)
+      socket.emit("arena:room_restarted", publicRoom(room))
+      socket.to(`room_${code}`).emit("arena:room_updated", publicRoom(room))
     }
   })
 
@@ -468,6 +480,9 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     const room = friendlyRooms.get(code)
     
     if (room && room.organizerId === userId && room.participantId && room.participantReady) {
+      if (room.startTime) return; // Prevent multiple starts
+      if (room.examTimeout) clearTimeout(room.examTimeout);
+      
       try {
         // Fetch N random problems for the exam
         const problems = await getNRandomProblems(room.numberOfQuestions, room.difficulties)
@@ -509,8 +524,13 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
   function endExam(code: string, reason: string) {
     const room = friendlyRooms.get(code)
     if (!room) return
+    if (room.examEnded) return
+    room.examEnded = true
     
-    if (room.examTimeout) clearTimeout(room.examTimeout)
+    if (room.examTimeout) {
+      clearTimeout(room.examTimeout)
+      room.examTimeout = null
+    }
     
     const p1Score = room.scores[room.organizerId] || 0
     const p2Score = room.scores[room.participantId as string] || 0
@@ -535,6 +555,14 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
       winnerUsername,
       scores: room.scores
     })
+
+    // Clean up memory after a short grace period
+    setTimeout(() => {
+      friendlyRooms.delete(code)
+      userToRoom.forEach((val, key) => {
+        if (val === code) userToRoom.delete(key)
+      })
+    }, 60000) // 1 minute
   }
 
   // ── EXAM SUBMISSION & INTERACTION ────────────────────────────────────────────────────────
@@ -554,6 +582,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     if (!codeRoom) return
     const room = friendlyRooms.get(codeRoom)
     if (!room) return
+    if (!room.startTime || room.examEnded) return
     
     // The player who forfeited gets a score of -1 to ensure they lose
     room.scores[userId] = -1
@@ -568,9 +597,9 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     if (!room) return
     if (!room.problems.some((p: any) => p.id === problemId)) return socket.emit("arena:error", { message: "Invalid problem ID" })
     
-    // EXAM BOUNDARY CHECK: Prevent submission if the time limit has passed
-    if (room.endTime && Date.now() > room.endTime) {
-      return socket.emit("arena:error", { message: "Exam time has expired. Submissions are no longer accepted." })
+    // EXAM BOUNDARY CHECK: Prevent submission if the time limit has passed or exam ended
+    if (room.examEnded || (room.endTime && Date.now() > room.endTime)) {
+      return socket.emit("arena:error", { message: "Exam has ended. Submissions are no longer accepted." })
     }
     
     // Check if already passed
