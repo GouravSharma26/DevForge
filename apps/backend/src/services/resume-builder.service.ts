@@ -1,6 +1,6 @@
 import { prisma } from "@devforge/database"
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import { consumeAiRequest } from "../utils/ai-rate-limit"
+
 
 function getModel(systemInstruction: string) {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
@@ -26,7 +26,7 @@ export async function loadResumeBuilder(userId: string) {
 }
 
 export async function generateResumeWithAI(userId: string, sections: any[], resumeId?: string) {
-  await consumeAiRequest(userId, prisma)
+
   
   let resume = null
 

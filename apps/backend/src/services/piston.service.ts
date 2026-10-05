@@ -16,21 +16,35 @@ export async function executeCode(language: string, code: string, version: strin
   // First, we need to fetch runtimes if version is '*' or we can just send '*' and let Piston pick the latest.
   // Piston v2 accepts version: "*" to use the latest version available.
   
-  const response = await fetch(`${pistonUrl}/execute`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      language,
-      version,
-      files: [
-        {
-          content: code,
-        },
-      ],
-    }),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+
+  let response;
+  try {
+    response = await fetch(`${pistonUrl}/execute`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        language,
+        version,
+        files: [
+          {
+            content: code,
+          },
+        ],
+      }),
+    });
+  } catch (error: any) {
+    if (error.name === "AbortError") {
+      throw new Error("Piston API timed out after 15 seconds.");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!response.ok) {
     if (response.status === 401) {

@@ -47,7 +47,7 @@ jobs:
         run: npm ci
 
       - name: Setup Database Schema
-        run: npx prisma db push --skip-generate
+        run: npx prisma migrate deploy
         working-directory: packages/database
 
       - name: Typecheck

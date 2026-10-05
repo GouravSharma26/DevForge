@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI, SchemaType, Schema } from "@google/generative-ai"
 import { prisma } from "@devforge/database"
 import { executeCode } from "./piston.service"
-import { consumeAiRequest } from "../utils/ai-rate-limit"
+
 import crypto from "crypto"
 
 function getModel(systemInstruction: string, schema?: Schema) {
@@ -21,7 +21,7 @@ const challengeCache = new Map<string, any>()
 export async function generateGrandmasterChallenge(interviewId: string, primaryLanguage: string) {
   const interview = await prisma.interview.findUnique({ where: { id: interviewId } })
   if (!interview) throw new Error("Interview not found")
-  await consumeAiRequest(interview.userId, prisma)
+
 
   const cacheKey = crypto.createHash("sha256").update(`${primaryLanguage}-grandmaster-challenge`).digest("hex")
   if (challengeCache.has(cacheKey)) {
@@ -91,7 +91,7 @@ export async function generateGrandmasterChallenge(interviewId: string, primaryL
 }
 
 export async function evaluateGrandmasterSubmission(userId: string, scenario: string, expectedOutput: string, submittedCode: string, pistonStdout: string, pistonStderr: string) {
-  await consumeAiRequest(userId, prisma)
+
   
   const systemInstruction = "You are an expert code evaluator. Evaluate whether the user's submitted fix solves the bug based on the scenario, expected output, and actual execution output."
   

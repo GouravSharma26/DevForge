@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { prisma } from "@devforge/database"
 import { redactPII } from "../utils/redact"
-import { consumeAiRequest } from "../utils/ai-rate-limit"
+
 import crypto from "crypto"
 const pdfParse = require("pdf-parse")
 
@@ -20,7 +20,7 @@ export async function analyzeResume(userId: string, pdfBuffer: Buffer, profileNa
   }
 
   if (!skipAI) {
-    await consumeAiRequest(userId, prisma)
+
   }
 
   const prompt = `
@@ -156,7 +156,7 @@ Scoring criteria:
 }
 
 export async function analyzeExistingResumeText(userId: string, resumeId: string, text: string) {
-  await consumeAiRequest(userId, prisma)
+
 
   const prompt = `
 You are an expert technical recruiter and resume analyst. Read this candidate's resume and return a JSON response.
@@ -319,7 +319,7 @@ export async function analyzeResumeFromText(userId: string, resumeText: string, 
     return cached
   }
 
-  await consumeAiRequest(userId, prisma)
+
   
   const prompt = `
 You are an expert technical recruiter and recruiter and resume analyst. Analyze this resume text and return a JSON response.

@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI, SchemaType, Schema } from "@google/generative-ai"
 import { prisma } from "@devforge/database"
-import { consumeAiRequest } from "../utils/ai-rate-limit"
+
 
 function getModel(systemInstruction: string, schema: Schema) {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
@@ -19,7 +19,7 @@ function getModel(systemInstruction: string, schema: Schema) {
 export async function generateInterview(userId: string, resumeId: string) {
   const resume = await prisma.resume.findFirst({ where: { id: resumeId, userId } })
   if (!resume) throw new Error("Resume not found or access denied")
-  await consumeAiRequest(userId, prisma)
+
 
   const primaryLanguage = resume.skills[0] || "JavaScript"
 
@@ -251,7 +251,7 @@ export async function completeInterview(interviewId: string, userId: string) {
   })
   if (!interview) throw Object.assign(new Error("Interview not found"), { statusCode: 404 })
   
-  await consumeAiRequest(interview.userId, prisma)
+
 
   const standardQuestions = interview.questions.filter(q => !q.isGrandmaster)
   

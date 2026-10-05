@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyRequest } from "fastify"
 import { authenticate } from "../plugins/authenticate"
+import { aiQuotaCheck } from "../plugins/ai-quota"
 import { prisma } from "@devforge/database"
 import {
   analyzeResume,
@@ -56,7 +57,7 @@ export async function resumeRoutes(app: FastifyInstance) {
   // POST /api/resume/builder/ai-fill
   app.post(
     "/builder/ai-fill",
-    { preHandler: [authenticate] },
+    { preHandler: [authenticate, aiQuotaCheck] },
     async (req: FastifyRequest<{ Body: { sections: any[]; resumeId?: string } }>, reply) => {
       const { id: userId } = req.user as { id: string }
       try {
@@ -87,7 +88,7 @@ export async function resumeRoutes(app: FastifyInstance) {
   // POST /api/resume/analyze-builder
   app.post(
     "/analyze-builder",
-    { preHandler: [authenticate] },
+    { preHandler: [authenticate, aiQuotaCheck] },
     async (req, reply) => {
       const { id: userId } = req.user as { id: string }
       const builder = await prisma.resumeBuilder.findUnique({ where: { userId } })
@@ -157,6 +158,11 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
       
       const skipAI = req.query.skipAI === "true"
       
+      if (!skipAI) {
+        await aiQuotaCheck(req as any, reply as any)
+        if (reply.sent) return
+      }
+
       try {
         const result = await analyzeResume(userId, buffer, "PDF Upload", skipAI)
         return reply.send({ success: true, data: result.resume })
@@ -196,7 +202,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
   // POST /api/resume/:id/analyze
   app.post(
     "/:id/analyze",
-    { preHandler: [authenticate] },
+    { preHandler: [authenticate, aiQuotaCheck] },
     async (req: FastifyRequest<{ Params: { id: string } }>, reply) => {
       const { id: userId } = req.user as { id: string }
       try {
@@ -256,7 +262,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
   // POST /api/resume/:id/jd-match
   app.post(
     "/:id/jd-match",
-    { preHandler: [authenticate] },
+    { preHandler: [authenticate, aiQuotaCheck] },
     async (
       req: FastifyRequest<{ Params: { id: string }; Body: { jdText: string } }>,
       reply
@@ -281,7 +287,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
   // POST /api/resume/:id/jd-match/upload
   app.post(
     "/:id/jd-match/upload",
-    { preHandler: [authenticate] },
+    { preHandler: [authenticate, aiQuotaCheck] },
     async (req: FastifyRequest<{ Params: { id: string } }>, reply) => {
       const { id: userId } = req.user as { id: string }
       const data = await req.file()
@@ -363,7 +369,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
   // POST /api/resume/interview
   app.post(
     "/interview",
-    { preHandler: [authenticate] },
+    { preHandler: [authenticate, aiQuotaCheck] },
     async (req: FastifyRequest<{ Body: { resumeId: string } }>, reply) => {
       const { id: userId } = req.user as { id: string }
       try {
@@ -438,7 +444,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
   // POST /api/resume/interview/:id/grandmaster
   app.post(
     "/interview/:id/grandmaster",
-    { preHandler: [authenticate] },
+    { preHandler: [authenticate, aiQuotaCheck] },
     async (req: FastifyRequest<{ Params: { id: string } }>, reply) => {
       const { id: userId } = req.user as { id: string }
       try {
@@ -457,7 +463,7 @@ ${projects?.items?.filter((i: any) => i.name).map((i: any) =>
   // POST /api/resume/interview/:id/question/:questionId/run
   app.post(
     "/interview/:id/question/:questionId/run",
-    { preHandler: [authenticate] },
+    { preHandler: [authenticate, aiQuotaCheck] },
     async (req: FastifyRequest<{ Params: { id: string; questionId: string }, Body: { code: string } }>, reply) => {
       const { id: userId } = req.user as { id: string }
       try {

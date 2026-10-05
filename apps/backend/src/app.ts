@@ -33,7 +33,7 @@ const requireEnv = (k: string) => {
 }
 
 export function buildApp() {
-  const app = Fastify({ logger: true })
+  const app = Fastify({ logger: true, trustProxy: true })
 
   // Initialize Socket.io early so it can be passed or accessed if needed
   const io = new Server(app.server, {

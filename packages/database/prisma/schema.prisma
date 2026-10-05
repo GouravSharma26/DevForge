@@ -137,16 +137,16 @@ model Match {
   id         String      @id @default(cuid())
   status     MatchStatus @default(WAITING)
   problemId  String
-  player1Id  String
+  player1Id  String?
   player2Id  String?
   winnerId   String?
   startedAt  DateTime?
   endedAt    DateTime?
   createdAt  DateTime    @default(now())
   isFriendly Boolean     @default(false)
-  player1    User        @relation("player1", fields: [player1Id], references: [id], onDelete: Cascade)
-  player2    User?       @relation("player2", fields: [player2Id], references: [id], onDelete: Cascade)
-  problem    Problem     @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  player1    User?       @relation("player1", fields: [player1Id], references: [id], onDelete: SetNull)
+  player2    User?       @relation("player2", fields: [player2Id], references: [id], onDelete: SetNull)
+  problem    Problem     @relation(fields: [problemId], references: [id], onDelete: Restrict)
   winner     User?       @relation("winner", fields: [winnerId], references: [id], onDelete: SetNull)
 }
 

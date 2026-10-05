@@ -2,7 +2,7 @@ import { GoogleGenerativeAI, SchemaType, Schema } from "@google/generative-ai"
 import { prisma } from "@devforge/database"
 import { redactPII } from "../utils/redact"
 import { getResumeById } from "./resume.service"
-import { consumeAiRequest } from "../utils/ai-rate-limit"
+
 import crypto from "crypto"
 
 function getModel(systemInstruction: string) {
@@ -52,7 +52,7 @@ async function executeJDMatchCore(
   systemInstruction: string,
   originalResumeText: string
 ) {
-  await consumeAiRequest(userId, prisma)
+
 
   const model = getModel(systemInstruction)
   let result;
