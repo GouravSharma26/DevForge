@@ -40,13 +40,13 @@ export async function reconcileStaleMatches() {
   const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000)
   const updated = await prisma.match.updateMany({
     where: {
-      status: "IN_PROGRESS",
+      status: "ACTIVE",
       createdAt: { lt: thirtyMinutesAgo }
     },
     data: { status: "ABANDONED" }
   })
   if (updated.count > 0) {
-    console.log(`🧹 Marked ${updated.count} stale IN_PROGRESS matches as ABANDONED`)
+    console.log(`🧹 Marked ${updated.count} stale ACTIVE matches as ABANDONED`)
   }
 }
 
