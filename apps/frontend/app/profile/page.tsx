@@ -5,9 +5,11 @@ import { useMe, useUpdateMe } from "@/hooks/useUser"
 import { useResumes, useDeleteResume, useUploadResume, useInterviews } from "@/hooks/useResume"
 import { useMatchHistory } from "@/hooks/useArena"
 import { useRouter } from "next/navigation"
-import { Flame, Trophy, Star, Edit3, Mail, Target, Clock, Shield, FileText, Plus, Trash2, ArrowRight, Swords, Skull, Mic } from "lucide-react"
+import { Flame, Trophy, Star, Edit3, Mail, Target, Clock, Shield, FileText, Plus, Trash2, ArrowRight, Swords, Skull, Mic, CheckCircle2, XCircle, TrendingUp, TrendingDown, ImagePlus, User, Briefcase, Camera } from "lucide-react"
 import { calculateRank } from "@/lib/rank"
 import { RankIcon } from "@/components/ui/RankIcon"
+
+import { Skeleton } from "@/components/ui/Skeleton"
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -58,9 +60,40 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-base">
-        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
-      </div>
+      <main className="min-h-screen bg-base text-primary p-6 md:p-12 font-sans">
+        <div className="max-w-4xl mx-auto space-y-8">
+          {/* Header Skeleton */}
+          <div className="rounded-3xl border border-border bg-surface-theme/50 p-8 md:p-10 flex flex-col md:flex-row gap-8">
+            <Skeleton className="w-32 h-32 rounded-full shrink-0" />
+            <div className="flex-1 space-y-4 pt-2">
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="h-4 w-64" />
+              <Skeleton className="h-4 w-full max-w-lg" />
+              <div className="flex gap-3 pt-2">
+                <Skeleton className="h-6 w-24 rounded-full" />
+                <Skeleton className="h-6 w-24 rounded-full" />
+                <Skeleton className="h-6 w-32 rounded-full" />
+              </div>
+            </div>
+          </div>
+          {/* Stats Skeleton */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Skeleton className="h-28 rounded-2xl" />
+            <Skeleton className="h-28 rounded-2xl" />
+            <Skeleton className="h-28 rounded-2xl" />
+            <Skeleton className="h-28 rounded-2xl" />
+          </div>
+          {/* Activity Skeleton */}
+          <div className="p-8 rounded-3xl border border-border bg-surface-theme/50">
+             <Skeleton className="h-6 w-40 mb-6" />
+             <div className="space-y-4">
+               <Skeleton className="h-20 rounded-2xl" />
+               <Skeleton className="h-20 rounded-2xl" />
+               <Skeleton className="h-20 rounded-2xl" />
+             </div>
+          </div>
+        </div>
+      </main>
     )
   }
 
@@ -191,20 +224,22 @@ export default function ProfilePage() {
           </div>
         </div>
         
-        {/* Activity / Placeholder */}
+        {/* Activity */}
         <div className="p-8 rounded-3xl border border-border bg-surface-theme/50 backdrop-blur-xl">
-          <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
-            <span className="w-1.5 h-6 rounded-full bg-accent"></span>
-            Recent Activity
-          </h2>
-          <div className="flex flex-col max-h-[360px] overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(234,88,12,0.2) transparent' }}>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <span className="w-1.5 h-6 rounded-full bg-accent"></span>
+              Recent Activity
+            </h2>
+          </div>
+          <div className="flex flex-col gap-2">
             {(() => {
               const completedInterviews = interviews?.filter((i: any) => i.status === "COMPLETED") || []
               const completedMatches = matches || []
               const forgeLogActivities = [
                 ...completedInterviews.map((i: any) => ({ ...i, type: 'INTERVIEW', date: new Date(i.createdAt) })),
                 ...completedMatches.map((m: any) => ({ ...m, type: 'MATCH', date: new Date(m.endedAt || m.createdAt) }))
-              ].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 30) // Increased to 30 for scrolling
+              ].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 5) // Show only latest 5
 
               if (forgeLogActivities.length === 0) {
                 return (
@@ -221,16 +256,18 @@ export default function ProfilePage() {
               return forgeLogActivities.map((activity: any) => {
                 if (activity.type === 'INTERVIEW') {
                   return (
-                    <div key={`int-${activity.id}`} className="flex gap-4 py-4 border-b border-border last:border-0 hover:bg-card/30 px-4 -mx-4 rounded-xl transition-colors">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${activity.score > 80 ? 'bg-[#10b981]/10 text-[#10b981]' : activity.score > 60 ? 'bg-[#eab308]/10 text-[#eab308]' : 'bg-[#ef4444]/10 text-[#ef4444]'}`}>
-                        <Mic size={18} />
+                    <div key={`int-${activity.id}`} className="flex gap-4 py-4 border border-border bg-card/30 hover:bg-card/50 px-5 rounded-2xl transition-colors">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${activity.score > 80 ? 'bg-[#10b981]/10 text-[#10b981]' : activity.score > 60 ? 'bg-[#eab308]/10 text-[#eab308]' : 'bg-[#ef4444]/10 text-[#ef4444]'}`}>
+                        <Mic size={20} />
                       </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <div className="font-bold text-primary flex items-center gap-2">Mock Interview Protocol Graded — {activity.score}/100</div>
-                          <span className="text-xs text-muted font-mono">{activity.date.toLocaleDateString()}</span>
+                      <div className="flex-1 flex flex-col justify-center">
+                        <div className="flex justify-between items-center">
+                          <div className="font-bold text-primary flex items-center gap-2">Mock Interview Graded — <span className={activity.score > 80 ? 'text-[#10b981]' : activity.score > 60 ? 'text-[#eab308]' : 'text-[#ef4444]'}>{activity.score}/100</span></div>
+                          <span className="text-xs text-muted font-mono bg-surface-theme px-2 py-1 rounded-md">{activity.date.toLocaleDateString()}</span>
                         </div>
-                        <div className="text-muted text-sm mt-1">{activity.jobTitle || 'General Software Engineer'} • AI Agent Session</div>
+                        <div className="text-muted text-sm mt-1 flex items-center gap-2">
+                          <Briefcase size={14} className="opacity-70" /> {activity.jobTitle || 'General Software Engineer'}
+                        </div>
                       </div>
                     </div>
                   )
@@ -238,19 +275,19 @@ export default function ProfilePage() {
                   const isWinner = activity.winnerId === user?.id
                   const opponent = activity.player1Id === user?.id ? activity.player2 : activity.player1
                   return (
-                    <div key={`match-${activity.id}`} className="flex gap-4 py-4 border-b border-border last:border-0 hover:bg-card/30 px-4 -mx-4 rounded-xl transition-colors">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isWinner ? 'bg-highlight/10 text-highlight' : 'bg-red-500/10 text-red-500'}`}>
-                        {isWinner ? <Trophy size={18} /> : <Skull size={18} />}
+                    <div key={`match-${activity.id}`} className="flex gap-4 py-4 border border-border bg-card/30 hover:bg-card/50 px-5 rounded-2xl transition-colors">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${isWinner ? 'bg-highlight/10 text-highlight' : 'bg-red-500/10 text-red-500'}`}>
+                        {isWinner ? <TrendingUp size={22} strokeWidth={2.5} /> : <TrendingDown size={22} strokeWidth={2.5} />}
                       </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
+                      <div className="flex-1 flex flex-col justify-center">
+                        <div className="flex justify-between items-center">
                           <div className="font-bold text-primary flex items-center gap-2">
-                            {isWinner ? "Won PvP Battle" : "Lost PvP Battle"} vs {opponent?.username || "Unknown"}
+                            {isWinner ? "Victory" : "Defeat"} vs <span className="text-secondary">{opponent?.username || "Unknown"}</span>
                           </div>
-                          <span className="text-xs text-muted font-mono">{activity.date.toLocaleDateString()}</span>
+                          <span className="text-xs text-muted font-mono bg-surface-theme px-2 py-1 rounded-md">{activity.date.toLocaleDateString()}</span>
                         </div>
-                        <div className="text-muted text-sm mt-1">
-                          {activity.problem?.title || "Problem"} {isWinner ? "• +100 XP" : ""}
+                        <div className="text-muted text-sm mt-1 flex items-center gap-2">
+                          <Swords size={14} className="opacity-70" /> {activity.problem?.title || "Arena Battle"} {isWinner && <span className="text-highlight text-xs font-bold font-mono ml-2">+100 XP</span>}
                         </div>
                       </div>
                     </div>
@@ -373,103 +410,119 @@ export default function ProfilePage() {
 
       {/* ── Edit Profile Modal ── */}
       {isEditing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-base border border-accent/20 rounded-2xl w-full max-w-md shadow-[0_0_40px_rgba(234,88,12,0.15)] overflow-hidden flex flex-col relative animate-in zoom-in-95 duration-200">
-            {/* Glowing Top Border */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent to-highlight" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in" onClick={() => setIsEditing(false)}></div>
+          <div className="bg-[#121316] border border-border rounded-3xl w-full max-w-lg shadow-[0_0_50px_rgba(234,88,12,0.1)] overflow-hidden flex flex-col relative z-10 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+            {/* Header */}
+            <div className="p-6 md:p-8 pb-6 border-b border-border/50 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent via-highlight to-accent background-animate" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-accent/20 blur-3xl pointer-events-none" />
+              <div className="relative z-10 flex justify-between items-center">
+                <h3 className="text-2xl font-bold text-white font-mono flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-accent/20 border border-accent/30 flex items-center justify-center text-accent">
+                    <Edit3 size={18} />
+                  </div>
+                  Edit Profile
+                </h3>
+              </div>
+            </div>
+            
+            <div className="p-6 md:p-8 space-y-6">
+              {/* Avatar Upload */}
+              <div className="flex flex-col items-center">
+                <div className="relative group mb-3">
+                  {editForm.avatar ? (
+                    <img src={editForm.avatar} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-surface-theme shadow-xl" />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-surface-theme border-2 border-dashed border-border flex items-center justify-center text-muted">
+                      <User size={32} />
+                    </div>
+                  )}
+                  <label className="absolute bottom-0 right-0 w-8 h-8 bg-accent text-white rounded-full flex items-center justify-center cursor-pointer border-2 border-[#121316] shadow-lg hover:bg-highlight transition-colors">
+                    <Camera size={14} />
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        if (file.size > 2 * 1024 * 1024) return alert("Image must be less than 2MB")
+                        const reader = new FileReader()
+                        reader.onloadend = () => setEditForm({...editForm, avatar: reader.result as string})
+                        reader.readAsDataURL(file)
+                      }}
+                    />
+                  </label>
+                  {editForm.avatar && (
+                     <button onClick={() => setEditForm({...editForm, avatar: ""})} className="absolute top-0 right-0 w-6 h-6 bg-red-500/90 text-white rounded-full flex items-center justify-center cursor-pointer border-2 border-[#121316] shadow-lg hover:bg-red-500 transition-colors">
+                       <XCircle size={12} />
+                     </button>
+                  )}
+                </div>
+                <p className="text-xs text-muted font-mono uppercase tracking-widest">Profile Picture</p>
+              </div>
 
-            <div className="p-6 md:p-8">
-              <h3 className="text-2xl font-bold text-primary font-mono mb-8 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center shadow-[0_0_15px_rgba(234,88,12,0.2)]">
-                  <Edit3 className="text-accent" size={20} />
-                </div>
-                Forge Profile
-              </h3>
-              
-              <div className="space-y-5">
-                <div>
-                  <label className="block text-xs font-mono text-muted mb-1.5 uppercase tracking-wider">Username</label>
-                  <input 
-                    type="text" 
-                    value={editForm.username} 
-                    onChange={e => setEditForm({...editForm, username: e.target.value})}
-                    className="w-full bg-surface-theme/50 border border-border rounded-xl px-4 py-3 text-sm text-primary outline-none focus:border-accent focus:ring-1 focus:ring-accent/50 transition-all font-mono"
-                  />
+              {/* Form Fields */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-mono text-muted uppercase tracking-widest pl-1">Username</label>
+                    <div className="relative">
+                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" size={16} />
+                      <input 
+                        type="text" 
+                        value={editForm.username} 
+                        onChange={e => setEditForm({...editForm, username: e.target.value})}
+                        className="w-full bg-[#1c1d21] border border-border rounded-xl pl-10 pr-4 py-3 text-sm text-primary outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all font-mono"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-mono text-muted uppercase tracking-widest pl-1">Target Role</label>
+                    <div className="relative">
+                      <Target className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" size={16} />
+                      <input 
+                        type="text" 
+                        value={editForm.targetRole} 
+                        onChange={e => setEditForm({...editForm, targetRole: e.target.value})}
+                        placeholder="Frontend Engineer"
+                        className="w-full bg-[#1c1d21] border border-border rounded-xl pl-10 pr-4 py-3 text-sm text-primary outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all font-mono"
+                      />
+                    </div>
+                  </div>
                 </div>
                 
-                <div>
-                  <label className="block text-xs font-mono text-muted mb-1.5 uppercase tracking-wider">Target Role</label>
-                  <input 
-                    type="text" 
-                    value={editForm.targetRole} 
-                    onChange={e => setEditForm({...editForm, targetRole: e.target.value})}
-                    placeholder="e.g. Senior Frontend Engineer"
-                    className="w-full bg-surface-theme/50 border border-border rounded-xl px-4 py-3 text-sm text-primary outline-none focus:border-accent focus:ring-1 focus:ring-accent/50 transition-all font-mono"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-xs font-mono text-muted mb-1.5 uppercase tracking-wider">Bio</label>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-mono text-muted uppercase tracking-widest pl-1">Bio</label>
                   <textarea 
                     value={editForm.bio} 
                     onChange={e => setEditForm({...editForm, bio: e.target.value})}
-                    placeholder="Tell us about yourself..."
-                    className="w-full bg-surface-theme/50 border border-border rounded-xl px-4 py-3 text-sm text-primary outline-none focus:border-accent focus:ring-1 focus:ring-accent/50 transition-all font-mono resize-none h-28"
+                    placeholder="Tell us your origin story..."
+                    className="w-full bg-[#1c1d21] border border-border rounded-xl px-4 py-3 text-sm text-primary outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all font-sans resize-none h-24"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-mono text-muted mb-2.5 uppercase tracking-wider">Avatar</label>
-                  <div className="flex items-center gap-4">
-                    {editForm.avatar ? (
-                       <div className="relative group rounded-full">
-                         <img src={editForm.avatar} alt="Avatar preview" className="w-14 h-14 rounded-full object-cover border-2 border-accent shadow-[0_0_15px_rgba(234,88,12,0.3)]" />
-                         <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer border-2 border-transparent" onClick={() => setEditForm({...editForm, avatar: ""})}>
-                           <Trash2 size={16} className="text-white" />
-                         </div>
-                       </div>
-                    ) : (
-                       <div className="w-14 h-14 rounded-full bg-surface-theme border-2 border-dashed border-border flex items-center justify-center text-[10px] text-muted font-mono">None</div>
-                    )}
-                    <label className="cursor-pointer bg-card border border-border hover:border-accent hover:bg-accent/5 text-primary px-4 py-2.5 rounded-xl text-xs font-bold font-mono transition-all flex items-center gap-2">
-                      <Plus size={14} className="text-accent" /> Upload Image
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
-                        onChange={(e) => {
-                          const file = e.target.files?.[0]
-                          if (!file) return
-                          if (file.size > 2 * 1024 * 1024) {
-                            alert("Image must be less than 2MB")
-                            return
-                          }
-                          const reader = new FileReader()
-                          reader.onloadend = () => {
-                            setEditForm({...editForm, avatar: reader.result as string})
-                          }
-                          reader.readAsDataURL(file)
-                        }}
-                      />
-                    </label>
-                  </div>
                 </div>
               </div>
             </div>
             
-            <div className="flex border-t border-border bg-surface-theme/20">
+            <div className="flex p-4 md:p-6 pt-2 gap-3 bg-surface-theme/30">
               <button
                 onClick={() => setIsEditing(false)}
-                className="flex-1 py-4.5 text-sm font-bold text-muted hover:text-primary hover:bg-card transition-colors border-r border-border font-mono py-4"
+                className="flex-1 py-3 text-sm font-bold text-muted bg-surface-theme hover:bg-card border border-border rounded-xl transition-colors font-mono"
               >
-                Cancel
+                Discard
               </button>
               <button
                 disabled={updateMe.isPending}
                 onClick={handleSaveProfile}
-                className="flex-1 py-4.5 text-sm font-bold text-accent hover:bg-accent hover:text-white transition-colors disabled:opacity-50 font-mono py-4"
+                className="flex-1 py-3 text-sm font-bold text-white bg-accent hover:bg-highlight shadow-[0_0_20px_rgba(234,88,12,0.3)] rounded-xl transition-all disabled:opacity-50 font-mono flex items-center justify-center gap-2"
               >
-                {updateMe.isPending ? "Forging..." : "Save Changes"}
+                {updateMe.isPending ? (
+                  <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Saving...</>
+                ) : (
+                  <>Save Profile <ArrowRight size={16} /></>
+                )}
               </button>
             </div>
           </div>

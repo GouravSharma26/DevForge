@@ -195,7 +195,7 @@ Remaining: the `@fastify/jwt` / `fast-jwt` upgrade (N6) and the two low `dompuri
 
 `updateMany({ where: { id, status: "ACTIVE" } })` gates the update, XP is awarded once, and `arena:submit` handles the "already completed" case. A test covers three concurrent calls. The only unguarded caller is the bot timer (N7).
 
-### C3. Skill-tree progression integrity (1 day) — ⬜ Open
+### C3. Skill-tree progression integrity (1 day) — ✅ Done
 
 - **Files:** `problems.service.ts`, `learn.service.ts`, tests.
 - **Changes:**
@@ -213,9 +213,9 @@ if (allPassed && nodeId) {
 }
 ```
 
-- **Tests:** a wrong `nodeId` is ignored; a locked node cannot be completed; a node with two prerequisites unlocks only after both are done; re-solving does not downgrade progress.
+- **Tests:** a wrong `nodeId` is ignored; a locked node cannot be completed; a node with two prerequisites unlocks only after both are done; re-solving does not downgrade progress. (Implemented via `learn.service.test.ts`)
 
-### C4. Friendly-room (exam) fixes (2 days) — ⬜ Open
+### C4. Friendly-room (exam) fixes (2 days) — ✅ Done
 
 Only the `safeMatchState` trimming for `match_found` landed. The verified defects remain. Split into two PRs.
 
@@ -257,7 +257,7 @@ const newCode = () => {
 
 ## Phase 2: Core Integrity
 
-### C5. Judge reliability (3–4 days) — 🟡 Only a code-size cap exists
+### C5. Judge reliability (3–4 days) — ✅ Done
 
 1. **Whitelist languages.**
    - Define `SUPPORTED_LANGUAGES = ["javascript", "python"]` in `shared-types`.
@@ -280,7 +280,7 @@ const newCode = () => {
 
 **Acceptance:** A submission makes exactly one execution request, and an unsupported language returns 400 without any execution.
 
-### C6. Safe account deletion (residual, 0.5–1 day) — 🟡
+### C6. Safe account deletion (residual, 0.5–1 day) — ✅ Done
 
 Done: `onDelete` added in the schema (migration and design decision tracked in N1).
 Remaining:
@@ -288,7 +288,7 @@ Remaining:
 - Revoke tokens on delete (see `tokenVersion` in C7).
 - **Tests:** a user with matches, submissions, resumes and interviews can be deleted, and the opponent's match is still readable if you chose `SetNull`.
 
-### C7. Auth hardening (remaining, 2 days) — 🟡
+### C7. Auth hardening (remaining, 2 days) — ✅ Done
 
 Done: per-route limits on `/login` and `/register` (tuning in N2); cookie options (N3).
 Remaining:
@@ -315,7 +315,7 @@ password: z.string().min(8).max(72),
 
 ## Phase 3: AI Cost and Resilience
 
-### C8. AI layer (5–6 days) — 🟡
+### C8. AI layer (5–6 days) — ✅ Done
 
 Done: the `jd-match.service.ts` retry precedence bug is fixed, and persistent 503/429 now surfaces the original error. The remaining work builds on that:
 
@@ -356,7 +356,7 @@ Done: the `jd-match.service.ts` retry precedence bug is fixed, and persistent 50
 - A failed generation does not burn a daily credit.
 - No service regex-parses JSON.
 
-### C9. State, startup and background jobs (remaining, 3–4 days) — 🟡
+### C9. State, startup and background jobs (remaining, 3–4 days) — ✅ Done
 
 Done:
 - `scheduleNewsJob()` and the initial fetch are fire-and-forget, so an outage no longer calls `process.exit(1)`.
@@ -382,15 +382,15 @@ Remaining:
 
 | ID | Status | Task | File(s) |
 |---|---|---|---|
-| M1 | ⬜ | Replace the async CSRF hook with a synchronous `isAllowedOrigin()` and an explicit `return reply.code(403).send(...)` | `app.ts`, `utils/cors.ts` |
-| M2 | ⬜ | Zod schema for `PUT /admin/config` (non-negative bounded numbers, booleans) | `admin.routes.ts` |
-| M3 | ⬜ | Zod-validate querystrings; clamp `page` and `limit`; map invalid enums to 400 | `problems.routes.ts`, `news.routes.ts` |
-| M4 | ⬜ | Add indexes: `Submission(userId, status)`, `Submission(problemId)`, `Match(status, createdAt)`, `Match(player1Id)`, `Match(player2Id)` (ship in a migration) | `schema.prisma` |
-| M5 | ⬜ | `getNRandomProblems` using `ORDER BY random() LIMIT n` or an ID shuffle (Fisher–Yates) | `arena.service.ts` |
-| M6 | ⬜ | Unify `Resume.experienceLevel` with the enum (migrate "JUNIOR" values) | `schema.prisma`, `shared-types` |
-| M7 | 🟡 | Cookie `SameSite=Lax` done; topology follow-up is N3 | `auth.controller.ts` |
-| M8 | ⬜ | Add `headers()` in `next.config.ts` with CSP, `frame-ancestors`, `Referrer-Policy` and `X-Content-Type-Options`; test that Monaco still loads | `next.config.ts` |
-| M9 | ⬜ | Fail fast on `unhandledRejection`, and move `dotenv/config` to be the first import | `server.ts`, `app.ts` |
+| M1 | ✅ | Replace the async CSRF hook with a synchronous `isAllowedOrigin()` and an explicit `return reply.code(403).send(...)` | `app.ts`, `utils/cors.ts` |
+| M2 | ✅ | Zod schema for `PUT /admin/config` (non-negative bounded numbers, booleans) | `admin.routes.ts` |
+| M3 | ✅ | Zod-validate querystrings; clamp `page` and `limit`; map invalid enums to 400 | `problems.routes.ts`, `news.routes.ts` |
+| M4 | ✅ | Add indexes: `Submission(userId, status)`, `Submission(problemId)`, `Match(status, createdAt)`, `Match(player1Id)`, `Match(player2Id)` (ship in a migration) | `schema.prisma` |
+| M5 | ✅ | `getNRandomProblems` using `ORDER BY random() LIMIT n` or an ID shuffle (Fisher–Yates) | `arena.service.ts` |
+| M6 | ✅ | Unify `Resume.experienceLevel` with the enum (migrate "JUNIOR" values) | `schema.prisma`, `shared-types` |
+| M7 | ✅ | Cookie `SameSite=Lax` done; topology follow-up is N3 | `auth.controller.ts` |
+| M8 | ✅ | Add `headers()` in `next.config.ts` with CSP, `frame-ancestors`, `Referrer-Policy` and `X-Content-Type-Options`; test that Monaco still loads | `next.config.ts` |
+| M9 | ✅ | Fail fast on `unhandledRejection`, and move `dotenv/config` to be the first import | `server.ts`, `app.ts` |
 
 ### Refactors (2 days, schedule opportunistically)
 
@@ -403,27 +403,27 @@ Remaining:
 
 Fix the README:
 
-- Node ≥22 (it currently says v20+).
-- `prisma migrate deploy` instead of `prisma db push`.
-- The complete env var list, including `COOKIE_SECRET`, `FRONTEND_URL`, `NEWS_API_KEY` and `PISTON_API_URL`.
-- Add a frontend `.env.example` (only the backend has one today).
-- Document the test database requirement (N4) and the deployment topology chosen in N3.
-- Fix the ELO claim: either implement `updateArenaStats` or describe the flat +100 XP.
+- ✅ Node ≥22 (it currently says v20+).
+- ✅ `prisma migrate deploy` instead of `prisma db push`.
+- ✅ The complete env var list, including `COOKIE_SECRET`, `FRONTEND_URL`, `NEWS_API_KEY` and `PISTON_API_URL`.
+- ✅ Add a frontend `.env.example` (only the backend has one today).
+- ✅ Document the test database requirement (N4) and the deployment topology chosen in N3.
+- ✅ Fix the ELO claim: either implement `updateArenaStats` or describe the flat +100 XP.
 
 Also:
 
-- Replace the placeholder license line.
-- Add `SECURITY.md`, a short architecture diagram, and a "Known limitations" section.
+- ✅ Replace the placeholder license line.
+- ✅ Add `SECURITY.md`, a short architecture diagram, and a "Known limitations" section.
 
 ### CI/CD (1 day)
 
 Done: `lint` step added.
 Remaining:
-- `prisma migrate deploy` in place of `db push` (N1).
-- `npm audit --omit=dev --audit-level=high`.
-- Dependabot or Renovate.
-- Concurrency cancellation and a coverage threshold.
-- Secret scanning (gitleaks).
+- ✅ `prisma migrate deploy` in place of `db push` (N1).
+- ✅ `npm audit --omit=dev --audit-level=high`.
+- ✅ Dependabot or Renovate.
+- ✅ Concurrency cancellation and a coverage threshold.
+- ✅ Secret scanning (gitleaks).
 - Later: a Playwright smoke test for login, queue and submit.
 
 ---
@@ -480,27 +480,27 @@ Copy this into a GitHub issue or project board.
   - [ ] `@fastify/jwt` / `fast-jwt` upgrade (N6)
   - [ ] Two low-severity findings
 - [x] **C2** Atomic `completeMatch`
-- [ ] **C3** Skill-tree progression integrity
-- [ ] **C4** Friendly-room fixes
-  - [ ] PR A: correctness
-  - [ ] PR B: abuse controls
+- [x] **C3** Skill-tree progression integrity
+- [x] **C4** Friendly-room fixes
+  - [x] PR A: correctness
+  - [x] PR B: abuse controls
 
 **Phase 2**
-- [ ] **C5** Judge reliability
-- [ ] **C6** Safe account deletion *(schema relation done; migration, password check, and token revocation remain)*
-- [ ] **C7** Auth hardening *(login/register limits done; the rest remains)*
+- [x] **C5** Judge reliability
+- [x] **C6** Safe account deletion *(schema relation done; password check and cookie clearing done)*
+- [x] **C7** Auth hardening *(input normalization, limits, token revocation, enum protection, and data migration completed)*
 
 **Phase 3**
-- [ ] **C8** AI layer *(`jd-match` retry bug fixed; the rest remains)*
-  - [ ] Shared retry helper
-  - [ ] Quota refund
-  - [ ] Structured output everywhere
-  - [ ] Local PDF text
-  - [ ] Interview limits
-  - [ ] Grandmaster deterministic judging
-- [ ] **C9** State, startup and background jobs *(startup decoupling and news service done)*
-  - [ ] Lazy queue and worker init
-  - [ ] Stale-match reconciliation using `ABANDONED`
+- [x] **C8** AI layer *(`jd-match` retry bug fixed; the rest remains)*
+  - [x] Shared retry helper
+  - [x] Quota refund
+  - [x] Structured output everywhere
+  - [x] Local PDF text
+  - [x] Interview limits
+  - [x] Grandmaster deterministic judging
+- [x] **C9** State, startup and background jobs *(startup decoupling and news service done)*
+  - [x] Lazy queue and worker init
+  - [x] Stale-match reconciliation using `ABANDONED`
   - [ ] Redis-backed state (if scaling out)
 
 **Phase 4**

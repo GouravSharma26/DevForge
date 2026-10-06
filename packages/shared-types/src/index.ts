@@ -1,16 +1,36 @@
 import { z } from "zod"
 
+export const SUPPORTED_LANGUAGES = ["javascript", "python"] as const
+export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number]
+
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 export const RegisterSchema = z.object({
-  username: z.string().min(3).max(30),
-  email: z.string().email(),
-  password: z.string().min(8),
+  username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9_-]+$/, "Username can only contain letters, numbers, underscores, and dashes"),
+  email: z.string().trim().toLowerCase().email(),
+  password: z.string().min(8).max(72),
 })
 
 export const LoginSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
+  email: z.string().trim().toLowerCase().email(),
+  password: z.string().min(8).max(72),
+})
+
+export const UpdateProfileSchema = z.object({
+  username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9_-]+$/).optional(),
+  email: z.string().trim().toLowerCase().email().optional(),
+  bio: z.string().max(500).optional().nullable(),
+  targetRole: z.string().max(100).optional().nullable(),
+  avatar: z.string().max(256 * 1024 * 1.4).regex(/^data:image\/(png|jpeg|webp);base64,/, "Avatar must be a PNG, JPEG, or WEBP data URL").optional().nullable(), // ~256KB base64
+})
+
+export const ChangePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8).max(72),
+})
+
+export const DeleteAccountSchema = z.object({
+  password: z.string().min(1),
 })
 
 // ─── User ─────────────────────────────────────────────────────────────────────
@@ -52,7 +72,7 @@ export const ResumeSchema = z.object({
   profileName: z.string(),
   originalText: z.string().optional(),
   skills: z.array(z.string()),
-  experienceLevel: z.string(),
+  experienceLevel: z.enum(["BEGINNER", "MID", "SENIOR"]),
   targetRole: z.string().nullable().optional(),
   score: z.number(),
   skillsScore: z.number(),

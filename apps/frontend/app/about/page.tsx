@@ -98,19 +98,20 @@ export default function AboutPage() {
       </section>
 
       {/* The RPG System */}
-      <section className="space-y-12 pt-12 border-t border-border animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-700 fill-mode-both">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-primary font-mono mb-3">The Ranking System</h2>
-          <p className="text-muted">Earn XP to Level up. Gain Elo in the Arena to reach higher divisions.</p>
+      <section className="space-y-12 pt-16 mt-16 border-t border-border/50 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-700 fill-mode-both relative">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-accent/5 blur-[100px] pointer-events-none" />
+        <div className="text-center mb-16 relative z-10">
+          <h2 className="text-3xl md:text-4xl font-bold text-white font-mono mb-4">The Ranking System</h2>
+          <p className="text-muted text-lg max-w-2xl mx-auto">Earn XP to Level up. Gain Elo in the Arena to reach higher divisions.</p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <RankCard rank="Iron Apprentice" title="Lv. 1 - 4" desc="You have entered the forge." />
-          <RankCard rank="Bronze Artificer" title="Lv. 5 - 9" desc="You are beginning to shape the code." />
-          <RankCard rank="Silver Forgesmith" title="Lv. 10 - 14" desc="Your tools are sharpened." />
-          <RankCard rank="Gold Innovator" title="Lv. 15 - 24" desc="Your architectures spark with brilliance." />
-          <RankCard rank="Obsidian Architect" title="Lv. 25 - 49" desc="You build unbreakable systems." />
-          <RankCard rank="Ember Grandmaster" title="Lv. 50+" desc="The Apex. The Forge is yours to command." />
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+          <RankCard rank="Iron Apprentice" title="Lv. 1 - 4" desc="You have entered the forge." delay="delay-100" />
+          <RankCard rank="Bronze Artificer" title="Lv. 5 - 9" desc="You are beginning to shape the code." delay="delay-200" />
+          <RankCard rank="Silver Forgesmith" title="Lv. 10 - 14" desc="Your tools are sharpened." delay="delay-300" />
+          <RankCard rank="Gold Innovator" title="Lv. 15 - 24" desc="Your architectures spark with brilliance." delay="delay-400" />
+          <RankCard rank="Obsidian Architect" title="Lv. 25 - 49" desc="You build unbreakable systems." delay="delay-500" />
+          <RankCard rank="Ember Grandmaster" title="Lv. 50+" desc="The Apex. The Forge is yours to command." delay="delay-600" />
         </div>
       </section>
 
@@ -215,36 +216,54 @@ function CoreLoopAnimation() {
 
 function FeatureSection({ icon, title, description, children, reverse, delay }: any) {
   return (
-    <div className={`flex flex-col ${reverse ? 'md:flex-row-reverse' : 'md:flex-row'} gap-8 md:gap-12 items-center animate-in fade-in slide-in-from-bottom-8 duration-1000 ${delay} fill-mode-both`}>
-      <div className="flex-1 space-y-4">
-        <div className="flex items-center gap-4 border-b border-border pb-4">
-          <div className="w-14 h-14 rounded-2xl bg-surface-theme border border-border flex items-center justify-center shadow-sm">
+    <div className={`flex flex-col ${reverse ? 'md:flex-row-reverse' : 'md:flex-row'} gap-8 md:gap-16 items-center animate-in fade-in slide-in-from-bottom-8 duration-1000 ${delay} fill-mode-both`}>
+      <div className="flex-1 space-y-6">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-surface-theme border border-border flex items-center justify-center shadow-lg shadow-black/50">
             {icon}
           </div>
-          <h2 className="text-2xl font-bold text-primary font-mono">{title}</h2>
+          <h2 className="text-3xl font-bold text-white font-mono">{title}</h2>
         </div>
-        <p className="text-muted text-lg leading-relaxed">
+        <p className="text-muted text-lg leading-relaxed border-l-2 border-accent/30 pl-4">
           {description}
         </p>
         {children}
       </div>
-      <div className="flex-1 w-full bg-surface-theme/20 rounded-3xl border border-border aspect-[4/3] flex items-center justify-center overflow-hidden relative group">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-        <Play size={48} className="text-muted/20 group-hover:text-accent/50 transition-colors duration-500" />
-        <div className="absolute bottom-4 left-0 right-0 text-center text-xs font-mono text-muted/50">Interactive Demo (Coming Soon)</div>
+      <div className="flex-1 w-full relative group">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-transparent blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        <div className="relative bg-[#121316] rounded-3xl border border-border aspect-[4/3] flex flex-col overflow-hidden shadow-2xl">
+          {/* Faux Window Header */}
+          <div className="h-8 border-b border-border bg-surface-theme/50 flex items-center px-4 gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+            <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
+          </div>
+          {/* Grid Pattern Background */}
+          <div className="flex-1 w-full bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:20px_20px] flex items-center justify-center relative p-6">
+            <div className="absolute inset-0 bg-gradient-to-t from-[#121316] via-transparent to-[#121316]" />
+            <div className="relative z-10 p-6 rounded-2xl bg-surface-theme/80 border border-border backdrop-blur-md flex flex-col items-center gap-4 shadow-xl">
+               <Zap size={32} className="text-accent" />
+               <div className="font-mono text-sm text-center text-muted">SYSTEM <span className="text-accent">ONLINE</span></div>
+               <div className="w-32 h-1 bg-border rounded-full overflow-hidden">
+                 <div className="w-2/3 h-full bg-accent animate-pulse" />
+               </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
 
-function RankCard({ rank, title, desc }: { rank: string, title: string, desc: string }) {
+function RankCard({ rank, title, desc, delay }: { rank: string, title: string, desc: string, delay?: string }) {
   return (
-    <div className="p-6 rounded-2xl border border-border bg-surface-theme/50 hover:bg-surface-theme transition-all duration-300 group flex flex-col items-center text-center gap-4 hover:border-accent/30 hover:shadow-[0_0_20px_rgba(234,88,12,0.1)]">
-      <RankIcon rankTitle={rank} className="w-16 h-16 group-hover:scale-110 transition-transform duration-500" />
-      <div>
-        <h4 className="font-bold text-primary font-mono text-lg">{rank}</h4>
-        <div className="text-xs font-bold text-accent mb-2 uppercase tracking-widest">{title}</div>
-        <p className="text-sm text-muted">{desc}</p>
+    <div className={`p-8 rounded-3xl border border-border bg-[#121316]/80 hover:bg-surface-theme/50 transition-all duration-500 group flex flex-col items-center text-center gap-5 hover:border-accent/40 hover:shadow-[0_0_30px_rgba(234,88,12,0.15)] relative overflow-hidden animate-in fade-in zoom-in-95 duration-1000 ${delay} fill-mode-both`}>
+      <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      <RankIcon rankTitle={rank} className="w-20 h-20 group-hover:scale-110 group-hover:-translate-y-2 transition-transform duration-500 drop-shadow-2xl relative z-10" />
+      <div className="relative z-10">
+        <h4 className="font-bold text-white font-mono text-xl mb-1">{rank}</h4>
+        <div className="text-xs font-bold text-accent mb-3 uppercase tracking-widest">{title}</div>
+        <p className="text-sm text-muted/90 leading-relaxed">{desc}</p>
       </div>
     </div>
   )

@@ -6,6 +6,15 @@ export default defineConfig({
     env: {
       COOKIE_SECRET: "test-environment-cookie-secret-very-long-32-chars",
       JWT_SECRET: "test-environment-jwt-secret-very-long-32-chars",
+    },
+    coverage: {
+      provider: "v8",
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 80,
+        statements: 80
+      }
     }
   }
 })

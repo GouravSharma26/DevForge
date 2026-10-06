@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useResumes, useInterviews, useStartInterview, useDeleteInterview, useUploadResume, useRenameInterview } from "@/hooks/useResume"
 import { Plus, ChevronDown, Bot, Code2, Trash2, Edit2, Download, Clock, Loader2 } from "lucide-react"
+import { Skeleton } from "@/components/ui/Skeleton"
 import { useAuthStore } from "@/store/auth.store"
 import { toast } from "sonner"
 import type { Interview, Resume } from "@devforge/shared-types"
@@ -189,7 +190,11 @@ export default function InterviewHubPage() {
 
         {/* ── Saved Interviews Grid ── */}
         {isLoading ? (
-          <p className="text-[var(--color-muted)] text-[12px] text-center mt-10">Loading your sessions...</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
+            {[1,2,3].map(i => (
+               <Skeleton key={i} className="h-32 rounded-[16px]" />
+            ))}
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2 fade-up" style={{ animationDelay: '0.4s' }}>
             {interviews?.length === 0 && (
@@ -323,23 +328,32 @@ export default function InterviewHubPage() {
 
       {/* Coming Soon Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
-          <div className="glass-panel bg-[var(--color-surface-theme)] border-[var(--color-accent)] rounded-[20px] p-8 max-w-[400px] w-full text-center shadow-[0_0_40px_rgba(234,88,12,0.15)] animate-fade-in-up">
-            <div className="w-12 h-12 mx-auto rounded-full bg-[var(--color-card)] text-[var(--color-accent)] border border-[var(--color-accent)] flex items-center justify-center mb-5 text-[24px]">
-              🚧
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in" onClick={() => setShowModal(false)} />
+          <div className="glass-panel bg-[#121316] border border-accent/20 rounded-3xl p-8 max-w-[420px] w-full text-center shadow-[0_0_50px_rgba(234,88,12,0.15)] animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 relative z-10 overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent to-highlight background-animate" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-accent/20 blur-3xl pointer-events-none" />
+            
+            <div className="relative">
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-surface-theme border border-border flex items-center justify-center mb-6 shadow-xl group">
+                <Bot size={28} className="text-accent group-hover:scale-110 transition-transform duration-500" />
+              </div>
+              <h3 className="text-2xl font-black text-white mb-3 font-mono">
+                System Offline
+              </h3>
+              <p className="text-sm text-muted leading-relaxed mb-8">
+                The AI Agent voice protocol is currently receiving critical security updates. It will be re-enabled in a future patch.
+              </p>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="w-full py-3.5 rounded-xl text-sm font-bold cursor-pointer transition-all border border-border bg-surface-theme text-primary hover:bg-card hover:text-white"
+                >
+                  Understood
+                </button>
+              </div>
             </div>
-            <h3 className="text-[18px] font-bold text-[var(--color-text-primary)] mb-2">
-              Coming Soon
-            </h3>
-            <p className="text-[13px] text-[var(--color-muted)] leading-relaxed mb-6">
-              The 1-on-1 AI autonomous voice recruiter is currently in active development. Check back soon!
-            </p>
-            <button
-              onClick={() => setShowModal(false)}
-              className="w-full py-2.5 rounded-[12px] text-[13px] font-bold cursor-pointer transition-all border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text-primary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-            >
-              Got it
-            </button>
           </div>
         </div>
       )}

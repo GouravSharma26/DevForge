@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { Server, Socket } from "socket.io"
+import { ERROR_MESSAGES } from "../utils/constants"
 import {
   getWaitingMatch,
   createMatch,
@@ -11,6 +12,7 @@ import {
   cancelMatch,
 } from "../services/arena.service"
 import { submitSolution } from "../services/problems.service"
+import { SUPPORTED_LANGUAGES } from "@devforge/shared-types"
 import { prisma } from "@devforge/database"
 import { calculateBotSolveTime, startBotBattle, cancelBotBattle } from "../services/arena-bot.service"
 
@@ -68,8 +70,31 @@ function publicRoom(r: FriendlyRoom) {
   return rest;
 }
 
+// Rate limiter maps
+const userEventHistory = new Map<string, number[]>()
+const userSubmitHistory = new Map<string, number[]>()
+
 function on<T>(socket: Socket, ev: string, schema: z.ZodType<T>, fn: (p: T) => Promise<any> | any) {
   socket.on(ev, async (raw: unknown) => {
+    const userId = socket.data.userId as string || socket.id
+    const now = Date.now()
+    
+    // Rate limiter logic
+    const isSubmit = ev.includes("submit")
+    const historyMap = isSubmit ? userSubmitHistory : userEventHistory
+    const limit = isSubmit ? 2 : 10
+    
+    let history = historyMap.get(userId) || []
+    history = history.filter(time => now - time < 10000) // Keep last 10 seconds
+    
+    if (history.length >= limit) {
+      console.warn(`[Arena Socket] Rate limit exceeded for ${userId} on ${ev}`)
+      return socket.emit("arena:error", { message: "Slow down! You are sending too many requests." })
+    }
+    
+    history.push(now)
+    historyMap.set(userId, history)
+
     // Tolerate payload-less emits and ack callbacks passed as the only argument
     const payload = typeof raw === "function" ? {} : (raw ?? {})
     const p = schema.safeParse(payload)
@@ -231,7 +256,13 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
       try {
         const waiting = await getWaitingMatch()
 
-      if (waiting && waiting.player1Id !== userId) {
+      if (waiting) {
+        if (waiting.player1Id === userId) {
+          // Reject double-queueing
+          socket.join(waiting.id)
+          return
+        }
+
         try {
           const match = await joinMatch(waiting.id, userId)
           socket.join(match.id)
@@ -589,8 +620,8 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     endExam(codeRoom, `${username} forfeited the match!`)
   })
 
-  on(socket, "arena:submit_exam_code", z.object({ problemId: z.string(), code: z.string(), language: z.string() }), async ({ problemId, code: sourceCode, language }) => {
-    if (sourceCode.length > 100_000) return socket.emit("arena:error", { message: "Payload too large" })
+  on(socket, "arena:submit_exam_code", z.object({ problemId: z.string(), code: z.string().max(100000), language: z.enum(SUPPORTED_LANGUAGES as any) }), async ({ problemId, code: sourceCode, language }) => {
+    if (sourceCode.length > 100_000) return socket.emit("arena:error", { message: ERROR_MESSAGES.PAYLOAD_TOO_LARGE })
     const codeRoom = userToRoom.get(userId)
     if (!codeRoom) return
     const room = friendlyRooms.get(codeRoom)
@@ -599,7 +630,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     
     // EXAM BOUNDARY CHECK: Prevent submission if the time limit has passed or exam ended
     if (room.examEnded || (room.endTime && Date.now() > room.endTime)) {
-      return socket.emit("arena:error", { message: "Exam has ended. Submissions are no longer accepted." })
+      return socket.emit("arena:error", { message: ERROR_MESSAGES.EXAM_ENDED })
     }
     
     // Check if already passed
@@ -654,7 +685,7 @@ export function registerArenaHandlers(io: Server, socket: Socket) {
     socket.to(matchId).emit("arena:opponent_code", { code })
   })
 
-  on(socket, "arena:submit", z.object({ matchId: z.string(), problemId: z.string(), code: z.string(), language: z.string() }), async ({ matchId, problemId, code, language }) => {
+  on(socket, "arena:submit", z.object({ matchId: z.string(), problemId: z.string(), code: z.string().max(100000), language: z.enum(SUPPORTED_LANGUAGES as any) }), async ({ matchId, problemId, code, language }) => {
     if (code.length > 100_000) return socket.emit("arena:error", { message: "Payload too large" })
     const matchMem = activeMatches.get(matchId)
     if (!matchMem || (matchMem.player1Id !== userId && matchMem.player2?.id !== userId)) {

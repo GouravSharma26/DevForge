@@ -25,28 +25,34 @@ const redisConnection = {
   maxRetriesPerRequest: null, // Required by BullMQ
 }
 
-export const newsQueue = new Queue("news", { connection: redisConnection })
-
-newsQueue.on("error", (err) => {
-  console.error("⚠️ News Queue Redis error (ignored):", err.message)
-})
-
-const worker = new Worker(
-  "news",
-  async (job) => {
-    console.log(`⚙️  Processing job: ${job.name}`)
-    await fetchAndStoreNews()
-  },
-  { connection: redisConnection }
-)
-
-worker.on("completed", () => console.log("✅ News job completed"))
-worker.on("failed", (job, err) => console.error(`❌ News job failed`, err))
-worker.on("error", (err) => {
-  console.error("⚠️ News Worker Redis error (ignored):", err.message)
-})
+let newsQueue: Queue;
+let worker: Worker;
 
 export async function scheduleNewsJob() {
+  if (!newsQueue) {
+    newsQueue = new Queue("news", { connection: redisConnection })
+    newsQueue.on("error", (err) => {
+      console.error("⚠️ News Queue Redis error (ignored):", err.message)
+    })
+  }
+
+  if (!worker) {
+    worker = new Worker(
+      "news",
+      async (job) => {
+        console.log(`⚙️  Processing job: ${job.name}`)
+        await fetchAndStoreNews()
+      },
+      { connection: redisConnection }
+    )
+
+    worker.on("completed", () => console.log("✅ News job completed"))
+    worker.on("failed", (job, err) => console.error(`❌ News job failed`, err))
+    worker.on("error", (err) => {
+      console.error("⚠️ News Worker Redis error (ignored):", err.message)
+    })
+  }
+
   await newsQueue.add(
     "fetch-news",
     {},

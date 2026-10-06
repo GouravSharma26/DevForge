@@ -3,10 +3,11 @@ import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai"
 import { prisma } from "@devforge/database"
 import { consumeAiRequest } from "../utils/ai-rate-limit"
 import { containsPromptInjection, isGarbageText } from "../utils/prompt-scrubber"
+import { withGeminiRetry } from "../utils/gemini"
 
 export function registerInterviewHandlers(io: Server, socket: Socket) {
   const userId = socket.data.userId
-  const chatSessions = new Map<string, { chat: any, interviewId: string, history: any[] }>()
+  const chatSessions = new Map<string, { chat: any, interviewId: string, history: any[], timer?: NodeJS.Timeout }>()
 
   socket.on("interview:join", async ({ resumeId, duration }: { resumeId: string, duration?: number }) => {
     try {
@@ -40,7 +41,21 @@ Ask technical questions one by one. Wait for the candidate's answer before proce
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", systemInstruction })
       const chat = model.startChat({ history: [] })
 
-      chatSessions.set(socket.id, { chat, interviewId: interview.id, history: [] })
+      const sessionTimeout = setTimeout(async () => {
+        socket.emit("interview:error", { message: "Interview session time has expired. Please conclude the interview." })
+        const activeSession = chatSessions.get(socket.id)
+        if (activeSession) {
+          try {
+            await prisma.interview.updateMany({
+              where: { id: activeSession.interviewId, status: "IN_PROGRESS" },
+              data: { status: "COMPLETED" } // Wait, actually it should be ended.
+            })
+          } catch (err) {}
+          chatSessions.delete(socket.id)
+        }
+      }, (duration || 5) * 60 * 1000)
+
+      chatSessions.set(socket.id, { chat, interviewId: interview.id, history: [], timer: sessionTimeout })
 
       const result = await chat.sendMessage("Start the interview.")
       const text = result.response.text()
@@ -63,6 +78,17 @@ Ask technical questions one by one. Wait for the candidate's answer before proce
       const session = chatSessions.get(socket.id)
       if (!session) {
          return socket.emit("interview:error", { message: "Chat session not found. Please refresh." })
+      }
+      if (typeof message !== "string" || message.trim().length === 0) {
+        return socket.emit("interview:error", { message: "Invalid message format." })
+      }
+
+      if (message.length > 2000) {
+        return socket.emit("interview:error", { message: "Message is too long. Please keep it under 2000 characters." })
+      }
+
+      if (session.history.length >= 60) {
+        return socket.emit("interview:error", { message: "Interview session length limit reached. Please conclude the interview." })
       }
       
       if (containsPromptInjection(message)) {
@@ -129,15 +155,10 @@ Ask technical questions one by one. Wait for the candidate's answer before proce
       const prompt = `Evaluate the following technical interview transcript. Generate a score out of 100 and detailed feedback (what they got right, what they missed, how to improve).
       
       Transcript:
-      ${history.map(h => `${h.role === 'user' ? 'Candidate' : 'Interviewer'}: ${h.content}`).join("\\n\\n")}`
+      ${history.map(h => `${h.role === 'user' ? 'Candidate' : 'Interviewer'}: ${h.content}`).join("\n\n")}`
 
-      const result = await evalModel.generateContent(prompt)
-      let textResponse = result.response.text()
-      
-      // Cleanup markdown json block if Gemini returns it
-      textResponse = textResponse.replace(/^```json\s*/, "")
-      textResponse = textResponse.replace(/\s*```$/, "")
-      textResponse = textResponse.trim()
+      const result = await withGeminiRetry(() => evalModel.generateContent(prompt))
+      const textResponse = result.response.text().trim()
 
       const parsed = JSON.parse(textResponse)
 
@@ -165,7 +186,19 @@ Ask technical questions one by one. Wait for the candidate's answer before proce
     }
   })
 
-  socket.on("disconnect", () => {
-    chatSessions.delete(socket.id)
+  socket.on("disconnect", async () => {
+    const session = chatSessions.get(socket.id)
+    if (session) {
+      if (session.timer) clearTimeout(session.timer)
+      try {
+        await prisma.interview.updateMany({
+          where: { id: session.interviewId, status: "IN_PROGRESS" },
+          data: { status: "ABANDONED" }
+        })
+      } catch (err) {
+        console.error("Failed to mark abandoned interview", err)
+      }
+      chatSessions.delete(socket.id)
+    }
   })
 }

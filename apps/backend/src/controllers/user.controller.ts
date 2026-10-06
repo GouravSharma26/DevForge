@@ -33,10 +33,6 @@ export const UserController = {
     if (bio !== undefined) data.bio = bio
     if (targetRole !== undefined) data.targetRole = targetRole
     if (avatar !== undefined) {
-      // 2MB actual file size limit. Base64 inflates size by ~1.37x.
-      if (typeof avatar === 'string' && avatar.length > 2 * 1024 * 1024 * 1.37) {
-        return reply.status(400).send({ success: false, error: "Avatar image is too large (max 2MB)" })
-      }
       data.avatar = avatar
     }
 
@@ -72,7 +68,10 @@ export const UserController = {
     const hashed = await bcrypt.hash(newPassword, 12)
     await prisma.user.update({
       where: { id },
-      data: { password: hashed }
+      data: { 
+        password: hashed,
+        tokenVersion: { increment: 1 }
+      }
     })
 
     return reply.send({ success: true, message: "Password updated successfully" })
@@ -80,7 +79,23 @@ export const UserController = {
 
   async deleteMe(req: FastifyRequest, reply: FastifyReply) {
     const { id } = req.user as { id: string }
-    await prisma.user.delete({ where: { id } })
+    const { password } = req.body as any
+
+    if (!password) {
+      return reply.status(400).send({ success: false, error: "Password is required to delete account" })
+    }
+
+    const user = await prisma.user.findUnique({ where: { id } })
+    if (!user) return reply.status(404).send({ success: false, error: "User not found" })
+
+    const valid = await bcrypt.compare(password, user.password)
+    if (!valid) return reply.status(401).send({ success: false, error: "Incorrect password" })
+
+    await prisma.$transaction([
+      prisma.user.delete({ where: { id } })
+    ])
+    
+    reply.clearCookie("access_token")
     return reply.send({ success: true, message: "Account deleted successfully" })
   },
 }

@@ -16,7 +16,7 @@ DevForge is a full-stack, AI-powered platform designed to accelerate developer g
 ### 2. Live Arena (DSA Sandbox)
 - **Competitive Environment:** Solve algorithmic challenges in a live, in-browser IDE (powered by Monaco Editor).
 - **Secure Execution:** Code is safely executed via a Piston sandbox.
-- **ELO Rating System:** Gain or lose ELO based on your performance, pushing you towards the "Grandmaster Tier."
+- **XP & Leveling System:** Gain a flat +100 XP for every ranked match won, leveling up your profile and pushing you towards the "Grandmaster Tier."
 
 ### 3. Smart Resume Generator
 - **Job Description Matching:** Input a target job description and DevForge will analyze the delta between the JD and your current profile.
@@ -65,7 +65,7 @@ DevForge completely rejects standard SaaS aesthetics. It embraces a highly techn
 ## Local Development Setup
 
 ### Prerequisites
-- Node.js (v20+)
+- Node.js (v22+)
 - npm or pnpm
 - A Neon PostgreSQL Database
 - An Upstash Redis Database
@@ -86,13 +86,13 @@ DevForge completely rejects standard SaaS aesthetics. It embraces a highly techn
 
 3. **Environment Variables:**
    Set up your `.env` files in both `apps/frontend` and `apps/backend` using the provided `.env.example` templates.
-   - *Backend requires:* `DATABASE_URL`, `REDIS_URL` (use `redis://` to avoid TLS timeouts), `GEMINI_API_KEY`, `JWT_SECRET`.
+   - *Backend requires:* `DATABASE_URL`, `REDIS_URL` (use `redis://` to avoid TLS timeouts), `GEMINI_API_KEY`, `JWT_SECRET`, `COOKIE_SECRET`, `FRONTEND_URL`, `NEWS_API_KEY`, and `PISTON_API_URL`.
    - *Frontend requires:* `NEXT_PUBLIC_API_URL`.
 
 4. **Database Migration:**
    ```bash
    cd packages/database
-   npx prisma db push
+   npx prisma migrate deploy
    ```
 
 5. **Run the Development Servers:**
@@ -107,5 +107,39 @@ DevForge completely rejects standard SaaS aesthetics. It embraces a highly techn
 
 ---
 
+## Deployment Topology & Configuration
+DevForge is designed to be deployed across two primary services:
+- **Frontend:** Vercel (or similar Edge-enabled platform).
+- **Backend:** Render, Railway, or Fly.io (a long-running Node.js process to maintain WebSocket connections and BullMQ workers).
+
+Because the API and Frontend will likely run on different domains (e.g., `api.devforge.com` and `devforge.com`), ensure `CORS_ORIGINS` on the backend includes the frontend domain. Cookies are configured with `SameSite=Lax`, which allows cross-site authentication, but necessitates that both services operate over HTTPS.
+
+## Testing
+To run the automated test suite securely, you must configure a dedicated **Test Database**.
+Running tests against a production database will result in data pollution or accidental data deletion during the teardown phase. 
+Ensure the `DATABASE_URL` during tests points to a completely separate database instance.
+
+---
+
+## Architecture
+
+```mermaid
+graph TD;
+    Client[Next.js Frontend] -->|HTTPS / WSS| API[Fastify Backend];
+    API -->|TCP| DB[(Neon Postgres)];
+    API -->|TCP| Redis[(Upstash Redis)];
+    API -->|REST| Gemini[Google Gemini API];
+    API -->|REST| Piston[Piston Code Sandbox];
+    Redis -->|BullMQ| Workers[Background Workers];
+```
+
+## Known Limitations
+
+- **State Management:** WebSocket connections and matchmaking queues currently rely on in-memory state. To scale horizontally (run multiple backend instances), this state needs to be migrated to Redis.
+- **AI Rate Limits:** Generating AI feedback depends heavily on Gemini API limits. High concurrency may result in degraded mock interview response times.
+- **Piston Sandbox:** Extremely heavy code execution loops may hit Piston timeout limits (currently restricted to typical algorithmic constraints).
+
+---
+
 ## License
-Proprietary / Open Source (Modify as needed for your specific use case).
+MIT License. See `LICENSE` for more information.

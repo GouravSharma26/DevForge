@@ -1,6 +1,8 @@
+import "dotenv/config"
 import { buildApp } from "./app"
 import { fetchAndStoreNews } from "./services/news.service"
 import { scheduleNewsJob } from "./workers/news.worker"
+import { scheduleArenaJobs } from "./workers/arena.worker"
 
 const { app } = buildApp()
 
@@ -11,8 +13,9 @@ async function start() {
     await app.listen({ port: PORT, host: "0.0.0.0" })
     console.log(`🚀 Backend running on http://localhost:${PORT}`)
 
-    // Start background news fetching (fire-and-forget)
+    // Start background jobs (fire-and-forget)
     scheduleNewsJob().catch(err => console.error("Failed to schedule news job", err))
+    scheduleArenaJobs().catch(err => console.error("Failed to schedule arena jobs", err))
 
     // Fetch news immediately on startup so DB isn't empty (fire-and-forget)
     fetchAndStoreNews().catch(err => console.error("Failed to fetch initial news", err))
@@ -30,7 +33,7 @@ process.on("uncaughtException", (err) => {
 
 process.on("unhandledRejection", (err) => {
   console.error("🔥 Unhandled Rejection:", err)
-  // Continue running on unhandled promise rejections
+  process.exit(1)
 })
 
 start()

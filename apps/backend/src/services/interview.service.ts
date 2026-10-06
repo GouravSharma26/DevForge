@@ -1,5 +1,7 @@
 import { GoogleGenerativeAI, SchemaType, Schema } from "@google/generative-ai"
 import { prisma } from "@devforge/database"
+import { withGeminiRetry } from "../utils/gemini"
+import { refundAiRequest } from "../utils/ai-rate-limit"
 
 
 function getModel(systemInstruction: string, schema: Schema) {
@@ -71,26 +73,13 @@ Grandmaster: A concise, self-contained debug challenge with a logical bug (no sy
 `
 
   let result;
-  let retries = 2; // Reduced retries due to schema
-  let delay = 2000;
-
-  while (retries > 0) {
-    try {
-      result = await model.generateContent(prompt)
-      break;
-    } catch (error: any) {
-      if ((error.status === 503 || error.status === 429 || error.message?.includes("429")) && retries > 1) {
-        console.warn(`⏳ Gemini API busy (429/503). Retrying in ${delay / 1000} seconds...`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        retries--;
-        delay *= 2;
-      } else {
-        throw error;
-      }
-    }
+  try {
+    result = await withGeminiRetry(() => model.generateContent(prompt))
+  } catch (error) {
+    await refundAiRequest(userId, prisma).catch(() => {})
+    throw error;
   }
-
-  const text = result!.response.text().trim()
+  const text = result.response.text().trim()
   const parsed = JSON.parse(text)
 
   const questionsData = parsed.questions.map((q: any) => ({
@@ -292,37 +281,23 @@ Question: ${q.question}
 Answer: ${q.userAnswer}
 `).join("\n")}
 `
-    let result;
-    let retries = 1; // Reduced retries
-    let delay = 2000;
-    let success = false;
     let parsedArray: any[] = [];
 
-    while (retries >= 0 && !success) {
-      try {
-        result = await model.generateContent(prompt)
-        const text = result.response.text().trim()
-        parsedArray = JSON.parse(text)
-        success = true;
-      } catch (error: any) {
-        if (retries > 0) {
-          console.warn(`⏳ Gemini batch evaluation failed (${error.message}). Retrying in ${delay / 1000} seconds...`);
-          await new Promise(r => setTimeout(r, delay));
-          retries--;
-          delay *= 2;
-        } else {
-          console.error("❌ Gemini batch evaluation exhausted all retries. Using fallback.");
-          success = true;
-          // Create fallback array for ungraded questions
-          parsedArray = ungraded.map(q => ({
-            questionId: q.id,
-            score: null, // No score given
-            feedback: "Evaluation failed due to API quota limits. Please review your answer manually.",
-            strengths: "N/A",
-            improvements: "N/A"
-          }));
-        }
-      }
+    try {
+      const result = await withGeminiRetry(() => model.generateContent(prompt), { retries: 2, baseDelay: 2000 })
+      const text = result.response.text().trim()
+      parsedArray = JSON.parse(text)
+    } catch (error: any) {
+      console.error("❌ Gemini batch evaluation exhausted all retries. Using fallback.", error.message);
+      await refundAiRequest(userId, prisma).catch(() => {})
+      // Create fallback array for ungraded questions
+      parsedArray = ungraded.map(q => ({
+        questionId: q.id,
+        score: null, // No score given
+        feedback: "Evaluation failed due to API quota limits. Please review your answer manually.",
+        strengths: "N/A",
+        improvements: "N/A"
+      }));
     }
 
     // Apply the valid evaluations (or fallbacks)

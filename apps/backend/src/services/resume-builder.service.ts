@@ -1,14 +1,19 @@
 import { prisma } from "@devforge/database"
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import { withGeminiRetry } from "../utils/gemini"
+import { refundAiRequest } from "../utils/ai-rate-limit"
 
 
-function getModel(systemInstruction: string) {
+import { z } from "zod"
+
+function getModel(systemInstruction: string, schema?: any) {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
   return genAI.getGenerativeModel({ 
     model: "gemini-2.5-flash",
     systemInstruction,
     generationConfig: {
-      responseMimeType: "application/json"
+      responseMimeType: "application/json",
+      responseSchema: schema
     }
   })
 }
@@ -47,7 +52,20 @@ export async function generateResumeWithAI(userId: string, sections: any[], resu
     : "Software Developer with experience in web development"
 
   const systemInstruction = "You are an expert resume parser and writer. Your job is to extract the candidate's information from the provided context and format it perfectly into the JSON structure provided."
-  const model = getModel(systemInstruction)
+  const schema = {
+    type: "ARRAY",
+    items: {
+      type: "OBJECT",
+      properties: {
+        id: { type: "STRING" },
+        type: { type: "STRING" },
+        data: { type: "OBJECT" },
+        items: { type: "ARRAY", items: { type: "OBJECT" } }
+      },
+      required: ["id", "type"]
+    }
+  }
+  const model = getModel(systemInstruction, schema as any)
 
   const prompt = `
 Candidate context:
@@ -67,27 +85,11 @@ Return ONLY the JSON array with the exact same structure as the input sections a
 `
 
   let result;
-  let retries = 3;
-  let delay = 5000;
-
-  while (retries > 0) {
-    try {
-      result = await model.generateContent(prompt);
-      break;
-    } catch (error: any) {
-      const isRateLimit = error.status === 503 || error.status === 429 || 
-                          (error.message && (error.message.includes("429") || error.message.includes("503") || error.message.includes("exhausted") || error.message.includes("quota")));
-                          
-      if (isRateLimit && retries > 1) {
-        console.warn(`⏳ Gemini API busy/rate-limited in aiFill. Retrying in ${delay / 1000} seconds...`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        retries--;
-        delay *= 2;
-      } else {
-        console.warn("⚠️ Rate limit exhausted! Switching to Fallback in aiFill...")
-        break;
-      }
-    }
+  try {
+    result = await withGeminiRetry(() => model.generateContent(prompt), { retries: 3, baseDelay: 5000 })
+  } catch (error: any) {
+    console.warn("⚠️ Rate limit exhausted or AI failed! Switching to Fallback in aiFill...")
+    await refundAiRequest(userId, prisma).catch(() => {})
   }
 
   if (!result) {
@@ -124,5 +126,6 @@ Return ONLY the JSON array with the exact same structure as the input sections a
   }
 
   const text = result.response.text().trim()
-  return JSON.parse(text)
+  const parsed = JSON.parse(text)
+  return z.array(z.any()).parse(parsed)
 }

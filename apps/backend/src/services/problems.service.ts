@@ -129,83 +129,98 @@ export async function submitSolution(
   let allPassed = true
   const results = new Array(testCases.length)
 
-  // Bounded concurrency execution against Piston (limit: 5)
-  const CONCURRENCY_LIMIT = 5;
-  let activePromises = 0;
-  let queueIndex = 0;
-
-  const runTestCase = async (index: number) => {
-    const testCase = testCases[index];
-    const wrappedCode = buildCode(code, language, testCase.input, problem.slug);
-    const examples = problem.examples as { input: string }[];
-    const isExample = examples.some((ex: any) => ex.input === testCase.input);
-    const expectedOutput = isExample ? testCase.expected : undefined;
+  const wrappedCode = buildCode(code, language, testCases.map(tc => tc.input), problem.slug)
+  
+  try {
+    const pistonRes = await executeCode(language, wrappedCode)
+    const { stdout, stderr, signal } = pistonRes.run
+    const timedOut = signal === "SIGKILL"
     
-    try {
-      const pistonRes = await executeCode(language, wrappedCode);
-      const { stdout, stderr, signal } = pistonRes.run;
-      const timedOut = signal === "SIGKILL";
-
-      if (timedOut) {
-        allPassed = false;
-        results[index] = {
-          input: testCase.input,
-          expected: expectedOutput,
+    if (timedOut) {
+      allPassed = false
+      for (let i = 0; i < testCases.length; i++) {
+        results[i] = {
+          input: testCases[i].input,
+          expected: testCases[i].expected,
           output: "Time Limit Exceeded",
           passed: false,
           stderr: null,
-        };
-        return;
+        }
+      }
+    } else {
+      let runResults: any[] = []
+      try {
+        runResults = JSON.parse(stdout.trim().split("\n").pop() || "[]")
+      } catch (e) {
+        // Fallback if stdout couldn't be parsed as JSON
+        allPassed = false
+        for (let i = 0; i < testCases.length; i++) {
+          results[i] = {
+            input: testCases[i].input,
+            expected: testCases[i].expected,
+            output: "Output Parsing Error",
+            passed: false,
+            stderr: stderr || stdout || "Invalid JSON output from runner",
+          }
+        }
+        runResults = null as any
       }
 
-      const output = stdout.trim();
-      const passed = output === testCase.expected.trim();
-      if (!passed) allPassed = false;
-
-      results[index] = {
-        input: testCase.input,
-        expected: expectedOutput,
-        output,
-        passed,
-        stderr: stderr || null,
-      };
-    } catch (e: any) {
-      allPassed = false;
-      results[index] = {
-        input: testCase.input,
-        expected: expectedOutput,
+      if (runResults) {
+        for (let i = 0; i < testCases.length; i++) {
+          const tc = testCases[i]
+          const res = runResults[i]
+          if (!res) {
+            allPassed = false
+            results[i] = { input: tc.input, expected: tc.expected, output: "Missing output", passed: false, stderr: null }
+            continue
+          }
+          if (!res.success) {
+            allPassed = false
+            results[i] = { input: tc.input, expected: tc.expected, output: "Execution Error", passed: false, stderr: res.error }
+            continue
+          }
+          
+          const output = String(res.output).trim()
+          const passed = output === String(tc.expected).trim()
+          if (!passed) allPassed = false
+          
+          results[i] = { input: tc.input, expected: tc.expected, output, passed, stderr: null }
+        }
+      }
+    }
+  } catch (e: any) {
+    allPassed = false
+    for (let i = 0; i < testCases.length; i++) {
+      results[i] = {
+        input: testCases[i].input,
+        expected: testCases[i].expected,
         output: "Execution Error",
         passed: false,
         stderr: e.message,
-      };
+      }
     }
-  };
-
-  const workers = [];
-  for (let i = 0; i < CONCURRENCY_LIMIT; i++) {
-    workers.push(
-      (async () => {
-        while (queueIndex < testCases.length) {
-          const currentIndex = queueIndex++;
-          await runTestCase(currentIndex);
-        }
-      })()
-    );
   }
 
-  await Promise.all(workers);
-
-  const submission = await prisma.submission.create({
-    data: {
-      userId,
-      problemId,
-      code,
-      language,
-      status: allPassed ? "accepted" : "wrong_answer",
-      runtime: null,
-      memory: null,
-    },
+  const lastSubmission = await prisma.submission.findFirst({
+    where: { userId, problemId },
+    orderBy: { createdAt: "desc" },
   })
+
+  let submission = lastSubmission;
+  if (!lastSubmission || lastSubmission.code !== code || lastSubmission.language !== language) {
+    submission = await prisma.submission.create({
+      data: {
+        userId,
+        problemId,
+        code,
+        language,
+        status: allPassed ? "accepted" : "wrong_answer",
+        runtime: null,
+        memory: null,
+      },
+    })
+  }
 
   if (allPassed && nodeId) {
     const node = await prisma.skillNode.findUnique({ where: { id: nodeId } })
@@ -228,13 +243,61 @@ export async function submitSolution(
   return { submission, results, allPassed }
 }
 
+const RUNNER_REGISTRY: Record<string, { javascript?: string, python?: string }> = {
+  "two-sum": {
+    javascript: `const nums = JSON.parse(lines[0]); const target = parseInt(lines[1]); result = JSON.stringify(twoSum(nums, target));`,
+    python: `nums = json.loads(lines[0]); target = int(lines[1]); result = json.dumps(two_sum(nums, target), separators=(',', ':'))`,
+  },
+  "valid-parentheses": {
+    javascript: `result = isValid(lines[0]) ? "true" : "false";`,
+    python: `result = "true" if is_valid(lines[0]) else "false"`,
+  },
+  "maximum-subarray": {
+    javascript: `const nums = JSON.parse(lines[0]); result = String(maxSubArray(nums));`,
+    python: `nums = json.loads(lines[0]); result = str(max_sub_array(nums))`,
+  },
+  "climbing-stairs": {
+    javascript: `result = String(climbStairs(parseInt(lines[0])));`,
+    python: `result = str(climb_stairs(int(lines[0])))`,
+  },
+  "binary-search": {
+    javascript: `const nums = JSON.parse(lines[0]); const target = parseInt(lines[1]); result = String(search(nums, target));`,
+    python: `nums = json.loads(lines[0]); target = int(lines[1]); result = str(search(nums, target))`,
+  },
+  "number-of-islands": {
+    javascript: `const grid = JSON.parse(lines[0]); result = String(numIslands(grid));`,
+    python: `grid = json.loads(lines[0]); result = str(num_islands(grid))`,
+  },
+  "longest-palindromic-substring": {
+    javascript: `result = longestPalindrome(lines[0]);`,
+    python: `result = longest_palindrome(lines[0])`,
+  },
+  "word-search": {
+    javascript: `const board = JSON.parse(lines[0]); const word = lines[1]; result = exist(board, word) ? "true" : "false";`,
+    python: `board = json.loads(lines[0]); word = lines[1]; result = "true" if exist(board, word) else "false"`,
+  },
+  "reverse-linked-list": {
+    javascript: `const head = toList(JSON.parse(lines[0])); result = JSON.stringify(fromList(reverseList(head)));`,
+    python: `head = to_list(json.loads(lines[0])); result = json.dumps(from_list(reverseList(head)), separators=(',', ':'))`,
+  },
+  "merge-two-sorted-lists": {
+    javascript: `const l1 = toList(JSON.parse(lines[0])); const l2 = toList(JSON.parse(lines[1])); result = JSON.stringify(fromList(mergeTwoLists(l1, l2)));`,
+    python: `l1 = to_list(json.loads(lines[0])); l2 = to_list(json.loads(lines[1])); result = json.dumps(from_list(mergeTwoLists(l1, l2)), separators=(',', ':'))`,
+  }
+}
+
 function buildCode(
   code: string,
   language: string,
-  input: string,
+  testCases: string[],
   slug: string
 ): string {
+  const runnerDef = RUNNER_REGISTRY[slug];
+  if (!runnerDef) throw new Error(`No runner configured for problem ${slug}`)
+  
   if (language === "javascript") {
+    const runner = runnerDef.javascript;
+    if (!runner) throw new Error(`No Javascript runner for problem ${slug}`)
     return `
 // Hijack stdout so user logs don't interfere with the judge result
 const _out = process.stdout.write.bind(process.stdout);
@@ -244,22 +307,74 @@ if (typeof console !== 'undefined') {
   console.info = console.log;
 }
 
-${code}
-
-const lines = ${JSON.stringify(input)}.split("\\n");
-try {
-  let result;
-  ${getJSRunner(slug)}
-  _out(String(result) + "\\n");
-} catch (e) {
-  process.stderr.write(e.message + "\\n");
+class ListNode {
+  constructor(val = 0, next = null) {
+    this.val = val;
+    this.next = next;
+  }
 }
+function toList(arr) {
+  if (!arr || !arr.length) return null;
+  const head = new ListNode(arr[0]);
+  let curr = head;
+  for(let i=1; i<arr.length; i++){
+    curr.next = new ListNode(arr[i]);
+    curr = curr.next;
+  }
+  return head;
+}
+function fromList(head) {
+  const arr = [];
+  let curr = head;
+  while(curr && arr.length < 1000) { arr.push(curr.val); curr = curr.next; }
+  return arr;
+}
+
+\${code}
+
+const testCases = ${JSON.stringify(testCases)};
+const results = [];
+for (let i = 0; i < testCases.length; i++) {
+  const lines = testCases[i].split("\\n");
+  try {
+    let result;
+    ${runner}
+    results.push({ success: true, output: String(result) });
+  } catch (e) {
+    results.push({ success: false, error: e.message });
+  }
+}
+_out(JSON.stringify(results) + "\\n");
 `
   }
 
   if (language === "python") {
+    const runner = runnerDef.python;
+    if (!runner) throw new Error(`No Python runner for problem ${slug}`)
     return `
 import json, sys
+
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def to_list(arr):
+    if not arr: return None
+    head = ListNode(arr[0])
+    curr = head
+    for i in range(1, len(arr)):
+        curr.next = ListNode(arr[i])
+        curr = curr.next
+    return head
+
+def from_list(head):
+    arr = []
+    curr = head
+    while curr and len(arr) < 1000:
+        arr.append(curr.val)
+        curr = curr.next
+    return arr
 
 # Hijack standard output
 _real_stdout = sys.stdout
@@ -268,62 +383,19 @@ sys.stdout = sys.stderr
 ${code}
 
 sys.stdout = _real_stdout
-lines = ${JSON.stringify(input)}.strip().split("\\n")
-try:
-    ${getPyRunner(slug)}
-    print(result, end="")
-except Exception as e:
-    sys.stderr.write(str(e))
+testCases = ${JSON.stringify(testCases)}
+results = []
+for testCase in testCases:
+    lines = testCase.strip().split("\\n")
+    try:
+        ${runner}
+        results.append({"success": True, "output": str(result)})
+    except Exception as e:
+        results.append({"success": False, "error": str(e)})
+
+_real_stdout.write(json.dumps(results) + "\\n")
 `
   }
 
-  return code
-}
-
-function getJSRunner(slug: string): string {
-  const map: Record<string, string> = {
-    "two-sum":
-      `const nums = JSON.parse(lines[0]); const target = parseInt(lines[1]); result = JSON.stringify(twoSum(nums, target));`,
-    "valid-parentheses":
-      `result = isValid(lines[0]) ? "true" : "false";`,
-    "maximum-subarray":
-      `const nums = JSON.parse(lines[0]); result = String(maxSubArray(nums));`,
-    "climbing-stairs":
-      `result = String(climbStairs(parseInt(lines[0])));`,
-    "binary-search":
-      `const nums = JSON.parse(lines[0]); const target = parseInt(lines[1]); result = String(search(nums, target));`,
-    "number-of-islands":
-      `const grid = JSON.parse(lines[0]); result = String(numIslands(grid));`,
-    "longest-palindromic-substring":
-      `result = longestPalindrome(lines[0]);`,
-    "word-search":
-      `const board = JSON.parse(lines[0]); const word = lines[1]; result = exist(board, word) ? "true" : "false";`,
-    "reverse-linked-list":
-      `result = "[]";`,
-    "merge-two-sorted-lists":
-      `result = "[]";`,
-  }
-  return map[slug] ?? `result = "No runner configured";`
-}
-
-function getPyRunner(slug: string): string {
-  const map: Record<string, string> = {
-    "two-sum":
-     `nums = json.loads(lines[0]); target = int(lines[1]); result = json.dumps(two_sum(nums, target), separators=(',', ':'))`,
-    "valid-parentheses":
-      `result = "true" if is_valid(lines[0]) else "false"`,
-    "maximum-subarray":
-      `nums = json.loads(lines[0]); result = str(max_sub_array(nums))`,
-    "climbing-stairs":
-      `result = str(climb_stairs(int(lines[0])))`,
-    "binary-search":
-      `nums = json.loads(lines[0]); target = int(lines[1]); result = str(search(nums, target))`,
-    "longest-palindromic-substring":
-      `result = longest_palindrome(lines[0])`,
-    "number-of-islands":
-      `grid = json.loads(lines[0]); result = str(num_islands(grid))`,
-    "word-search":
-      `board = json.loads(lines[0]); word = lines[1]; result = "true" if exist(board, word) else "false"`,
-  }
-  return map[slug] ?? `result = "No runner configured"`
+  throw new Error("Unsupported language")
 }

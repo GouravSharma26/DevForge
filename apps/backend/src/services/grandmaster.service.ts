@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI, SchemaType, Schema } from "@google/generative-ai"
 import { prisma } from "@devforge/database"
 import { executeCode } from "./piston.service"
+import { withGeminiRetry } from "../utils/gemini"
 
 import crypto from "crypto"
 
@@ -37,39 +38,39 @@ export async function generateGrandmasterChallenge(interviewId: string, primaryL
       scenario: { type: SchemaType.STRING, description: "Explanation of what the code is supposed to do." },
       language: { type: SchemaType.STRING },
       buggyCode: { type: SchemaType.STRING, description: "The buggy code that prints output to stdout." },
-      expectedOutput: { type: SchemaType.STRING, description: "The exact stdout expected if fixed." }
+      expectedOutput: { type: SchemaType.STRING, description: "The exact stdout expected if fixed." },
+      fixedCode: { type: SchemaType.STRING, description: "The corrected code that prints expectedOutput." }
     },
-    required: ["scenario", "language", "buggyCode", "expectedOutput"]
+    required: ["scenario", "language", "buggyCode", "expectedOutput", "fixedCode"]
   }
 
   const model = getModel(systemInstruction, schema)
 
-  const maxRetries = 2; // Reduced retries since parse failures are eliminated
   let attempt = 0;
-
-  while (attempt < maxRetries) {
+  while (attempt < 3) {
     attempt++;
     const prompt = `Generate a debug challenge in ${primaryLanguage}.`
     let result;
     try {
-      result = await model.generateContent(prompt)
-    } catch (err: any) {
-      if (err.status === 429 || err.message?.includes("429") || err.status === 503) {
-        console.warn("⏳ Gemini API rate limit hit in Grandmaster generation. Retrying...");
-        await new Promise(r => setTimeout(r, 4000));
-        continue;
-      }
-      throw err;
-    }
-
-    try {
+      result = await withGeminiRetry(() => model.generateContent(prompt))
       const parsed = JSON.parse(result.response.text())
 
       // PRE-CHECK
-      const sandboxRes = await executeCode(parsed.language, parsed.buggyCode)
+      const buggyRes = await executeCode(parsed.language, parsed.buggyCode)
+      const fixedRes = await executeCode(parsed.language, parsed.fixedCode)
       
-      if (sandboxRes.run.stderr && !sandboxRes.run.stdout) {
-        console.warn("Sandbox pre-check failed (syntax/compile error). Retrying generation...", sandboxRes.run.stderr)
+      if (buggyRes.run.stderr && !buggyRes.run.stdout) {
+        console.warn("Sandbox pre-check failed (syntax/compile error in buggy code). Retrying generation...", buggyRes.run.stderr)
+        continue;
+      }
+      
+      if (fixedRes.run.stdout?.trim() !== parsed.expectedOutput?.trim()) {
+        console.warn("Sandbox pre-check failed (fixed code stdout does not match expected). Retrying generation...")
+        continue;
+      }
+
+      if (buggyRes.run.stdout?.trim() === parsed.expectedOutput?.trim()) {
+        console.warn("Sandbox pre-check failed (buggy code stdout matches expected!). Retrying generation...")
         continue;
       }
 
@@ -83,7 +84,7 @@ export async function generateGrandmasterChallenge(interviewId: string, primaryL
       challengeCache.set(cacheKey, finalChallenge)
       return finalChallenge
     } catch (err: any) {
-      console.warn("Challenge generation parse error (unlikely with schema), retrying...", err.message)
+      console.warn("Challenge generation parse/API error, retrying...", err.message)
     }
   }
 
@@ -91,23 +92,24 @@ export async function generateGrandmasterChallenge(interviewId: string, primaryL
 }
 
 export async function evaluateGrandmasterSubmission(userId: string, scenario: string, expectedOutput: string, submittedCode: string, pistonStdout: string, pistonStderr: string) {
-
   
-  const systemInstruction = "You are an expert code evaluator. Evaluate whether the user's submitted fix solves the bug based on the scenario, expected output, and actual execution output."
+  const truncatedStdout = (pistonStdout || "<empty>").substring(0, 500);
+  const truncatedStderr = (pistonStderr || "<empty>").substring(0, 500);
+  
+  // Deterministic judging
+  const score = truncatedStdout.trim() === expectedOutput.trim() ? 100 : 0;
+
+  const systemInstruction = "You are an expert code evaluator. Provide brief, constructive feedback on the user's submitted fix based on the scenario, expected output, and actual execution output. They scored " + score + "/100."
   
   const schema: Schema = {
     type: SchemaType.OBJECT,
     properties: {
-      score: { type: SchemaType.NUMBER, description: "0-100, 100 meaning completely fixed and correct" },
       feedback: { type: SchemaType.STRING, description: "Brief, constructive feedback on their fix (or lack thereof)." }
     },
-    required: ["score", "feedback"]
+    required: ["feedback"]
   }
 
   const model = getModel(systemInstruction, schema)
-
-  const truncatedStdout = (pistonStdout || "<empty>").substring(0, 500);
-  const truncatedStderr = (pistonStderr || "<empty>").substring(0, 500);
 
   const prompt = `
 Scenario:
@@ -127,18 +129,18 @@ ${truncatedStderr}
   `
 
   try {
-    const result = await model.generateContent(prompt)
+    const result = await withGeminiRetry(() => model.generateContent(prompt))
     const parsed = JSON.parse(result.response.text())
 
     return {
-      score: typeof parsed.score === 'number' ? Math.max(0, Math.min(100, parsed.score)) : 0,
+      score,
       feedback: parsed.feedback || "Code evaluated."
     }
   } catch (err: any) {
     console.warn("Evaluation failed...", err.message)
     return {
-      score: 0,
-      feedback: "Evaluation failed due to an unexpected error. Please review your code manually."
+      score,
+      feedback: score === 100 ? "Correct fix! Output matched expected." : "Evaluation failed, but output did not match expected."
     }
   }
 }

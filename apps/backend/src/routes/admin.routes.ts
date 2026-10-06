@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify"
 import { prisma } from "@devforge/database"
+import { z } from "zod"
 
 
 export async function adminRoutes(fastify: FastifyInstance) {
@@ -33,20 +34,32 @@ export async function adminRoutes(fastify: FastifyInstance) {
     return reply.send(config)
   })
 
-  fastify.put("/config", async (request, reply) => {
+  const AdminConfigSchema = z.object({
+    botEnabled: z.boolean().optional(),
+    botQueueWaitTime: z.number().min(0).optional(),
+    baseTimeEasy: z.number().min(0).optional(),
+    baseTimeMedium: z.number().min(0).optional(),
+    baseTimeHard: z.number().min(0).optional(),
+    multBeginner: z.number().min(0).optional(),
+    multIntermediate: z.number().min(0).optional(),
+    multGrandmaster: z.number().min(0).optional(),
+    variancePercent: z.number().min(0).max(100).optional(),
+  })
+
+  fastify.put("/config", { schema: { body: AdminConfigSchema } }, async (request, reply) => {
     const data = request.body as any
     const updated = await prisma.systemConfig.update({
       where: { id: "global" },
       data: {
-        botEnabled: data.botEnabled,
-        botQueueWaitTime: data.botQueueWaitTime,
-        baseTimeEasy: data.baseTimeEasy,
-        baseTimeMedium: data.baseTimeMedium,
-        baseTimeHard: data.baseTimeHard,
-        multBeginner: data.multBeginner,
-        multIntermediate: data.multIntermediate,
-        multGrandmaster: data.multGrandmaster,
-        variancePercent: data.variancePercent,
+        ...(data.botEnabled !== undefined && { botEnabled: data.botEnabled }),
+        ...(data.botQueueWaitTime !== undefined && { botQueueWaitTime: data.botQueueWaitTime }),
+        ...(data.baseTimeEasy !== undefined && { baseTimeEasy: data.baseTimeEasy }),
+        ...(data.baseTimeMedium !== undefined && { baseTimeMedium: data.baseTimeMedium }),
+        ...(data.baseTimeHard !== undefined && { baseTimeHard: data.baseTimeHard }),
+        ...(data.multBeginner !== undefined && { multBeginner: data.multBeginner }),
+        ...(data.multIntermediate !== undefined && { multIntermediate: data.multIntermediate }),
+        ...(data.multGrandmaster !== undefined && { multGrandmaster: data.multGrandmaster }),
+        ...(data.variancePercent !== undefined && { variancePercent: data.variancePercent }),
       },
     })
     return reply.send(updated)

@@ -15,17 +15,26 @@ export const AuthController = {
     if (existing)
       return reply.status(409).send({ success: false, error: "User already exists" })
 
-    const hashed = await bcrypt.hash(password, 12)
-    const user = await prisma.user.create({
-      data: { username, email, password: hashed },
-      select: {
-        id: true, username: true, email: true,
-        avatar: true, bio: true, targetRole: true,
-        experienceLevel: true, xp: true, streak: true, createdAt: true,
-      },
-    })
+    let user;
+    try {
+      const hashed = await bcrypt.hash(password, 12)
+      user = await prisma.user.create({
+        data: { username, email, password: hashed },
+        select: {
+          id: true, username: true, email: true,
+          avatar: true, bio: true, targetRole: true,
+          experienceLevel: true, xp: true, streak: true, createdAt: true,
+          tokenVersion: true
+        },
+      })
+    } catch (err: any) {
+      if (err.code === 'P2002') {
+        return reply.status(409).send({ success: false, error: "User already exists" })
+      }
+      throw err;
+    }
 
-    const token = await reply.jwtSign({ id: user.id }, { expiresIn: "1h" })
+    const token = await reply.jwtSign({ id: user.id, tokenVersion: user.tokenVersion }, { expiresIn: "1h" })
     const cookieOptions = {
       path: "/",
       httpOnly: true,
@@ -41,15 +50,21 @@ export const AuthController = {
   async login(req: FastifyRequest<{ Body: z.infer<typeof LoginSchema> }>, reply: FastifyReply) {
     const { email, password } = req.body
     const user = await prisma.user.findUnique({ where: { email } })
-    if (!user)
-      return reply.status(401).send({ success: false, error: "Invalid credentials" })
+    const DUMMY_HASH = "$2b$12$L7R2QfL0a7eN7pU0n4A4a.Kj4w9Y8W5X3kZ7B9y9k7z7Q5M6x5H."
+    let valid = false;
 
-    const valid = await bcrypt.compare(password, user.password)
-    if (!valid)
+    if (!user) {
+      // Prevent timing attacks by running bcrypt even if user not found
+      await bcrypt.compare(password, DUMMY_HASH)
       return reply.status(401).send({ success: false, error: "Invalid credentials" })
+    } else {
+      valid = await bcrypt.compare(password, user.password)
+      if (!valid)
+        return reply.status(401).send({ success: false, error: "Invalid credentials" })
+    }
 
     const { password: _, ...safeUser } = user
-    const token = await reply.jwtSign({ id: user.id }, { expiresIn: "1h" })
+    const token = await reply.jwtSign({ id: user.id, tokenVersion: user.tokenVersion }, { expiresIn: "1h" })
     const cookieOptions = {
       path: "/",
       httpOnly: true,

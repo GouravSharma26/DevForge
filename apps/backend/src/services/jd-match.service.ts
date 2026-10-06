@@ -2,8 +2,11 @@ import { GoogleGenerativeAI, SchemaType, Schema } from "@google/generative-ai"
 import { prisma } from "@devforge/database"
 import { redactPII } from "../utils/redact"
 import { getResumeById } from "./resume.service"
+import { withGeminiRetry } from "../utils/gemini"
+import { refundAiRequest } from "../utils/ai-rate-limit"
 
 import crypto from "crypto"
+const pdfParse = require("pdf-parse")
 
 function getModel(systemInstruction: string) {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
@@ -56,23 +59,11 @@ async function executeJDMatchCore(
 
   const model = getModel(systemInstruction)
   let result;
-  let retries = 2; // Reduced due to schema mode
-  let delay = 2000;
-
-  while (retries > 0) {
-    try {
-      result = await model.generateContent(geminiParts)
-      break;
-    } catch (error: any) {
-      if ((error.status === 503 || error.status === 429 || (error.message && error.message.includes("429"))) && retries > 1) {
-        console.warn(`⏳ Gemini API busy generating JD Match. Retrying in ${delay / 1000} seconds...`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        retries--;
-        delay *= 2;
-      } else {
-        throw error;
-      }
-    }
+  try {
+    result = await withGeminiRetry(() => model.generateContent(geminiParts))
+  } catch (error) {
+    await refundAiRequest(userId, prisma).catch(() => {})
+    throw error;
   }
 
   const text = result.response.text().trim()
@@ -157,24 +148,40 @@ IMPORTANT:
 - The keywords arrays should ONLY contain short, 1-3 word skill or technology names.
 - For cultureFlags, look for burnout signals, unrealistic expectations, toxic management, or vague compensation.`
 
+  if (fileBuffer.length < 5 || fileBuffer.toString("utf8", 0, 5) !== "%PDF-") {
+    throw new Error("Invalid file format. Only valid PDF files are allowed.")
+  }
+
+  let rawText = ""
+  try {
+    const parseFn = typeof pdfParse === "function" ? pdfParse : (pdfParse.default || pdfParse.PDFParse)
+    const pdfData = await parseFn(fileBuffer)
+    rawText = pdfData?.text || ""
+  } catch (err) {
+    throw new Error("Failed to parse PDF text natively.")
+  }
+
+  const redactedJd = redactPII(rawText)
+
   const prompt = `
-Compare this candidate's resume to the provided job description PDF.
+Compare this candidate's resume to the provided job description.
 
 RESUME TEXT:
 <resume>
 ${resume.originalText}
 </resume>
 
-Extract the text from the provided Job Description PDF.
-Scrub any recruiter emails or phone numbers from the extracted text.
+JOB DESCRIPTION:
+<jd>
+${redactedJd}
+</jd>
 `
 
   const parts = [
-    { inlineData: { data: fileBuffer.toString("base64"), mimeType: "application/pdf" } },
     { text: prompt }
   ]
 
-  return executeJDMatchCore(userId, resumeId, parts, "", jdHash, systemInstruction, resume.originalText)
+  return executeJDMatchCore(userId, resumeId, parts, redactedJd, jdHash, systemInstruction, resume.originalText)
 }
 
 export async function getJDMatchesForResume(userId: string, resumeId: string) {

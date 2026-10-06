@@ -29,6 +29,7 @@ model User {
   role            Role            @default(USER)
   aiRequestCount  Int             @default(0)
   lastAiRequestAt DateTime?
+  tokenVersion    Int             @default(1)
   enrollments     Enrollment[]
   interviews      Interview[]
   jdMatches       JDMatch[]
@@ -131,6 +132,9 @@ model Submission {
   createdAt DateTime @default(now())
   problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([problemId])
 }
 
 model Match {
@@ -148,20 +152,24 @@ model Match {
   player2    User?       @relation("player2", fields: [player2Id], references: [id], onDelete: SetNull)
   problem    Problem     @relation(fields: [problemId], references: [id], onDelete: Restrict)
   winner     User?       @relation("winner", fields: [winnerId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([player1Id])
+  @@index([player2Id])
 }
 
 model Resume {
-  id              String      @id @default(cuid())
+  id              String          @id @default(cuid())
   userId          String
   originalText    String
   skills          String[]
-  experienceLevel String      @default("JUNIOR")
+  experienceLevel ExperienceLevel @default(BEGINNER)
   targetRole      String?
-  score           Int         @default(0)
-  skillsScore     Int         @default(0)
-  projectsScore   Int         @default(0)
-  writingScore    Int         @default(0)
-  atsScore        Int         @default(0)
+  score           Int             @default(0)
+  skillsScore     Int             @default(0)
+  projectsScore   Int             @default(0)
+  writingScore    Int             @default(0)
+  atsScore        Int             @default(0)
   suggestions     Json
   gaps            String[]
   createdAt       DateTime    @default(now())
@@ -276,6 +284,7 @@ enum MatchStatus {
 enum InterviewStatus {
   IN_PROGRESS
   COMPLETED
+  ABANDONED
 }
 
 model SkillTree {

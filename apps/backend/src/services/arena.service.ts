@@ -10,21 +10,31 @@ export async function getRandomProblemByDifficulty(difficulty: "EASY" | "MEDIUM"
 }
 
 export async function getNRandomProblems(count: number, difficulties?: string[]) {
-  const problems = await prisma.problem.findMany({
+  const ids = await prisma.problem.findMany({
     where: difficulties?.length ? { difficulty: { in: difficulties as any[] } } : undefined,
-    select: { id: true, title: true, slug: true, description: true, category: true, difficulty: true, examples: true, constraints: true, starterCode: true },
+    select: { id: true },
   })
   
-  if (!problems.length) {
+  if (!ids.length) {
     if (difficulties?.length) {
       return getNRandomProblems(count) // fallback to any
     }
     return []
   }
 
-  // Shuffle array
-  const shuffled = problems.sort(() => 0.5 - Math.random())
-  return shuffled.slice(0, Math.max(1, count))
+  // Fisher-Yates Shuffle on IDs
+  const shuffled = [...ids]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  
+  const selectedIds = shuffled.slice(0, Math.max(1, count)).map(p => p.id)
+
+  return prisma.problem.findMany({
+    where: { id: { in: selectedIds } },
+    select: { id: true, title: true, slug: true, description: true, category: true, difficulty: true, examples: true, constraints: true, starterCode: true },
+  })
 }
 
 export async function createMatch(player1Id: string, problemId: string, isFriendly: boolean = false) {
@@ -37,6 +47,8 @@ export async function createMatch(player1Id: string, problemId: string, isFriend
   })
 }
 
+import { ERROR_MESSAGES } from "../utils/constants"
+
 export async function joinMatch(matchId: string, player2Id: string) {
   const { count } = await prisma.match.updateMany({
     where: { id: matchId, status: "WAITING" },
@@ -46,7 +58,7 @@ export async function joinMatch(matchId: string, player2Id: string) {
       startedAt: new Date(),
     },
   })
-  if (count === 0) throw new Error("Match no longer waiting")
+  if (count === 0) throw new Error(ERROR_MESSAGES.MATCH_NOT_WAITING)
 
   return prisma.match.findUniqueOrThrow({
     where: { id: matchId },
@@ -92,6 +104,7 @@ export async function completeMatch(matchId: string, winnerId: string) {
 export async function getWaitingMatch() {
   return prisma.match.findFirst({
     where: { status: "WAITING" },
+    orderBy: { createdAt: "asc" },
     include: {
       player1: { select: { id: true, username: true } },
       problem: { select: { id: true, title: true, slug: true } },

@@ -1,3 +1,4 @@
+import "dotenv/config"
 import Fastify from "fastify"
 import cors from "@fastify/cors"
 import helmet from "@fastify/helmet"
@@ -8,7 +9,6 @@ import * as cookie from "cookie"
 import multipart from "@fastify/multipart"
 import { Server } from "socket.io"
 import { prisma } from "@devforge/database"
-import "dotenv/config"
 import { serializerCompiler, validatorCompiler, ZodTypeProvider } from "fastify-type-provider-zod"
 
 import { authRoutes } from "./routes/auth.routes"
@@ -22,7 +22,7 @@ import { resumeRoutes } from "./routes/resume.routes"
 import { adminRoutes } from "./routes/admin.routes"
 import { registerArenaHandlers } from "./sockets/arena.socket"
 import { registerInterviewHandlers } from "./sockets/interview.socket"
-import { checkCorsOrigin } from "./utils/cors"
+import { checkCorsOrigin, isAllowedOrigin } from "./utils/cors"
 
 const requireEnv = (k: string) => { 
   const v = process.env[k]; 
@@ -36,6 +36,10 @@ const requireEnv = (k: string) => {
 export function buildApp() {
   const app = Fastify({ logger: true, trustProxy: true })
 
+  if (process.env.NODE_ENV === "production" && (!process.env.PISTON_API_URL || process.env.PISTON_API_URL.includes("emkc.org"))) {
+    throw new Error("Self-hosted PISTON_API_URL is required in production. Do not use emkc.org.");
+  }
+
   app.setValidatorCompiler(validatorCompiler)
   app.setSerializerCompiler(serializerCompiler)
 
@@ -45,6 +49,7 @@ export function buildApp() {
       origin: checkCorsOrigin,
       credentials: true
     },
+    maxHttpBufferSize: 100_000,
     allowRequest: (req, cb) => checkCorsOrigin(req.headers.origin, (_e, ok) => cb(null, ok))
   })
 
@@ -75,19 +80,12 @@ export function buildApp() {
       if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
         const origin = req.headers.origin
         if (!origin) {
-          reply.status(403).send({ success: false, error: "Missing Origin header for CSRF protection" })
-          return reply
+          return reply.code(403).send({ success: false, error: "Missing Origin header for CSRF protection" })
         }
         
-        await new Promise<void>((resolve, reject) => {
-          checkCorsOrigin(origin, (err, allow) => {
-            if (err || !allow) reject(new Error("Origin not allowed"))
-            else resolve()
-          })
-        }).catch(() => {
-          reply.status(403).send({ success: false, error: "Invalid Origin for CSRF protection" })
-          return reply
-        })
+        if (!isAllowedOrigin(origin)) {
+          return reply.code(403).send({ success: false, error: "Invalid Origin for CSRF protection" })
+        }
       }
     })
 
@@ -147,18 +145,21 @@ export function buildApp() {
 
     if (!token) return next(new Error("Unauthorized"))
     try {
-      const decoded = app.jwt.verify(token) as { id: string }
+      const decoded = app.jwt.verify(token) as { id: string, tokenVersion?: number }
       socket.data.userId = decoded.id
 
       const user = await prisma.user.findUnique({
         where: { id: decoded.id },
-        select: { username: true, avatar: true }
+        select: { username: true, avatar: true, tokenVersion: true }
       })
 
-      if (user) {
-        socket.data.username = user.username
-        socket.data.avatar = user.avatar
+      if (!user) return next(new Error("User deleted"))
+      if (decoded.tokenVersion !== undefined && user.tokenVersion !== decoded.tokenVersion) {
+        return next(new Error("Token revoked"))
       }
+
+      socket.data.username = user.username
+      socket.data.avatar = user.avatar
 
       next()
     } catch {

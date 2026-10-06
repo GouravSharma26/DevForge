@@ -51,3 +51,23 @@ export async function consumeAiRequest(userId: string, prisma: PrismaClient) {
 
   return true
 }
+
+export async function refundAiRequest(userId: string, prisma: PrismaClient) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  })
+
+  if (!user || user.role === "ADMIN") {
+    return true
+  }
+
+  // Atomic update using raw SQL to decrement but floor at 0
+  await prisma.$executeRaw`
+    UPDATE "User"
+    SET "aiRequestCount" = CASE WHEN "aiRequestCount" > 0 THEN "aiRequestCount" - 1 ELSE 0 END
+    WHERE "id" = ${userId}
+  `
+
+  return true
+}
