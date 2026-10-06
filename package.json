@@ -370,7 +370,7 @@
     "postcss": "^8.5.29",
     "prelude-ls": "^1.2.1",
     "pretty-format": "^27.5.1",
-    "prisma": "^5.22.0",
+    "prisma": "^7.10.0",
     "process-warning": "^5.1.0",
     "prop-types": "^15.8.1",
     "proxy-from-env": "^2.1.0",
