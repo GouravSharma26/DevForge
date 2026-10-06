@@ -11,8 +11,8 @@ export default function AdminDashboard() {
   const router = useRouter()
   const { user, hydrated } = useAuthStore()
   
-  const [config, setConfig] = useState<Record<string, unknown> | null>(null)
-  const [stats, setStats] = useState<Record<string, unknown> | null>(null)
+  const [config, setConfig] = useState<any | null>(null)
+  const [stats, setStats] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
