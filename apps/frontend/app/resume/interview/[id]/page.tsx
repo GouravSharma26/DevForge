@@ -46,27 +46,33 @@ export default function InterviewPage() {
   }, [submitCountdown])
 
   useEffect(() => {
-    const q = interview?.questions?.[currentIdx] as any
-    if (q && q.isGrandmaster) {
-      setAnswer(q.buggyCode || "")
-    } else if (q) {
-      setAnswer("")
-    }
-  }, [currentIdx])
+    const timer = setTimeout(() => {
+      const q = interview?.questions?.[currentIdx] as any
+      if (q && q.isGrandmaster) {
+        setAnswer(q.buggyCode || "")
+      } else if (q) {
+        setAnswer("")
+      }
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [currentIdx, interview?.questions])
 
   // Auto-advance to the correct question after refresh
   useEffect(() => {
-    if (interview && interview.status === "IN_PROGRESS" && interview.questions) {
-      const firstUnanswered = interview.questions.findIndex((q: any) => !q.userAnswer)
-      if (firstUnanswered !== -1) {
-        if (currentIdx !== firstUnanswered) setCurrentIdx(firstUnanswered)
-      } else if (interview.questions.length > 0) {
-        // All questions are answered, go to the last question
-        const lastIdx = interview.questions.length - 1
-        if (currentIdx !== lastIdx) setCurrentIdx(lastIdx)
-        setSubmittedId(interview.questions[lastIdx].id)
+    const timer = setTimeout(() => {
+      if (interview && interview.status === "IN_PROGRESS" && interview.questions) {
+        const firstUnanswered = interview.questions.findIndex((q: any) => !q.userAnswer)
+        if (firstUnanswered !== -1) {
+          if (currentIdx !== firstUnanswered) setCurrentIdx(firstUnanswered)
+        } else if (interview.questions.length > 0) {
+          // All questions are answered, go to the last question
+          const lastIdx = interview.questions.length - 1
+          if (currentIdx !== lastIdx) setCurrentIdx(lastIdx)
+          setSubmittedId(interview.questions[lastIdx].id)
+        }
       }
-    }
+    }, 0)
+    return () => clearTimeout(timer)
   }, [interview?.status, interview?.questions?.length])
 
   useEffect(() => {

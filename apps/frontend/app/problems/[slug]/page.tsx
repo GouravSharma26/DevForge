@@ -40,15 +40,18 @@ export default function ProblemPage() {
   }, [hydrated, token])
 
   useEffect(() => {
-    if (problem) {
-      setCodeDrafts({
-        javascript: (problem.starterCode as any).javascript || "",
-        python: (problem.starterCode as any).python || "",
-      })
-      setResults(null)
-      setAllPassed(null)
-      setActiveTab("description")
-    }
+    const timer = setTimeout(() => {
+      if (problem) {
+        setCodeDrafts({
+          javascript: (problem.starterCode as any).javascript || "",
+          python: (problem.starterCode as any).python || "",
+        })
+        setResults(null)
+        setAllPassed(null)
+        setActiveTab("description")
+      }
+    }, 0)
+    return () => clearTimeout(timer)
   }, [problem])
 
   const code = codeDrafts[language] || ""

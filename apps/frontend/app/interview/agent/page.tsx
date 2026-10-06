@@ -41,7 +41,10 @@ function AIInterviewContent() {
 
   useEffect(() => {
     if (timeLeft <= 0) {
-      if (!isEvaluating && finalScore === null) handleEnd(true)
+      if (!isEvaluating && finalScore === null) {
+        const timer = setTimeout(() => handleEnd(true), 0)
+        return () => clearTimeout(timer)
+      }
       return
     }
     const timer = setInterval(() => setTimeLeft(t => t - 1), 1000)
@@ -78,7 +81,9 @@ function AIInterviewContent() {
       transports: ["websocket"]
     })
 
-    setSocket(newSocket)
+    setTimeout(() => {
+      setSocket(newSocket)
+    }, 0)
 
     newSocket.on("connect", () => {
       newSocket.emit("interview:join", { resumeId, duration: parseInt(durationParam) })

@@ -16,6 +16,7 @@ export default function PathDetailPage() {
   
   const { data: path, isLoading, error } = usePath(pathId)
   const markComplete = useMarkComplete()
+  const { user } = useAuthStore()
 
   const [activeTopic, setActiveTopic] = useState<any | null>(null)
 
@@ -24,8 +25,6 @@ export default function PathDetailPage() {
   }, [hydrated, token, router])
 
   if (!hydrated || !token) return null
-
-  const { user } = useAuthStore()
 
   // Find the user's progress for this path
   const userProgress = (user as any)?.pathProgress?.find((p: any) => p.pathId === path?.id)

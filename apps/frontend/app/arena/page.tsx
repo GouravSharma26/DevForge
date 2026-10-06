@@ -83,40 +83,49 @@ export default function ArenaPage() {
 
   // Initialize Quick Match code
   useEffect(() => {
-    if (state.problem && state.status === "active") {
-      setCode((state.problem.starterCode as any)?.javascript || "")
-    }
+    const timer = setTimeout(() => {
+      if (state.problem && state.status === "active") {
+        setCode((state.problem.starterCode as any)?.javascript || "")
+      }
+    }, 0)
+    return () => clearTimeout(timer)
   }, [state.problem, state.status])
 
   // Initialize Exam Mode Drafts & Send initial tab
   useEffect(() => {
-    if (state.status === "exam_active" && state.examProblems.length > 0) {
-      const initialDrafts: Record<string, string> = {}
-      state.examProblems.forEach(p => {
-        initialDrafts[p.id] = (p.starterCode as any)?.javascript || ""
-      })
-      setExamDrafts(initialDrafts)
-      setActiveProblemIdx(0)
-      switchExamTab(state.examProblems[0].id)
-    }
+    const timer = setTimeout(() => {
+      if (state.status === "exam_active" && state.examProblems.length > 0) {
+        const initialDrafts: Record<string, string> = {}
+        state.examProblems.forEach(p => {
+          initialDrafts[p.id] = (p.starterCode as any)?.javascript || ""
+        })
+        setExamDrafts(initialDrafts)
+        setActiveProblemIdx(0)
+        switchExamTab(state.examProblems[0].id)
+      }
+    }, 0)
+    return () => clearTimeout(timer)
   }, [state.status, state.examProblems, switchExamTab])
 
   // Forfeit Timer countdown
   useEffect(() => {
-    let int: NodeJS.Timeout
-    if (showForfeitConfirm) {
-      setForfeitTimer(5)
-      int = setInterval(() => {
-        setForfeitTimer(p => {
-          if (p <= 1) {
-            clearInterval(int)
-            return 0
-          }
-          return p - 1
-        })
-      }, 1000)
-    }
-    return () => clearInterval(int)
+    const timer = setTimeout(() => {
+      let int: NodeJS.Timeout
+      if (showForfeitConfirm) {
+        setForfeitTimer(5)
+        int = setInterval(() => {
+          setForfeitTimer(p => {
+            if (p <= 1) {
+              clearInterval(int)
+              return 0
+            }
+            return p - 1
+          })
+        }, 1000)
+      }
+      return () => { if (int) clearInterval(int) }
+    }, 0)
+    return () => clearTimeout(timer)
   }, [showForfeitConfirm])
 
   // Terminal Resize Drag Logic

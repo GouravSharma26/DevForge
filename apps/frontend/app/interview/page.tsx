@@ -47,9 +47,12 @@ export default function InterviewHubPage() {
 
   // Auto-select the first resume if none selected
   useEffect(() => {
-    if (resumes && resumes.length > 0 && !selectedResumeId) {
-      setSelectedResumeId(resumes[0].id)
-    }
+    const timer = setTimeout(() => {
+      if (resumes && resumes.length > 0 && !selectedResumeId) {
+        setSelectedResumeId(resumes[0].id)
+      }
+    }, 0)
+    return () => clearTimeout(timer)
   }, [resumes, selectedResumeId])
 
   async function handleStart() {

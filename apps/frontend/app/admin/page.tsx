@@ -2,17 +2,17 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { Shield, Settings, Server, Activity, Bot, Users, Swords, FileText, Mic, Target, RefreshCw, Code, Zap, PlayCircle } from "lucide-react"
+import { Shield, Settings, Activity, Bot, Users, Swords, FileText, Mic, Target, RefreshCw, Code, Zap, PlayCircle } from "lucide-react"
 import { useAuthStore } from "@/store/auth.store"
 import { api } from "@/lib/api"
 
 // API is proxied through Next.js
 export default function AdminDashboard() {
   const router = useRouter()
-  const { user, token, hydrated } = useAuthStore()
+  const { user, hydrated } = useAuthStore()
   
-  const [config, setConfig] = useState<any>(null)
-  const [stats, setStats] = useState<any>(null)
+  const [config, setConfig] = useState<Record<string, unknown> | null>(null)
+  const [stats, setStats] = useState<Record<string, unknown> | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
@@ -41,7 +41,10 @@ export default function AdminDashboard() {
       router.replace("/dashboard")
       return
     }
-    fetchData()
+    const timer = setTimeout(() => {
+      fetchData()
+    }, 0)
+    return () => clearTimeout(timer)
   }, [user, hydrated, router, fetchData])
 
   const handleSave = async () => {

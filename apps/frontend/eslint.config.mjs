@@ -22,7 +22,8 @@ const eslintConfig = defineConfig([
       "react/no-unescaped-entities": "warn",
       "@next/next/no-img-element": "warn",
       "react-hooks/rules-of-hooks": "error",
-      "react/jsx-no-comment-textnodes": "warn"
+      "react/jsx-no-comment-textnodes": "warn",
+      "react-compiler/react-compiler": "off"
     }
   }
 ]);

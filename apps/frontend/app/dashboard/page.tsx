@@ -24,7 +24,10 @@ export default function DashboardPage() {
   const { data: recommendedProblems, isLoading: recommendedLoading } = useRecommendedProblems()
 
   const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 0)
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     if (hydrated && !token) router.push("/login")

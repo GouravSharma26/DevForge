@@ -737,7 +737,10 @@ export default function ResumeBuilderPage() {
 
   // Load saved data
   useEffect(() => {
-    if (saved?.sections) setSections(saved.sections)
+    const timer = setTimeout(() => {
+      if (saved?.sections) setSections(saved.sections)
+    }, 0)
+    return () => clearTimeout(timer)
   }, [saved])
 
   // Handle auto-fill from query params

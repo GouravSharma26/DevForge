@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { HelpCircle, Star, Swords, Target, BookOpen, Mic, FileText, Zap, Trophy, Shield, ShieldQuestion, ChevronRight, BrainCircuit, Code, Play } from "lucide-react"
+import { HelpCircle, Swords, Target, BookOpen, Mic, FileText, Zap, Trophy, Shield, BrainCircuit, Code } from "lucide-react"
 import { RankIcon } from "@/components/ui/RankIcon"
 
 export default function AboutPage() {
@@ -19,7 +19,7 @@ export default function AboutPage() {
           THE DEVFORGE <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-highlight">CODEX</span>
         </h1>
         <p className="text-muted max-w-2xl text-lg leading-relaxed">
-          Welcome to the ultimate proving grounds. DevForge isn't just a learning platform—it's a gamified ecosystem designed to temper your skills, forge your career, and test your mettle in the Arena.
+          Welcome to the ultimate proving grounds. DevForge isn&apos;t just a learning platform—it&apos;s a gamified ecosystem designed to temper your skills, forge your career, and test your mettle in the Arena.
         </p>
       </div>
 
@@ -214,7 +214,7 @@ function CoreLoopAnimation() {
   )
 }
 
-function FeatureSection({ icon, title, description, children, reverse, delay }: any) {
+function FeatureSection({ icon, title, description, children, reverse, delay }: { icon: React.ReactNode, title: string, description: string, children: React.ReactNode, reverse?: boolean, delay?: string }) {
   return (
     <div className={`flex flex-col ${reverse ? 'md:flex-row-reverse' : 'md:flex-row'} gap-8 md:gap-16 items-center animate-in fade-in slide-in-from-bottom-8 duration-1000 ${delay} fill-mode-both`}>
       <div className="flex-1 space-y-6">
