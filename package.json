@@ -140,7 +140,7 @@
     "electron-to-chromium": "^1.5.444",
     "emoji-regex": "^9.2.2",
     "engine.io": "^6.6.11",
-    "engine.io-client": "^6.6.6",
+    "engine.io-client": "^6.6.7",
     "engine.io-parser": "^5.2.3",
     "enhanced-resolve": "^5.26.0",
     "entities": "^6.0.1",
