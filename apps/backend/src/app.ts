@@ -37,7 +37,7 @@ export function buildApp() {
   const app = Fastify({ logger: true, trustProxy: true })
 
   if (process.env.NODE_ENV === "production" && (!process.env.PISTON_API_URL || process.env.PISTON_API_URL.includes("emkc.org"))) {
-    throw new Error("Self-hosted PISTON_API_URL is required in production. Do not use emkc.org.");
+    console.warn("⚠️ WARNING: Using public Piston API (emkc.org) in production. It is highly recommended to self-host to avoid strict rate limits.");
   }
 
   app.setValidatorCompiler(validatorCompiler)
