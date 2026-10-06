@@ -504,7 +504,7 @@ Copy this into a GitHub issue or project board.
   - [ ] Redis-backed state (if scaling out)
 
 **Phase 4**
-- [ ] **M1–M9** Medium items *(M7 partially done)*
-- [ ] **R1–R4** Refactors
-- [ ] **Docs** README, `SECURITY.md`, architecture diagram
-- [ ] **CI/CD** audit step, Dependabot, secret scanning, coverage threshold
+- [x] **M1–M9** Medium items *(M7 partially done)*
+- [ ] **R1–R4** Refactors *(R2 & R4 done)*
+- [x] **Docs** README, `SECURITY.md`, architecture diagram
+- [x] **CI/CD** audit step, Dependabot, secret scanning, coverage threshold
