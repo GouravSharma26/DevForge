@@ -286,7 +286,7 @@
     "jsx-ast-utils": "^3.3.5",
     "jwa": "^2.0.1",
     "jws": "^4.0.1",
-    "keyv": "^4.5.4",
+    "keyv": "^6.1.0",
     "language-subtag-registry": "^0.3.23",
     "language-tags": "^1.0.9",
     "levn": "^0.4.1",
